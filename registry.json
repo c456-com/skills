@@ -1,1 +1,96 @@
-{"skills":[{"name":"c456-software-dev-sop","description":"通用软件开发 SOP — 需求分析 → 理论调研 → 兼容性评估 → 编码 → 文档同步 → 验收。集成 Karpathy Wiki 知识库工作流。","tags":["development","sop","workflow","documentation","knowledge-base"],"version":"1.0.0"}]}
+{
+  "skills": [
+    {
+      "name": "c456-software-dev-sop",
+      "description": "通用软件开发 SOP — 需求分析 → 理论调研 → 兼容性评估 → 编码 → 文档同步 → 验收。集成 Karpathy Wiki 知识库工作流。",
+      "tags": [
+        "development",
+        "sop",
+        "workflow",
+        "documentation",
+        "knowledge-base"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "c456-cli",
+      "description": "c456-cli",
+      "tags": [
+        "c456"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "c456-llm-wiki",
+      "description": "c456-llm-wiki",
+      "tags": [
+        "c456"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "c456-product-channel-article",
+      "description": "c456-product-channel-article",
+      "tags": [
+        "c456"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "c456-signal-product-vs",
+      "description": "c456-signal-product-vs",
+      "tags": [
+        "c456"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "c456-signal-researcher",
+      "description": "c456-signal-researcher",
+      "tags": [
+        "c456"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "c456-sync-public-markdown",
+      "description": "c456-sync-public-markdown",
+      "tags": [
+        "c456"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "karpathy-wiki",
+      "description": "karpathy-wiki",
+      "tags": [
+        "c456"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "gushifei-xuangu",
+      "description": "gushifei-xuangu",
+      "tags": [
+        "c456"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "gushifei-xingtai",
+      "description": "gushifei-xingtai",
+      "tags": [
+        "c456"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "gushifei-tuning",
+      "description": "gushifei-tuning",
+      "tags": [
+        "c456"
+      ],
+      "version": "1.0.0"
+    }
+  ]
+}
