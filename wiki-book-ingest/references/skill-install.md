@@ -111,7 +111,7 @@ BOOK_EXTRACT_PATH="<book-extract 的 path>"
 cp "$BOOK_EXTRACT_PATH/references/book-extract.example.json" .config/book-extract.json
 
 python3 "$BOOK_EXTRACT_PATH/scripts/vision_openai_compatible.py" \
-  --project-root . --images-dir work/pages --output-dir domains/.../pages --resume
+  --project-root . --images-dir .tmp/book-extract/<book-name>/pages --output-dir domains/.../pages --resume
 ```
 
 `wiki-book-ingest` 的 example 同理：`{wiki_book_ingest_path}/references/wiki-book-ingest.example.json`。

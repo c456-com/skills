@@ -41,6 +41,7 @@ domains/<domain>/raw/books/<book-name>/
 5. **`external_api` 禁止 Agent 临时写 HTTP/API 代码** — 只能 Shell 调用 `scripts/vision_*.py`
 6. **拍照录入禁止 Tesseract / 传统 OCR** — 仅视觉（`vision_mode` 仍须用户确认）
 7. 配置读 `.config/book-extract.json`；`defaults.extract_method` 保持 `user_choice`，**禁止**改成 `auto` 或预填路径
+8. **临时文件只放 `.tmp/`** — PDF 拆页、拍照预处理、MinerU 中间产出等写入 **`.tmp/book-extract/<book-name>/`**（如 `pages/`、`photos/`、`mineru/`）；**禁止**在项目根创建 `work/`、`out/` 等目录（`.tmp/` 已在 karpathy-wiki gitignore）
 
 ---
 
@@ -89,25 +90,30 @@ domains/<domain>/raw/books/<book-name>/
 
 ### 路径 A：MinerU（用户选 `mineru`）
 
-复用 [pdf-converter](https://github.com/baklib-tools/skills/tree/main/skills/pdf-converter) 或本机 `mineru`：
+复用 [pdf-converter](https://github.com/baklib-tools/skills/tree/main/skills/pdf-converter) 或本机 `mineru`。中间产出放 **`.tmp/book-extract/<book-name>/mineru/`**，勿用项目根 `./out`：
 
 ```bash
-mineru -p book.pdf -o ./out -b pipeline --lang ch -m auto -t True -f True
+mkdir -p .tmp/book-extract/<book-name>/mineru
+mineru -p book.pdf -o .tmp/book-extract/<book-name>/mineru -b pipeline --lang ch -m auto -t True -f True
 ```
 
 长书在预览中确认页范围后可分页。产出 `.md` + `images/` 拷入 `raw/books/<book>/`。
 
 ### 路径 B：视觉大模型（用户选 `vision`）
 
-PDF 先拆页图；拍照做 HEIC→PNG、缩放（见下）。
+PDF 先拆页图到 **`.tmp/book-extract/<book-name>/pages/`**；拍照预处理到 **`.tmp/book-extract/<book-name>/photos/`**。
 
 ```bash
-mkdir -p work/pages
-pdftoppm -png book.pdf work/pages/page
+BOOK=domains/<domain>/raw/books/<book-name>
+mkdir -p .tmp/book-extract/<book-name>/pages
+pdftoppm -png book.pdf .tmp/book-extract/<book-name>/pages/page
 
-for f in *.HEIC; do sips -s format png "$f" --out "out/${f%.HEIC}.png"; done
-for f in out/*.png; do magick "$f" -resize 1536x1536 -quality 80 "$f"; done
+mkdir -p .tmp/book-extract/<book-name>/photos
+for f in *.HEIC; do sips -s format png "$f" --out ".tmp/book-extract/<book-name>/photos/${f%.HEIC}.png"; done
+for f in .tmp/book-extract/<book-name>/photos/*.png; do magick "$f" -resize 1536x1536 -quality 80 "$f"; done
 ```
+
+识图完成后，页图可 **复制** 到 `$BOOK/images/` 留存；`.tmp/book-extract/<book-name>/` 为过程目录，勿在项目根建 `work/`。
 
 ---
 
@@ -148,7 +154,7 @@ for f in out/*.png; do magick "$f" -resize 1536x1536 -quality 80 "$f"; done
 # BOOK_EXTRACT_PATH 来自 npx skills list 中 book-extract 的 path
 python3 "$BOOK_EXTRACT_PATH/scripts/vision_openai_compatible.py" \
   --project-root /path/to/wiki-project \
-  --images-dir work/pages \
+  --images-dir .tmp/book-extract/my-book/pages \
   --output-dir domains/my-book/raw/books/my-book/pages \
   --batch-size 2 \
   --resume
@@ -159,7 +165,7 @@ python3 "$BOOK_EXTRACT_PATH/scripts/vision_openai_compatible.py" \
 ### `agent_native` 流程
 
 1. `.config/book-extract.json` 设 `"vision_mode": "agent_native"`
-2. 每批 1–2 张 Read → `pages/page-NNN.md`
+2. 从 `.tmp/book-extract/<book-name>/pages/`（或 `photos/`）**逐张** Read → `domains/.../raw/books/<book>/pages/page-NNN.md`
 3. 跳过已有页 = resume
 
 ### `external_api` 流程（禁止即兴写代码）

@@ -22,7 +22,7 @@ PDF / 拍照 → `raw/books/`。**不试跑、不自动判断** — Agent 直接
 
 不确定怎么选？看 [method-choice-guide.md](references/method-choice-guide.md) **自己对照 PDF 特点**；Agent 不试跑、不自动判断、不说「建议用某某」。
 
-拍照：仅视觉。
+拍照：仅视觉；预处理目录同为 `.tmp/book-extract/<book-name>/photos/`。
 
 ## 视觉：三种落地
 
@@ -37,7 +37,7 @@ PDF / 拍照 → `raw/books/`。**不试跑、不自动判断** — Agent 直接
 ```bash
 cp references/book-extract.example-qwen-local.json .config/book-extract.json
 # BOOK_EXTRACT_PATH=$(npx skills list --json 中 book-extract 的 path)
-python3 "$BOOK_EXTRACT_PATH/scripts/vision_openai_compatible.py" --project-root . --images-dir work/pages --output-dir domains/.../pages --resume
+python3 "$BOOK_EXTRACT_PATH/scripts/vision_openai_compatible.py" --project-root . --images-dir .tmp/book-extract/<book-name>/pages --output-dir domains/.../pages --resume
 ```
 
 ## 配置
