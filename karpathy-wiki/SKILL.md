@@ -131,7 +131,13 @@ AGENTS.md（Schema） ← 定义 AI 如何组织 Wiki
 询问用户是否：
 
 - 拉取 Karpathy Gist 作为种子素材（`raw/resources/karpathy-llm-wiki.md` + `wiki/sources/` 摘要）
-- `git init` 并首 commit（仅用户明确要求时）
+- 若**尚无** Git：是否 `git init`（仅用户明确要求时执行，**禁止自动 commit**）
+
+**Phase 7 — Git 检测**（Init 或任意大阶段收尾时）
+
+1. 检测项目根是否在 Git 仓库内：`git rev-parse --is-inside-work-tree`（或存在 `.git`）
+2. **非 Git 仓库** — 简要说明「知识库适合版本管理」，问是否 `git init`；不自动执行
+3. **已是 Git 仓库** — 记入上下文，供大阶段完成后提交建议（见下文「Git 版本控制与提交建议」）
 
 #### 脚手架清单（Agent 手动创建）
 
@@ -187,6 +193,61 @@ domains/<name>/
 
 ---
 
+## Git 版本控制与提交建议
+
+### 自动检测
+
+在 **Init 完成**、**书籍录入流水线结束**（`book-extract` + `wiki-book-ingest`）、或 **单次大批量 Ingest**（例如新增 >10 页 wiki / 整本书章节）后：
+
+1. 检测：`git rev-parse --is-inside-work-tree 2>/dev/null`
+2. **非 Git** — 可选询问是否 `git init`；**不自动 commit**
+3. **是 Git** — 进入「大阶段收尾」流程（下）
+
+**禁止**未经用户明确同意执行 `git add` / `git commit` / `git push`（仅建议与代拟命令，由用户确认后执行）。
+
+### 大阶段完成后：询问是否提交
+
+向用户简要汇报本阶段产出（如：新增 N 个 concept、M 个 source、更新 `wiki/index.md`），然后问：
+
+> 当前目录在 Git 版本控制下。是否现在提交这批知识库更新？  
+> 若同意，我可以帮你拟 commit 说明并列出将纳入的文件；你确认后我再执行 git 命令。
+
+拟 commit 时优先包含：
+
+- `wiki/`（index、log、concepts、sources、threads、entities）
+- `AGENTS.md`、领域 `domains/<name>/wiki/`
+- `skills-lock.json`（若存在）
+
+**默认不纳入**（除非用户明确要求）：`.config/`、`.tmp/`
+
+### 原始数据过大：询问是否排除 raw
+
+提交前用 `du -sh` 粗算 `domains/*/raw`、`raw/`（见 [`references/git-raw-policy.md`](references/git-raw-policy.md)）。
+
+若体积大（例如单域 raw **> 50MB**，或大量 `raw/images/` 页图），**必须询问**：
+
+> `raw/` 原始素材约 XXX MB（含书页图/PDF）。是否**不提交**原始文件，只提交 `wiki/` 编译结果？  
+> 若选不提交，我可在 `.gitignore` 追加 `domains/*/raw/images/` 等（需你确认）。
+
+用户确认排除 raw 后：
+
+1. merge 更新根 `.gitignore`（参考 [`references/gitignore-snippet.md`](references/gitignore-snippet.md) 注释块）
+2. 提交时只 `git add wiki/` 等，不 add 已忽略的 raw
+3. 在 `wiki/log.md` 可注明「raw 仅本地，未进 Git」
+
+用户选择**仍提交 raw** — 照实 add；若单文件过大提醒 Git LFS 或外部存储，由用户决定。
+
+### 建议 commit 信息格式
+
+```
+ingest: <领域名> <书名或主题> — <N> concepts, <M> sources
+
+- wiki/index.md, wiki/log.md 已更新
+- raw: 已纳入 / 已 gitignore（本地保留）
+```
+
+---
+
 ## 页面类型
 
 ### 实体页 `wiki/entities/`
@@ -238,6 +299,7 @@ domains/<name>/
 3. 检查缺失页
 4. 评估数据缺口
 5. 输出 Markdown 报告
+6. 若为大范围 Lint 且仓库在 Git 下，收尾时可按上文「Git 版本控制与提交建议」询问是否提交修复
 
 ## 特殊文件规范
 

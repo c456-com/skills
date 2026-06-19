@@ -102,6 +102,8 @@ npx skills add c456-com/skills --skill karpathy-wiki -g -y   # 全局安装
 | 新增领域 | 「按 karpathy-wiki 新增领域 ruby-learning，先预览，确认后创建」 |
 | 同步技能 | 「运行 npx skills update karpathy-wiki -y」 |
 
+录入大阶段完成后，若项目在 Git 下，Agent 会**询问是否提交**；`raw/` 过大时会**询问是否排除原始素材**。见 [SKILL.md](SKILL.md)「Git 版本控制与提交建议」。
+
 ## 书籍录入流水线
 
 | 步骤 | 技能 |
@@ -125,9 +127,16 @@ npx skills add c456-com/skills --skill karpathy-wiki -g -y   # 全局安装
 **`books/` 和 `domains/`？**
 → 语义相同；新库用 `domains/`。
 
+**大录入完成后要提交 Git 吗？**
+→ 在 Git 仓库内时，Agent 会在 Init / 整本书 ingest 等**大阶段收尾**询问是否 commit；**不会未经你同意自动提交**。
+
+**书页照片、PDF 太大不想进 Git？**
+→ 可选只提交 `wiki/`，把 `domains/*/raw/images/` 等写入 `.gitignore`；Agent 会按体积提示并问你。见 `references/git-raw-policy.md`。
+
 ## 文件说明
 
 | 文件 | 用途 |
 |------|------|
 | [SKILL.md](SKILL.md) | Agent 执行规范 |
 | [references/](references/) | Init 模板 |
+| [references/git-raw-policy.md](references/git-raw-policy.md) | 大体积 raw 是否进 Git |

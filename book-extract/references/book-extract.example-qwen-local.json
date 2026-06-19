@@ -1,10 +1,10 @@
 {
-  "vision_mode": "agent_native",
+  "vision_mode": "external_api",
   "vision": {
     "provider": "openai_compatible",
-    "base_url": "https://api.openai.com/v1",
-    "api_key": "",
-    "model": "gpt-4o",
+    "base_url": "http://127.0.0.1:1234/v1",
+    "api_key": "not-needed",
+    "model": "qwen3.6-35b-a3b-mtp",
     "max_images_per_request": 2,
     "image_max_edge_px": 1536
   },
@@ -12,8 +12,5 @@
     "backend": "pipeline",
     "lang": "ch",
     "method": "auto"
-  },
-  "defaults": {
-    "extract_method": "user_choice"
   }
 }

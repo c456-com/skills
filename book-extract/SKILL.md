@@ -1,9 +1,9 @@
 ---
 name: book-extract
 description: >-
-  书籍素材提取：PDF（MinerU 免费 / 视觉大模型）与拍照录入（仅视觉）。
-  vision_mode 支持 agent_native（Agent 自识别）或 external_api（标准脚本，禁止临时写 API 代码）。
-  当用户提到 PDF 录入、拍照录入、book-extract、MinerU、书籍转 raw、视觉识图时使用。
+  书籍素材提取：PDF（MinerU 或视觉大模型）与拍照（仅视觉）。由用户选择识别方式，不自动推荐。
+  vision_mode 支持 agent_native 或 external_api（含本地千问等 OpenAI 兼容端点）。
+  当用户提到 PDF 录入、拍照录入、book-extract、MinerU、千问识图、书籍转 raw 时使用。
 ---
 
 # Book Extract（书籍素材提取）
@@ -22,14 +22,15 @@ domains/<domain>/raw/books/<book-name>/
 └── book.md              # MinerU 路径或合并后的全书 MD（可选）
 ```
 
-并写 `.extract-meta.yml`（backend、页数、vision_mode、探测结论）。
+并写 `.extract-meta.yml`（用户选择的 `extract_method`、`vision_mode`、页数）。
 
 ## 硬性约束
 
-1. **先预览、用户确认、再执行**（路径、页范围、费用粗算）
-2. **`external_api` 禁止 Agent 临时写 HTTP/API 代码** — 只能 Shell 调用 `scripts/vision_*.py`
-3. **拍照录入禁止推荐 Tesseract / 传统 OCR** — 仅视觉大模型（`agent_native` 或脚本）
-4. 配置读 **项目根** `.config/book-extract.json`（gitignore，见 [`karpathy-wiki`](../karpathy-wiki/SKILL.md)）
+1. **识别方式由用户选择** — **禁止** Agent 根据 PDF 质量自动替用户决定 MinerU 或视觉；仅可简要说明各选项差异后询问
+2. **先预览、用户确认、再执行**（方式、页范围、费用/耗时粗算）
+3. **`external_api` 禁止 Agent 临时写 HTTP/API 代码** — 只能 Shell 调用 `scripts/vision_*.py`
+4. **拍照录入禁止 Tesseract / 传统 OCR** — 仅视觉大模型
+5. 配置读 **项目根** `.config/book-extract.json`（gitignore）
 
 ---
 
@@ -43,20 +44,29 @@ domains/<domain>/raw/books/<book-name>/
 
 ---
 
-## Phase 1 — PDF 探测与路径推荐（仅 PDF）
+## Phase 1 — 询问识别方式（必选，不自动识别）
 
-试跑前 3–5 页或检查 PDF 元数据：
+**拍照**：只有视觉路径，但仍须问 `vision_mode`（见 Phase 2）。
 
-| 判定 | 信号 | 推荐 |
-|------|------|------|
-| `scan_pdf` | 无文字层 / 纯扫描 | 视觉路径 |
-| `low_text_quality` | MinerU 试跑乱码率高 | 视觉路径 |
-| `image_heavy` | K 线、截图、手写多 | 视觉路径 |
-| `digital_pdf` | 电子版、表格多 | **MinerU**（免费慢） |
+**PDF**：用下面**简表**问用户选哪一种（一次问清，不要先跑 MinerU 试跑再推荐）：
 
-展示预览表 + 推荐 + 用户确认。
+| 选项 | 标识 | 成本 | 特点 |
+|------|------|------|------|
+| **A. MinerU** | `mineru` | 免费，本地慢 | 电子版、表格/公式结构化好 |
+| **B. 视觉大模型** | `vision` | 本地或 API | 图文/K 线/版式理解好；**即使 MinerU 能转，用户也可选此项** |
 
-### 路径 A：MinerU（免费）
+话术示例：
+
+> 这本 PDF 可以用两种方式提取：  
+> **A MinerU**（免费本地，偏文字与表格）  
+> **B 视觉大模型**（如本地千问 3.6 / Agent 读图 / 云端 API，偏识图与版式）  
+> 你更想用哪一种？
+
+用户选定前**不要**执行 MinerU 全量或视觉全量。
+
+可选：用户问差异时，可补充「扫描件、K 线多 → 视觉往往更好；纯文字电子书 → MinerU 省 API」，但**不得**据此覆盖用户选择。
+
+### 路径 A：MinerU（用户选 `mineru`）
 
 复用 [pdf-converter](https://github.com/baklib-tools/skills/tree/main/skills/pdf-converter) 或本机 `mineru`：
 
@@ -64,49 +74,51 @@ domains/<domain>/raw/books/<book-name>/
 mineru -p book.pdf -o ./out -b pipeline --lang ch -m auto -t True -f True
 ```
 
-长书先 `--start 0 --end 9` 试跑。产出 `.md` + `images/` 拷入 `raw/books/<book>/`。
+长书在预览中确认页范围后可分页。产出 `.md` + `images/` 拷入 `raw/books/<book>/`。
 
-### 路径 B：视觉大模型
+### 路径 B：视觉大模型（用户选 `vision`）
 
-PDF 先拆页图：
+PDF 先拆页图；拍照做 HEIC→PNG、缩放（见下）。
 
 ```bash
 mkdir -p work/pages
 pdftoppm -png book.pdf work/pages/page
-# 或: magick convert -density 150 book.pdf work/pages/page-%03d.png
-```
 
-拍照预处理（HEIC→PNG、缩放到 `image_max_edge_px`，默认 1536）：
-
-```bash
 for f in *.HEIC; do sips -s format png "$f" --out "out/${f%.HEIC}.png"; done
 for f in out/*.png; do magick "$f" -resize 1536x1536 -quality 80 "$f"; done
 ```
 
 ---
 
-## Phase 2 — 视觉模式选择（路径 B 与拍照必选）
+## Phase 2 — 视觉子模式（路径 B 与拍照）
 
-| `vision_mode` | 做法 | 何时用 |
-|---------------|------|--------|
-| **`agent_native`** | Agent 用 **Read 工具**读 `images/`，按 [`references/vision-extract-prompt.md`](references/vision-extract-prompt.md) 写 `page-*.md` | Cursor/Claude 等多模态 Agent；**零 API 配置** |
-| **`external_api`** | 读 `.config/book-extract.json`，**只调用标准脚本** | 批量离线、Agent 无视觉、指定便宜模型 |
+用户选 `vision` 后，再问（可合并成一轮）：
 
-### `agent_native` 流程
+| `vision_mode` | 做法 | 典型场景 |
+|---------------|------|----------|
+| **`agent_native`** | Agent **Read** 读图，按 [`references/vision-extract-prompt.md`](references/vision-extract-prompt.md) 写 `page-*.md` | Cursor 等多模态 Agent |
+| **`external_api`** | **只调用** `scripts/vision_*.py` | 本地 **千问 3.6**（LM Studio）、批量、云端 API |
 
-1. 确认 `.config/book-extract.json` 中 `"vision_mode": "agent_native"`（可无 api_key）
-2. 每批 1–2 张图 Read → 写 `pages/page-NNN.md`（frontmatter 含 `source-images`）
-3. `--resume` 语义：跳过已有 `page-*.md`
+### 本地千问 3.6（`external_api` + OpenAI 兼容）
 
-### `external_api` 流程（禁止即兴写代码）
+用户偏好本地视觉时，用 [`references/book-extract.example-qwen-local.json`](references/book-extract.example-qwen-local.json)：
 
-1. 用户复制 [`references/book-extract.example.json`](references/book-extract.example.json) → `.config/book-extract.json`，设 `"vision_mode": "external_api"` 并填 `api_key` 或环境变量
-2. 按 `vision.provider` 选脚本：
-
-**OpenAI 兼容**（OpenAI / OpenRouter / DeepSeek / LM Studio / Ollama）：
+```json
+{
+  "vision_mode": "external_api",
+  "vision": {
+    "provider": "openai_compatible",
+    "base_url": "http://127.0.0.1:1234/v1",
+    "api_key": "not-needed",
+    "model": "qwen3.6-35b-a3b-mtp",
+    "max_images_per_request": 2,
+    "image_max_edge_px": 1536
+  }
+}
+```
 
 ```bash
-python3 /path/to/skills/book-extract/scripts/vision_openai_compatible.py \
+python3 .../book-extract/scripts/vision_openai_compatible.py \
   --project-root /path/to/wiki-project \
   --images-dir work/pages \
   --output-dir domains/my-book/raw/books/my-book/pages \
@@ -114,36 +126,47 @@ python3 /path/to/skills/book-extract/scripts/vision_openai_compatible.py \
   --resume
 ```
 
-**Anthropic**：
+确认 LM Studio（或同类）已起服务且模型已加载。
 
-```bash
-python3 /path/to/skills/book-extract/scripts/vision_anthropic.py \
-  --project-root /path/to/wiki-project \
-  --images-dir work/pages \
-  --output-dir domains/my-book/raw/books/my-book/pages \
-  --resume
-```
+### `agent_native` 流程
 
-环境变量可覆盖密钥：`OPENAI_API_KEY`、`OPENROUTER_API_KEY`、`ANTHROPIC_API_KEY`。
+1. `.config/book-extract.json` 设 `"vision_mode": "agent_native"`
+2. 每批 1–2 张 Read → `pages/page-NNN.md`
+3. 跳过已有页 = resume
+
+### `external_api` 流程（禁止即兴写代码）
+
+1. 复制 example → `.config/book-extract.json`，`"vision_mode": "external_api"`
+2. `vision.provider`：
+   - `openai_compatible` → [`scripts/vision_openai_compatible.py`](scripts/vision_openai_compatible.py)（**含本地千问**）
+   - `anthropic` → [`scripts/vision_anthropic.py`](scripts/vision_anthropic.py)
+
+环境变量可覆盖密钥：`OPENAI_API_KEY`、`ANTHROPIC_API_KEY`（本地千问通常不需要）。
 
 ---
 
-## Phase 3 — 验收
+## Phase 3 — 预览与确认
+
+展示：用户选的 `extract_method`、`vision_mode`、将处理的页范围、将创建的路径。**用户确认后**再执行。
+
+---
+
+## Phase 4 — 验收
 
 - [ ] `raw/books/<book>/` 有 Markdown 与 `images/`
-- [ ] `.extract-meta.yml` 记录 backend 与 vision_mode
+- [ ] `.extract-meta.yml` 记录**用户选择**的方式（非自动判定）
 - [ ] 提示下一步：[`wiki-book-ingest`](../wiki-book-ingest/SKILL.md)
 
 ## 脚本文件
 
 | 文件 | 用途 |
 |------|------|
-| [`scripts/vision_openai_compatible.py`](scripts/vision_openai_compatible.py) | OpenAI 兼容多模态 API |
-| [`scripts/vision_anthropic.py`](scripts/vision_anthropic.py) | Anthropic Messages API |
-| [`scripts/vision_common.py`](scripts/vision_common.py) | 共享加载配置（勿单独调用） |
+| [`scripts/vision_openai_compatible.py`](scripts/vision_openai_compatible.py) | OpenAI 兼容（含本地千问 / LM Studio） |
+| [`scripts/vision_anthropic.py`](scripts/vision_anthropic.py) | Anthropic |
+| [`scripts/vision_common.py`](scripts/vision_common.py) | 共享配置加载 |
 
 ## 相关技能
 
-- 下一步编译：[`wiki-book-ingest`](../wiki-book-ingest/SKILL.md)
-- 知识库结构：[`karpathy-wiki`](../karpathy-wiki/SKILL.md)
-- MinerU 细节：pdf-converter（仅路径 A 参考）
+- [`wiki-book-ingest`](../wiki-book-ingest/SKILL.md)
+- [`karpathy-wiki`](../karpathy-wiki/SKILL.md)
+- MinerU：pdf-converter（仅用户选 `mineru` 时参考）

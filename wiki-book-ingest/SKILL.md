@@ -116,6 +116,7 @@ description: >-
 - [ ] K 线/图有文字解释
 - [ ] `wiki/index.md` 与 `wiki/log.md` 已更新
 - [ ] Lint 报告已交付
+- [ ] 若在 Git 仓库内：按 [`karpathy-wiki` Git 节](../karpathy-wiki/SKILL.md) 询问是否提交；`raw/` 过大时询问是否排除原始素材
 
 ## 相关技能
 
