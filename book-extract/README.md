@@ -7,7 +7,7 @@ PDF / 拍照 → `raw/books/`。**识别方式由你选**，Agent 不自动替�
 ## 快速开始
 
 ```
-请用 npx skills 安装 c456-com/skills 的 book-extract（未安装则先安装），
+请用 npx skills 安装 c456-com/skills 的 book-extract（未安装则先安装；缺 wiki-book-ingest / karpathy-wiki 也一并安装），
 帮我把这本 PDF 录入 domains/stock-trading。
 先问我用 MinerU 还是视觉大模型识别，我选视觉的话再问 agent_native 还是本地千问/外部 API。
 展示预览后我确认再执行。
@@ -34,7 +34,8 @@ PDF / 拍照 → `raw/books/`。**识别方式由你选**，Agent 不自动替�
 
 ```bash
 cp references/book-extract.example-qwen-local.json .config/book-extract.json
-python3 .../scripts/vision_openai_compatible.py --project-root . --images-dir work/pages --output-dir domains/.../pages --resume
+# BOOK_EXTRACT_PATH=$(npx skills list --json 中 book-extract 的 path)
+python3 "$BOOK_EXTRACT_PATH/scripts/vision_openai_compatible.py" --project-root . --images-dir work/pages --output-dir domains/.../pages --resume
 ```
 
 ## 配置
@@ -56,6 +57,8 @@ npx skills update book-extract -y
 
 ## 流水线
 
-1. [`karpathy-wiki`](../karpathy-wiki/README.md)
+Agent 会按 [skill-install.md](references/skill-install.md) 缺则安装：
+
+1. **karpathy-wiki**
 2. **book-extract**
-3. [`wiki-book-ingest`](../wiki-book-ingest/README.md)
+3. **wiki-book-ingest**

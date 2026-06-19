@@ -7,7 +7,7 @@
 ## 快速开始
 
 ```
-请从 https://github.com/c456-com/skills/tree/main/wiki-book-ingest 读取技能，
+请用 npx skills 安装 c456-com/skills 的 wiki-book-ingest（未安装则先安装；缺 book-extract / karpathy-wiki 也一并安装），
 对 domains/stock-trading/raw/books/股是股非 做书籍 ingest。
 先列出章节计划和拟建 wiki 页，我确认后再写入。
 ```

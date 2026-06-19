@@ -8,13 +8,22 @@ description: >-
 
 # Wiki Book Ingest（书籍知识编译）
 
-将 [`book-extract`](../book-extract/SKILL.md) 产出（或手放的 `raw/books/`）编译为 `wiki/` 可问答知识。
+将 **book-extract** 产出（或手放的 `raw/books/`）编译为 `wiki/` 可问答知识。
 
 技能目录：<https://github.com/c456-com/skills/tree/main/wiki-book-ingest>
 
+## 技能安装（执行前必做）
+
+按 [`references/skill-install.md`](references/skill-install.md)：**检测 → 缺则安装 → 已装则 update → 从 path 加载**。
+
+1. 检测 `wiki-book-ingest` 是否已安装
+2. **未安装** → `npx skills add c456-com/skills --skill wiki-book-ingest -y`
+3. 通常还需 `book-extract`、`karpathy-wiki` — 缺则 `add`；**早已安装**的 → `npx skills update karpathy-wiki book-extract wiki-book-ingest -y`
+4. 从 `npx skills list` 的 `path` 加载 — **禁止** `../book-extract/...` 相对路径
+
 ## 前置
 
-- 领域目录已存在（[`karpathy-wiki`](../karpathy-wiki/SKILL.md) Init）
+- 领域目录已存在（**karpathy-wiki** Init；无则先安装并执行 Init）
 - `domains/<domain>/raw/books/<book>/` 已有 Markdown + `images/`
 
 ## 硬性约束
@@ -116,9 +125,10 @@ description: >-
 - [ ] K 线/图有文字解释
 - [ ] `wiki/index.md` 与 `wiki/log.md` 已更新
 - [ ] Lint 报告已交付
-- [ ] 若在 Git 仓库内：按 [`karpathy-wiki` Git 节](../karpathy-wiki/SKILL.md) 询问是否提交；`raw/` 过大时询问是否排除原始素材
+- [ ] 若在 Git 仓库内：按 **karpathy-wiki** 安装目录下 `SKILL.md`「Git 版本控制与提交建议」询问是否提交；`raw/` 过大时询问是否排除原始素材
 
 ## 相关技能
 
-- 上一步：[`book-extract`](../book-extract/SKILL.md)
-- 结构规范：[`karpathy-wiki`](../karpathy-wiki/SKILL.md)
+- 上一步：**book-extract**
+- 结构规范：**karpathy-wiki**
+- 安装约定：[`references/skill-install.md`](references/skill-install.md)

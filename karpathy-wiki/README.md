@@ -106,17 +106,27 @@ npx skills add c456-com/skills --skill karpathy-wiki -g -y   # 全局安装
 
 ## 书籍录入流水线
 
-| 步骤 | 技能 |
-|------|------|
-| 1. 初始化领域 | **karpathy-wiki** |
-| 2. PDF/拍照 → raw | [`book-extract`](../book-extract/README.md) |
-| 3. raw → wiki | [`wiki-book-ingest`](../wiki-book-ingest/README.md) |
-| 4. 问答 / Lint | **karpathy-wiki** |
+Agent 检测到 PDF/拍照/书籍录入时，会**先检查并自动安装**缺失技能（`npx skills add`），再从本地安装目录加载，不用 `../` 相对路径。
+
+| 步骤 | 技能 | 说明 |
+|------|------|------|
+| 0. 补齐技能 | `karpathy-wiki` + `book-extract` + `wiki-book-ingest` | 缺则 `add`；已装则 `update` 本次涉及的技能，见 [skill-install.md](references/skill-install.md) |
+| 1. 初始化领域 | **karpathy-wiki** | |
+| 2. PDF/拍照 → raw | **book-extract** | |
+| 3. raw → wiki | **wiki-book-ingest** | |
+| 4. 问答 / Lint | **karpathy-wiki** | |
+
+**推荐话术**（Agent 会自动补装书籍技能）：
+
+```
+按 karpathy-wiki 帮我把这本 PDF 录入 domains/stock-trading。
+缺 book-extract / wiki-book-ingest 请先 npx skills 安装，再按流水线执行；先预览，我确认后再写入。
+```
 
 ## 常见问题
 
 **AI 只读了 GitHub 链接、没跑 npx skills？**
-→ 用上面「快速开始（推荐）」话术，明确要求 **先 `npx skills add` 再 Init**。
+→ 用上面「快速开始（推荐）」话术，明确要求 **先 `npx skills add` 再 Init**。书籍录入时 Agent 应自动补装 `book-extract`、`wiki-book-ingest`。
 
 **目录里已有文件怎么办？**
 → merge 模式：只补缺，不覆盖已有 `wiki/*.md`。
@@ -140,3 +150,4 @@ npx skills add c456-com/skills --skill karpathy-wiki -g -y   # 全局安装
 | [SKILL.md](SKILL.md) | Agent 执行规范 |
 | [references/](references/) | Init 模板 |
 | [references/git-raw-policy.md](references/git-raw-policy.md) | 大体积 raw 是否进 Git |
+| [references/skill-install.md](references/skill-install.md) | 技能检测、缺则安装、从 path 加载 |

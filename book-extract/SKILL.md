@@ -8,9 +8,18 @@ description: >-
 
 # Book Extract（书籍素材提取）
 
-将 **PDF** 或 **拍照书页** 提取为 `raw/books/` 下的 Markdown + 图片，供后续 [`wiki-book-ingest`](../wiki-book-ingest/SKILL.md) 编译。
+将 **PDF** 或 **拍照书页** 提取为 `raw/books/` 下的 Markdown + 图片，供后续 **wiki-book-ingest** 编译。
 
 技能目录：<https://github.com/c456-com/skills/tree/main/book-extract>
+
+## 技能安装（执行前必做）
+
+按 [`references/skill-install.md`](references/skill-install.md)：**检测 → 缺则安装 → 已装则 update → 从 path 加载**。
+
+1. 检测 `book-extract` 是否已安装（`npx skills list --json`）
+2. **未安装** → `npx skills add c456-com/skills --skill book-extract -y`（新装后不必再 update）
+3. 书籍流水线还需 `wiki-book-ingest`、`karpathy-wiki` — 缺则 `add`；**早已安装**的 → `npx skills update karpathy-wiki book-extract wiki-book-ingest -y`（勿 `check` 全量）
+4. 从安装目录的 `path` 读 `SKILL.md`、`references/`、`scripts/` — **禁止** `../wiki-book-ingest/...` 相对路径
 
 ## 输出目标
 
@@ -101,7 +110,7 @@ for f in out/*.png; do magick "$f" -resize 1536x1536 -quality 80 "$f"; done
 
 ### 本地千问 3.6（`external_api` + OpenAI 兼容）
 
-用户偏好本地视觉时，用 [`references/book-extract.example-qwen-local.json`](references/book-extract.example-qwen-local.json)：
+用户偏好本地视觉时，用已安装目录下 [`references/book-extract.example-qwen-local.json`](references/book-extract.example-qwen-local.json)（或 `npx skills list` 所得 `path` 下的同文件）：
 
 ```json
 {
@@ -118,7 +127,8 @@ for f in out/*.png; do magick "$f" -resize 1536x1536 -quality 80 "$f"; done
 ```
 
 ```bash
-python3 .../book-extract/scripts/vision_openai_compatible.py \
+# BOOK_EXTRACT_PATH 来自 npx skills list 中 book-extract 的 path
+python3 "$BOOK_EXTRACT_PATH/scripts/vision_openai_compatible.py" \
   --project-root /path/to/wiki-project \
   --images-dir work/pages \
   --output-dir domains/my-book/raw/books/my-book/pages \
@@ -155,7 +165,7 @@ python3 .../book-extract/scripts/vision_openai_compatible.py \
 
 - [ ] `raw/books/<book>/` 有 Markdown 与 `images/`
 - [ ] `.extract-meta.yml` 记录**用户选择**的方式（非自动判定）
-- [ ] 提示下一步：[`wiki-book-ingest`](../wiki-book-ingest/SKILL.md)
+- [ ] 提示下一步：**wiki-book-ingest**（先按 [`references/skill-install.md`](references/skill-install.md) 确保已安装，再读其 `SKILL.md`）
 
 ## 脚本文件
 
@@ -165,8 +175,10 @@ python3 .../book-extract/scripts/vision_openai_compatible.py \
 | [`scripts/vision_anthropic.py`](scripts/vision_anthropic.py) | Anthropic |
 | [`scripts/vision_common.py`](scripts/vision_common.py) | 共享配置加载 |
 
+脚本路径以 `npx skills list` 中 **book-extract** 的 `path` 为准。
+
 ## 相关技能
 
-- [`wiki-book-ingest`](../wiki-book-ingest/SKILL.md)
-- [`karpathy-wiki`](../karpathy-wiki/SKILL.md)
+- 下一步编译：**wiki-book-ingest**（[`references/skill-install.md`](references/skill-install.md) 缺则安装）
+- 知识库结构：**karpathy-wiki**
 - MinerU：pdf-converter（仅用户选 `mineru` 时参考）

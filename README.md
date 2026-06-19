@@ -26,6 +26,8 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 karpathy-wiki → book-extract → wiki-book-ingest → karpathy-wiki
 ```
 
+**karpathy-wiki** 在检测到书籍录入时会按 [karpathy-wiki/references/skill-install.md](karpathy-wiki/references/skill-install.md) **自动检查并安装**缺失的 `book-extract`、`wiki-book-ingest`，再从 `npx skills list` 返回的本地 `path` 加载（不用 `../` 相对路径）。
+
 项目根 `.config/<skill-name>.json` 存放 API 配置（git 忽略 `.config/`）。
 
 ## 安装（`npx skills`）

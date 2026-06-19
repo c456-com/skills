@@ -2,8 +2,9 @@
 name: karpathy-wiki
 description: >-
   通过 LLM 构建持续进化的个人知识库（卡帕西知识库）：Meta-Wiki 双层架构（根 + domains/）、
-  目录初始化、Ingest / Query / Lint。当用户提到 karpathy-wiki、初始化知识库、Meta-Wiki、
-  domains、Karpathy Wiki、LLM Wiki、个人知识库编译、RAG 替代方案时使用。
+  目录初始化、Ingest / Query / Lint、书籍录入流水线（自动检测并安装 book-extract / wiki-book-ingest）。
+  当用户提到 karpathy-wiki、初始化知识库、Meta-Wiki、domains、录入书籍、PDF 书本、
+  Karpathy Wiki、LLM Wiki、个人知识库编译、RAG 替代方案时使用。
 ---
 
 # Karpathy Wiki（卡帕西知识库）
@@ -58,6 +59,15 @@ AGENTS.md（Schema） ← 定义 AI 如何组织 Wiki
 模板：[`references/`](references/)（Agent 读取后按需渲染，**不使用脚本**）
 
 **本技能不包含可执行脚本。** 初始化完全由 Agent 通过对话询问、扫描目录、预览变更、用户确认后，再逐目录、逐文件创建。
+
+### Phase 0 — 确保本技能已安装（Init 与日常操作前）
+
+按 [`references/skill-install.md`](references/skill-install.md)：**检测 → 缺则安装 → 已装则 update → 从 path 加载**。
+
+1. `npx skills list --json` 查找 `"name": "karpathy-wiki"`
+2. **未安装** → `npx skills add c456-com/skills --skill karpathy-wiki -y`（新装后**不必**再 update）
+3. **早已安装** → `npx skills update karpathy-wiki -y`（只更新本技能，勿 `check` 全量）
+4. 读返回的 `path` 下 `SKILL.md` 与 `references/` — **禁止**仅 WebFetch GitHub 单个 `SKILL.md`
 
 ### 硬性约束：先预览、用户确认、再执行
 
@@ -124,7 +134,7 @@ AGENTS.md（Schema） ← 定义 AI 如何组织 Wiki
 
 1. 创建 `.config/`（空目录或放 example 说明）
 2. 根 `.gitignore` merge 写入 [`references/gitignore-snippet.md`](references/gitignore-snippet.md)（已有 `.config/` 条目则跳过）
-3. 告知用户：录入书籍前复制 [`book-extract`](../book-extract/references/book-extract.example.json) → `.config/book-extract.json`（见 [`references/config-readme.md`](references/config-readme.md)）
+3. 告知用户：录入书籍前按 [`references/skill-install.md`](references/skill-install.md) 安装 `book-extract` / `wiki-book-ingest`，再从各自安装目录复制 example → `.config/`（见 [`references/config-readme.md`](references/config-readme.md)）
 
 **Phase 6 — 可选后续**
 
@@ -184,12 +194,37 @@ domains/<name>/
 
 ## 书籍录入流水线
 
-有 PDF 或拍照书要录入时，按顺序加载技能：
+**触发**：用户要录入 PDF、拍照书页，或把书编译进 `wiki/`。
 
-1. **[`book-extract`](../book-extract/SKILL.md)** — PDF/拍照 → `raw/books/`（MinerU 或视觉；`agent_native` / `external_api`）
-2. **[`wiki-book-ingest`](../wiki-book-ingest/SKILL.md)** — `raw/books/` → `wiki/` 概念页（逐章 + Lint）
+### Phase 0 — 确保流水线技能已安装（必须先于业务步骤）
 
-配置目录：项目根 `.config/<skill-name>.json`（git 忽略）。
+按 [`references/skill-install.md`](references/skill-install.md)：**检测 → 缺则安装 → 已装则 update → 从 path 加载**。
+
+| 技能 | 检测名 | 未安装 | 早已安装（非本轮新装） |
+|------|--------|--------|------------------------|
+| 书籍提取 | `book-extract` | `npx skills add ... --skill book-extract -y` | 纳入下方 update |
+| 书籍编译 | `wiki-book-ingest` | `npx skills add ... --skill wiki-book-ingest -y` | 纳入下方 update |
+| 领域结构 | `karpathy-wiki` | `npx skills add ... --skill karpathy-wiki -y` | 纳入下方 update |
+
+对**早已存在**的技能（本轮未新 `add` 的），执行：
+
+```bash
+npx skills update karpathy-wiki book-extract wiki-book-ingest -y
+```
+
+**禁止** `npx skills check` 或无参 `npx skills update -y`（会更新全部已装技能）。
+
+安装/更新后从 `npx skills list --json` 的 **`path`** 加载各技能 `SKILL.md`。**禁止**读 `../book-extract/SKILL.md` 等仓库相对路径。
+
+向用户简要汇报：新装 / 已更新 / 已是最新。
+
+### 执行顺序
+
+1. **book-extract**（读已安装目录下的 `SKILL.md`）— PDF/拍照 → `raw/books/`（MinerU 或视觉；`agent_native` / `external_api`）
+2. **wiki-book-ingest** — `raw/books/` → `wiki/` 概念页（逐章 + Lint）
+3. **karpathy-wiki** — Query / Lint / Git 收尾（本节下文）
+
+配置目录：项目根 `.config/<skill-name>.json`（git 忽略）；example 从各技能**安装目录**的 `references/` 复制。
 
 ---
 
@@ -351,4 +386,4 @@ my-code-project/                    ← 代码项目
 
 ## 可选扩展：C456 四层
 
-若需与 C456.com 双向同步，读取同仓库 [`c456-llm-wiki`](../c456-llm-wiki/SKILL.md) 技能，在根层或领域层补 `c456-sync/` 与 `wiki/c456-meta.yml`。非默认，用户显式要求时才执行。
+若需与 C456.com 双向同步，先按 [`references/skill-install.md`](references/skill-install.md) 确保 `c456-llm-wiki` 已安装，再读其安装目录下 `SKILL.md`，在根层或领域层补 `c456-sync/` 与 `wiki/c456-meta.yml`。非默认，用户显式要求时才执行。
