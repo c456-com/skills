@@ -62,11 +62,14 @@
     },
     {
       "name": "karpathy-wiki",
-      "description": "karpathy-wiki",
+      "description": "卡帕西知识库：Meta-Wiki 双层架构（根 + domains/）、目录初始化（先预览确认后执行）、Ingest / Query / Lint",
       "tags": [
-        "c456"
+        "c456",
+        "knowledge-base",
+        "karpathy-wiki",
+        "meta-wiki"
       ],
-      "version": "1.0.0"
+      "version": "2.0.0"
     },
     {
       "name": "gushifei-xuangu",
