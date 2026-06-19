@@ -1,10 +1,9 @@
 ---
 name: karpathy-wiki
 description: >-
-  通过 LLM 构建持续进化的个人知识库（卡帕西知识库）：Meta-Wiki 双层架构（根 + domains/）、
-  目录初始化、Ingest / Query / Lint、书籍录入流水线（自动检测并安装 book-extract / wiki-book-ingest）。
-  当用户提到 karpathy-wiki、初始化知识库、Meta-Wiki、domains、录入书籍、PDF 书本、
-  Karpathy Wiki、LLM Wiki、个人知识库编译、RAG 替代方案时使用。
+  卡帕西个人知识库：Meta-Wiki（根 + domains/）、目录初始化、Ingest / Query / Lint。
+  用户提到 karpathy-wiki、初始化知识库、Meta-Wiki、domains、录入书籍、Karpathy Wiki、
+  LLM Wiki、个人知识库、知识库编译时使用。
 ---
 
 # Karpathy Wiki（卡帕西知识库）
@@ -220,7 +219,7 @@ npx skills update karpathy-wiki book-extract wiki-book-ingest -y
 
 ### 执行顺序
 
-1. **book-extract**（读已安装目录下的 `SKILL.md`）— PDF/拍照 → `raw/books/`（MinerU 或视觉；`agent_native` / `external_api`）
+1. **book-extract** — PDF/拍照 → `raw/`。**直接问用户**选 MinerU 或视觉，不试跑、不自动判断；可附自行判断参考（见 book-extract `method-choice-guide.md`）
 2. **wiki-book-ingest** — `raw/books/` → `wiki/` 概念页（逐章 + Lint）
 3. **karpathy-wiki** — Query / Lint / Git 收尾（本节下文）
 

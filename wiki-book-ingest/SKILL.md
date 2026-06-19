@@ -1,9 +1,8 @@
 ---
 name: wiki-book-ingest
 description: >-
-  将 raw/books/ 书籍 Markdown 编译进 Karpathy Wiki：逐章 Ingest、K 线图转文字、
-  章节查漏 Lint。在 book-extract 之后使用。当用户提到书籍 ingest、编译进知识库、
-  逐章提取、书籍补录、wiki-book-ingest 时使用。
+  将 raw/books/ 书籍 Markdown 编译为 wiki 概念页、来源摘要与线索（逐章 Ingest、Lint）。
+  用户提到书籍 ingest、raw 编译进知识库、逐章提取、书籍补录、wiki-book-ingest 时使用。
 ---
 
 # Wiki Book Ingest（书籍知识编译）

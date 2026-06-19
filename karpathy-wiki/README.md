@@ -120,7 +120,8 @@ Agent 检测到 PDF/拍照/书籍录入时，会**先检查并自动安装**缺�
 
 ```
 按 karpathy-wiki 帮我把这本 PDF 录入 domains/stock-trading。
-缺 book-extract / wiki-book-ingest 请先 npx skills 安装，再按流水线执行；先预览，我确认后再写入。
+缺 book-extract / wiki-book-ingest 请先 npx skills 安装；识别方式必须问我确认（MinerU 或视觉），不得自动决定。
+先预览，我确认后再写入。
 ```
 
 ## 常见问题
