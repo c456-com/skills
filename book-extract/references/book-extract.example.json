@@ -1,0 +1,19 @@
+{
+  "vision_mode": "agent_native",
+  "vision": {
+    "provider": "openai_compatible",
+    "base_url": "https://api.openai.com/v1",
+    "api_key": "",
+    "model": "gpt-4o",
+    "max_images_per_request": 2,
+    "image_max_edge_px": 1536
+  },
+  "mineru": {
+    "backend": "pipeline",
+    "lang": "ch",
+    "method": "auto"
+  },
+  "defaults": {
+    "pdf_path_preference": "auto"
+  }
+}

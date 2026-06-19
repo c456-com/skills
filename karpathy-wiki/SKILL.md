@@ -120,6 +120,12 @@ AGENTS.md（Schema） ← 定义 AI 如何组织 Wiki
 4. 根层与每个领域层按顺序创建，见下文「脚手架清单」
 5. 完成后运行验收 checklist 并向用户汇报
 
+**Phase 5b — `.config/` 与 gitignore**
+
+1. 创建 `.config/`（空目录或放 example 说明）
+2. 根 `.gitignore` merge 写入 [`references/gitignore-snippet.md`](references/gitignore-snippet.md)（已有 `.config/` 条目则跳过）
+3. 告知用户：录入书籍前复制 [`book-extract`](../book-extract/references/book-extract.example.json) → `.config/book-extract.json`（见 [`references/config-readme.md`](references/config-readme.md)）
+
 **Phase 6 — 可选后续**
 
 询问用户是否：
@@ -136,7 +142,9 @@ raw/{articles,books,papers,courses,resources,quotes,tools,work}/
 wiki/{index.md,log.md,entities,concepts,threads,sources,agents}/
 shared/wiki/{index.md,log.md}
 domains/  output/  .tmp/
+.config/                    # 技能配置（gitignore，见 references/gitignore-snippet.md）
 AGENTS.md
+.gitignore                  # 含 .config/
 ```
 
 **每个领域** — 模板 [`references/domain-AGENTS.md`](references/domain-AGENTS.md)、[`references/domain-index.md`](references/domain-index.md)：
@@ -164,6 +172,18 @@ domains/<name>/
 - [ ] 每个领域有 `AGENTS.md` + `wiki/index.md` + `wiki/log.md`
 - [ ] `shared/wiki/index.md` 与注册表一致
 - [ ] 根 `wiki/log.md` 有 init 记录
+- [ ] `.config/` 已创建，`.gitignore` 含 `.config/`
+
+---
+
+## 书籍录入流水线
+
+有 PDF 或拍照书要录入时，按顺序加载技能：
+
+1. **[`book-extract`](../book-extract/SKILL.md)** — PDF/拍照 → `raw/books/`（MinerU 或视觉；`agent_native` / `external_api`）
+2. **[`wiki-book-ingest`](../wiki-book-ingest/SKILL.md)** — `raw/books/` → `wiki/` 概念页（逐章 + Lint）
+
+配置目录：项目根 `.config/<skill-name>.json`（git 忽略）。
 
 ---
 

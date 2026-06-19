@@ -61,6 +61,29 @@
       "version": "1.0.0"
     },
     {
+      "name": "book-extract",
+      "description": "书籍素材提取：PDF（MinerU/视觉）、拍照；agent_native 或 external_api 标准脚本",
+      "tags": [
+        "knowledge-base",
+        "book",
+        "pdf",
+        "vision",
+        "mineru"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "wiki-book-ingest",
+      "description": "raw/books → wiki 书籍编译：逐章 Ingest、K 线图转文字、章节 Lint",
+      "tags": [
+        "knowledge-base",
+        "book",
+        "ingest",
+        "karpathy-wiki"
+      ],
+      "version": "1.0.0"
+    },
+    {
       "name": "karpathy-wiki",
       "description": "卡帕西知识库：Meta-Wiki 双层架构（根 + domains/）、目录初始化（先预览确认后执行）、Ingest / Query / Lint",
       "tags": [
