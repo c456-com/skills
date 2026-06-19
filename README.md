@@ -16,9 +16,6 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | [c456-signal-product-vs](c456-signal-product-vs/SKILL.md) | 产品对比类 signal 写作 |
 | [c456-signal-researcher](c456-signal-researcher/SKILL.md) | 新闻研究员风格 signal 写作 |
 | [c456-sync-public-markdown](c456-sync-public-markdown/SKILL.md) | C456 公开 Markdown 同步规范 |
-| [gushifei-xuangu](gushifei-xuangu/SKILL.md) | 《股是股非》三度选股 |
-| [gushifei-xingtai](gushifei-xingtai/SKILL.md) | 《股是股非》形态分析 |
-| [gushifei-tuning](gushifei-tuning/SKILL.md) | 《股是股非》参数调优 |
 
 ## 书籍录入流水线
 
