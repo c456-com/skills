@@ -2,7 +2,7 @@
   "skills": [
     {
       "name": "c456-software-dev-sop",
-      "description": "通用软件开发 SOP — 需求分析 → 理论调研 → 兼容性评估 → 编码 → 文档同步 → 验收。集成 Karpathy Wiki 知识库工作流。",
+      "description": "通用软件开发 SOP — 需求分析 → 理论调研 → 兼容性评估 → 编码 → 文档同步 → 验收。集成 llm-wiki 知识库工作流。",
       "tags": [
         "development",
         "sop",
@@ -110,6 +110,19 @@
         "monitoring"
       ],
       "version": "0.1.0"
+    },
+    {
+      "name": "doc-driven-multi-agent",
+      "description": "文档驱动多代理协作协议 — 角色 SOP、handoff 三要素、门禁 G0–G4、越界拒绝。平台无关，适用于 Cursor/Claude Code/Copilot/Hermes 等任意 AI Agent",
+      "tags": [
+        "multi-agent",
+        "coordination",
+        "document-driven",
+        "handoff",
+        "sop",
+        "workflow"
+      ],
+      "version": "1.0.0"
     }
   ]
 }

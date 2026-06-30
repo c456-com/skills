@@ -17,6 +17,7 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | [c456-signal-researcher](c456-signal-researcher/SKILL.md) | 新闻研究员风格 signal 写作 |
 | [c456-sync-public-markdown](c456-sync-public-markdown/SKILL.md) | C456 公开 Markdown 同步规范 |
 | [tmux-cursor-agent](tmux-cursor-agent/SKILL.md) | 通过 tmux 控制与监控 Cursor AI Agent — 状态检测、消息协议、监控 daemon |
+| [doc-driven-multi-agent](doc-driven-multi-agent/SKILL.md) | 文档驱动多代理协作协议 — 角色 SOP、handoff 三要素、门禁 G0–G4、越界拒绝 |
 
 ## 书籍录入流水线
 

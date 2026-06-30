@@ -1,6 +1,6 @@
 ---
 name: c456-software-dev-sop
-description: "通用软件开发 SOP — 需求分析 → 理论调研 → 兼容性评估 → 编码 → 文档同步 → 验收。集成 Karpathy Wiki 知识库工作流。"
+description: "通用软件开发 SOP — 需求分析 → 理论调研 → 兼容性评估 → 编码 → 文档同步 → 验收。集成 llm-wiki 知识库工作流。"
 version: 1.0.0
 tags: [development, sop, workflow, documentation, knowledge-base]
 ---
@@ -9,7 +9,7 @@ tags: [development, sop, workflow, documentation, knowledge-base]
 
 ## 核心理念
 
-- **理论来源与代码分离**：理论知识存在知识库（Karpathy Wiki / c456-wiki），代码项目只存技术文档
+- **理论来源与代码分离**：理论知识存在知识库（llm-wiki / c456-wiki），代码项目只存技术文档
 - **先读文档再改代码**：改任何代码前，先确认有对应文档说明设计意图
 - **兼容性评估前置**：每次改代码前评估影响面，提醒决策者，不自作主张做兼容
 - **文档同步变更**：改代码的同时更新对应文档，保持一致性
@@ -29,7 +29,7 @@ tags: [development, sop, workflow, documentation, knowledge-base]
 
 如果需求涉及领域知识，先去知识库（如 c456-wiki）读取对应理论/概念。
 
-知识库通常是 Karpathy Wiki 结构：
+知识库通常是 llm-wiki 结构（多领域场景使用 llm-wiki-domains）：
 ```
 <knowledge-base>/
 ├── wiki/
@@ -121,7 +121,7 @@ docs/
 ```
 项目代码 + 技术文档          ← 本项目
   依赖 ↑ 引用
-知识库（Karpathy Wiki）     ← 理论知识源头
+知识库（llm-wiki / llm-wiki-domains）     ← 理论知识源头
 ```
 
 - 知识库存理论知识（领域概念、算法原理、业务规则）

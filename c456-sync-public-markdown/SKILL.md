@@ -10,6 +10,42 @@ description: >-
 
 `c456-sync/` 中的正文会与 C456 `intake` 正文一致，读者包含站外陌生访客。须与 `wiki/` 的「笔记、线索、本地路径」写法区分。
 
+## 0. 发布前剥离 Frontmatter
+
+**c456 API 的正文（body）直接存储 Markdown 内容，不接收 YAML frontmatter。** 本地 `c456-sync/` 文件中的 frontmatter（`---` 之间的元数据）只为本地 wiki 维护服务，通过 `c456 <kind> new/update --body-file` 上行前**必须剥离**。
+
+在 `.tmp/` 下生成净稿：
+
+```bash
+cd ~/read-and-writes/c456-wiki
+python3 << 'PYEOF'
+import re
+with open("c456-sync/playbook/你的-文件.md") as f:
+    content = f.read()
+content = re.sub(r'^---\n.*?\n---\n', '', content, count=1, flags=re.DOTALL)
+content = content.lstrip('\n')
+lines = content.split('\n')
+if lines and lines[0].startswith('# '):
+    lines = lines[1:]
+    while lines and lines[0].strip() == '':
+        lines.pop(0)
+clean = '\n'.join(lines)
+with open(".tmp/你的-文件-净稿.md", "w") as f:
+    f.write(clean)
+print(f"净稿：{len(clean)} 字符")
+PYEOF
+```
+
+然后用净稿文件替换原来的 `--body-file` 参数：
+
+```bash
+# 之前（错误——正文含 frontmatter）
+c456 playbook new -t "标题" --body-file ./c456-sync/playbook/xxx.md
+
+# 之后（正确——正文从导语/配图开始）
+c456 playbook new -t "标题" --body-file .tmp/xxx-净稿.md
+```
+
 ## 1. 标题：只在 Frontmatter
 
 - **禁止**在正文开头使用 `#` 一级标题重复 `c456-title`（或 tool 标题）。C456 页面标题来自元数据，正文再写会 **重复展示**。

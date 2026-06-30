@@ -38,7 +38,7 @@ description: >-
 c456 skill install
 ```
 
-- **交互终端**：多选菜单（**取消安装** 在列表末尾）；**`c456-cli` 必选**；**`llm-wiki-domains`** 与 **`skills/` 下 `c456-*`** 可选。
+- **交互终端**：多选菜单（**取消安装** 在列表末尾）；**`c456-cli` 必选**；**`llm-wiki-domains`** 与 **c456-com/skills 可选技能** 同步显示。
 - **免交互**：命令后接技能 id（仍含 **`c456-cli`**），例如：
 
 ```bash
