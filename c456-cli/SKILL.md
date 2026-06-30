@@ -11,7 +11,7 @@ description: >-
 
 # C456 CLI（c456-cli）
 
-**重要**：发布正文到 C456 前，应先加载 `c456-sync-public-markdown` 技能，按对外正文格式规范（无 `#` 一级标题、无制作备忘、无标签式二级标题）撰写 `--body-file`。
+**重要**：发布正文到 C456 前，应先加载 `c456-sync-public-markdown` 技能，按对外正文格式规范（无 `#` 一级标题、无制作备忘、无标签式二级标题）撰写 `--body-file`。**尤其注意** `c456-sync-public-markdown` §0 要求的 frontmatter 剥离步骤不可跳过。
 
 ## Agent 激活时自动检查并启动 CDP
 
