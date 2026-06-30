@@ -6,12 +6,12 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 
 | 名称 | 说明 |
 |------|------|
-| [karpathy-wiki](karpathy-wiki/SKILL.md) | Meta-Wiki 初始化 + Query / Lint；[使用说明](karpathy-wiki/README.md) |
+| [llm-wiki-domains](llm-wiki-domains/SKILL.md) | 多领域知识库导航 — 每个领域独立 llm-wiki 实例，根索引 + 领域注册表 |
 | [book-extract](book-extract/SKILL.md) | PDF/拍照 → raw/books（MinerU 或视觉；[README](book-extract/README.md)） |
 | [wiki-book-ingest](wiki-book-ingest/SKILL.md) | raw/books → wiki 书籍编译（[README](wiki-book-ingest/README.md)） |
 | [c456-software-dev-sop](c456-software-dev-sop/SKILL.md) | 通用软件开发 SOP — 需求→理论调研→兼容性评估→编码→文档同步→验收 |
 | [c456-cli](c456-cli/SKILL.md) | C456 CLI 操作命令 |
-| [c456-llm-wiki](c456-llm-wiki/SKILL.md) | Karpathy LLM Wiki 知识库管理 |
+| [c456-llm-wiki](c456-llm-wiki/SKILL.md) | 在 llm-wiki-domains 基础上集成 C456 双向同步 |
 | [c456-product-channel-article](c456-product-channel-article/SKILL.md) | 产品渠道长文撰写 |
 | [c456-signal-product-vs](c456-signal-product-vs/SKILL.md) | 产品对比类 signal 写作 |
 | [c456-signal-researcher](c456-signal-researcher/SKILL.md) | 新闻研究员风格 signal 写作 |
@@ -21,12 +21,27 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 ## 书籍录入流水线
 
 ```
-karpathy-wiki → book-extract → wiki-book-ingest → karpathy-wiki
+llm-wiki-domains → book-extract → wiki-book-ingest
+                        ↓
+                  配置同步到 c456-llm-wiki（可选）
 ```
 
-**karpathy-wiki** 在检测到书籍录入时会按 [karpathy-wiki/references/skill-install.md](karpathy-wiki/references/skill-install.md) **自动检查并安装**缺失的 `book-extract`、`wiki-book-ingest`，再从 `npx skills list` 返回的本地 `path` 加载（不用 `../` 相对路径）。
+**llm-wiki-domains** 在检测到书籍录入时确保 `book-extract`、`wiki-book-ingest` 已安装。
 
 项目根 `.config/<skill-name>.json` 存放 API 配置（git 忽略 `.config/`）。
+
+## 依赖图
+
+```
+llm-wiki (Hermes 内置)         ← 单知识库核心引擎
+    ↑
+llm-wiki-domains               ← 多领域导航（本仓库）
+    ↑
+c456-llm-wiki                  ← C456 双向同步（本仓库）
+```
+
+- `book-extract` + `wiki-book-ingest` 与 `llm-wiki-domains` 配合使用
+- `c456-llm-wiki` 依赖 `llm-wiki-domains` 提供多领域结构
 
 ## 安装（`npx skills`）
 
@@ -37,7 +52,7 @@ karpathy-wiki → book-extract → wiki-book-ingest → karpathy-wiki
 npx skills add c456-com/skills -l
 
 # 安装单个（CLI 会询问或自动识别当前 Agent，勿手写 -a）
-npx skills add c456-com/skills --skill karpathy-wiki -y
+npx skills add c456-com/skills --skill llm-wiki-domains -y
 
 # 书籍流水线
 npx skills add c456-com/skills --skill book-extract -y
@@ -56,7 +71,7 @@ npx skills add c456-com/skills --all -y
 ```bash
 npx skills check              # 查看哪些技能有更新
 npx skills update -y          # 更新全部已安装技能
-npx skills update karpathy-wiki -y   # 只更新一个
+npx skills update llm-wiki-domains -y   # 只更新一个
 ```
 
 从锁文件还原（类似 `npm ci`）：

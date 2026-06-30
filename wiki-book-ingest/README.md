@@ -7,7 +7,7 @@
 ## 快速开始
 
 ```
-请用 npx skills 安装 c456-com/skills 的 wiki-book-ingest（未安装则先安装；缺 book-extract / karpathy-wiki 也一并安装），
+请用 npx skills 安装 c456-com/skills 的 wiki-book-ingest（未安装则先安装；缺 book-extract / llm-wiki-domains 也一并安装），
 对 domains/stock-trading/raw/books/股是股非 做书籍 ingest。
 先列出章节计划和拟建 wiki 页，我确认后再写入。
 ```
@@ -15,7 +15,7 @@
 ## 流水线位置
 
 ```
-karpathy-wiki → book-extract → wiki-book-ingest → karpathy-wiki (Query/Lint)
+llm-wiki-domains → book-extract → wiki-book-ingest → llm-wiki-domains (Query/Lint)
 ```
 
 ## 核心规则

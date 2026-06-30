@@ -38,7 +38,7 @@ description: >-
 c456 skill install
 ```
 
-- **交互终端**：多选菜单（**取消安装** 在列表末尾）；**`c456-cli` 必选**；**`karpathy-wiki`** 与 **`skills/` 下 `c456-*`** 可选。
+- **交互终端**：多选菜单（**取消安装** 在列表末尾）；**`c456-cli` 必选**；**`llm-wiki-domains`** 与 **`skills/` 下 `c456-*`** 可选。
 - **免交互**：命令后接技能 id（仍含 **`c456-cli`**），例如：
 
 ```bash
@@ -101,7 +101,7 @@ npx skills add . --skill c456-cli -y
 
 **技能 `skill`**
 
-- `c456 skill install [[skillIds...]] [--with-wiki] [-C <cwd>] [-g] [-a <agent>] [--copy]`（仅 `npx skills add`；无参数且为 TTY 时多选菜单；传 `skillIds` 免交互；`--with-wiki` 时装 karpathy-wiki、c456-llm-wiki 与 c456-cli，见 docs/private-knowledge-base.md §3）
+- `c456 skill install [[skillIds...]] [--with-wiki] [-C <cwd>] [-g] [-a <agent>] [--copy]`（仅 `npx skills add`；无参数且为 TTY 时多选菜单；传 `skillIds` 免交互；`--with-wiki` 时装 llm-wiki-domains、c456-llm-wiki 与 c456-cli，见 docs/private-knowledge-base.md §3）
 
 **浏览器（系统 Chrome + CDP）**
 

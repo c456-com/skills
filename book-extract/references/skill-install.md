@@ -1,6 +1,6 @@
 # 技能安装约定（c456-com/skills）
 
-与 [`karpathy-wiki/references/skill-install.md`](https://github.com/c456-com/skills/blob/main/karpathy-wiki/references/skill-install.md) **内容一致**；本文件随 `book-extract` 安装，供单独加载本技能时使用。
+与 [`llm-wiki-domains/references/skill-install.md`](https://github.com/c456-com/skills/blob/main/llm-wiki-domains/references/skill-install.md) **内容一致**；本文件随 `book-extract` 安装，供单独加载本技能时使用。
 
 ## 原则
 
@@ -63,10 +63,10 @@ npx skills add c456-com/skills --skill <skill-name> -y
 
 ```bash
 # 示例：书籍录入流水线
-npx skills update karpathy-wiki book-extract wiki-book-ingest -y
+npx skills update llm-wiki-domains book-extract wiki-book-ingest -y
 
 # 示例：仅 Init
-npx skills update karpathy-wiki -y
+npx skills update llm-wiki-domains -y
 ```
 
 更新后重新 `npx skills list --json` 取 `path`，再 Read `SKILL.md`。
@@ -84,14 +84,14 @@ npx skills update karpathy-wiki -y
 
 | 技能 | 用途 |
 |------|------|
-| `karpathy-wiki` | 领域 Init、Query、Lint、Git 收尾 |
+| `llm-wiki-domains` | 领域 Init、Query、Lint、Git 收尾 |
 | `book-extract` | PDF/拍照 → `raw/books/` |
 | `wiki-book-ingest` | `raw/books/` → `wiki/` |
 
 可一次补齐：
 
 ```bash
-npx skills add c456-com/skills --skill karpathy-wiki -y
+npx skills add c456-com/skills --skill llm-wiki-domains -y
 npx skills add c456-com/skills --skill book-extract -y
 npx skills add c456-com/skills --skill wiki-book-ingest -y
 ```

@@ -22,9 +22,13 @@
     },
     {
       "name": "c456-llm-wiki",
-      "description": "c456-llm-wiki",
+      "description": "在 llm-wiki-domains 多领域知识库基础上集成 C456.com 双向同步 — c456-sync/ 镜像层、signal/tool/channel/playbook/walkthrough 类型映射、CLI 发布工作流",
       "tags": [
-        "c456"
+        "c456",
+        "wiki",
+        "sync",
+        "knowledge-base",
+        "llm-wiki-domains"
       ],
       "version": "1.0.0"
     },
@@ -79,20 +83,21 @@
         "knowledge-base",
         "book",
         "ingest",
-        "karpathy-wiki"
+        "llm-wiki-domains"
       ],
       "version": "1.0.0"
     },
     {
-      "name": "karpathy-wiki",
-      "description": "卡帕西知识库：Meta-Wiki 双层架构（根 + domains/）、目录初始化（先预览确认后执行）、Ingest / Query / Lint",
+      "name": "llm-wiki-domains",
+      "description": "Multi-domain knowledge base navigator on top of Karpathy's LLM Wiki. Each domain is an independent llm-wiki instance connected by a root index + domain registry.",
       "tags": [
-        "c456",
+        "wiki",
         "knowledge-base",
-        "karpathy-wiki",
-        "meta-wiki"
+        "domains",
+        "multi-domain",
+        "llm-wiki"
       ],
-      "version": "2.1.0"
+      "version": "0.1.0"
     },
     {
       "name": "tmux-cursor-agent",

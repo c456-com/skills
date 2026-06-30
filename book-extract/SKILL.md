@@ -17,7 +17,7 @@ description: >-
 
 1. 检测 `book-extract` 是否已安装（`npx skills list --json`）
 2. **未安装** → `npx skills add c456-com/skills --skill book-extract -y`（新装后不必再 update）
-3. 书籍流水线还需 `wiki-book-ingest`、`karpathy-wiki` — 缺则 `add`；**早已安装**的 → `npx skills update karpathy-wiki book-extract wiki-book-ingest -y`（勿 `check` 全量）
+3. 书籍流水线还需 `wiki-book-ingest`、`llm-wiki-domains` — 缺则 `add`；**早已安装**的 → `npx skills update llm-wiki-domains book-extract wiki-book-ingest -y`（勿 `check` 全量）
 4. 从安装目录的 `path` 读 `SKILL.md`、`references/`、`scripts/` — **禁止** `../wiki-book-ingest/...` 相对路径
 
 ## 输出目标
@@ -41,7 +41,7 @@ domains/<domain>/raw/books/<book-name>/
 5. **`external_api` 禁止 Agent 临时写 HTTP/API 代码** — 只能 Shell 调用 `scripts/vision_*.py`
 6. **拍照录入禁止 Tesseract / 传统 OCR** — 仅视觉（`vision_mode` 仍须用户确认）
 7. 配置读 `.config/book-extract.json`；`defaults.extract_method` 保持 `user_choice`，**禁止**改成 `auto` 或预填路径
-8. **临时文件只放 `.tmp/`** — PDF 拆页、拍照预处理、MinerU 中间产出等写入 **`.tmp/book-extract/<book-name>/`**（如 `pages/`、`photos/`、`mineru/`）；**禁止**在项目根创建 `work/`、`out/` 等目录（`.tmp/` 已在 karpathy-wiki gitignore）
+8. **临时文件只放 `.tmp/`** — PDF 拆页、拍照预处理、MinerU 中间产出等写入 **`.tmp/book-extract/<book-name>/`**（如 `pages/`、`photos/`、`mineru/`）；**禁止**在项目根创建 `work/`、`out/` 等目录（`.tmp/` 已在 llm-wiki-domains gitignore）
 
 ---
 
@@ -204,5 +204,5 @@ python3 "$BOOK_EXTRACT_PATH/scripts/vision_openai_compatible.py" \
 ## 相关技能
 
 - 下一步编译：**wiki-book-ingest**（[`references/skill-install.md`](references/skill-install.md) 缺则安装）
-- 知识库结构：**karpathy-wiki**
+- 知识库结构：**llm-wiki-domains**
 - MinerU：pdf-converter（仅用户选 `mineru` 时参考）

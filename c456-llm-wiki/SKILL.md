@@ -1,19 +1,31 @@
 ---
 name: c456-llm-wiki
 description: >-
-  将 Karpathy LLM Wiki 三层架构与 C456.com 双向同步结合的知识库管理规范。
-  支持 raw/wiki/c456-sync 四层架构、多对多映射、双向同步、自动 Ingest。
-  撰写 c456-sync 与上行正文时须符合仓库 AGENTS.md §1.2–1.3；处理远端已删本地仍存须符合 §6.5（orphan_local：清单 + 用户确认）。
-  Use when the user mentions LLM Wiki, C456 sync, knowledge base, c456-sync,
-  bidirectional sync, orphan_local, remote-deleted local sync, or ingesting
-  content to wiki and c456.com.
+  Extends llm-wiki-domains (multi-domain wiki) with C456.com bidirectional sync.
+  Adds c456-sync/ mirror layer, C456 content type mapping (signal/tool/channel/playbook/walkthrough),
+  publish workflow via c456 CLI, and orphan_local remote-deletion handling.
+  Depends on llm-wiki-domains for the multi-domain structure and llm-wiki for per-domain operations.
 ---
 
-# LLM Wiki + C456 双向同步
+# C456 LLM Wiki — C456 双向同步
+
+## 架构依赖
+
+本技能基于分层架构构建：
+
+```
+llm-wiki (Hermes 核心)       ← 单知识库引擎：ingest / query / lint
+    ↑
+llm-wiki-domains             ← 多领域导航：root + domains/
+    ↑
+c456-llm-wiki                ← C456 同步：c456-sync/ ↔ c456.com
+```
+
+**前置依赖：** 确保 `llm-wiki` 和 `llm-wiki-domains` 已安装。本技能只负责 C456 特有功能。
 
 ## 核心思想
 
-在 Karpathy LLM Wiki 三层架构（raw/wiki/schema）基础上增加 C456 双向同步层，实现本地知识库与 c456.com 之间的内容发布与拉取。
+在 llm-wiki-domains 多领域架构基础上增加 C456 双向同步层，实现本地知识库与 c456.com 之间的内容发布与拉取。每个领域可独立配置同步范围。
 
 ## 必读：仓库根 `AGENTS.md`
 

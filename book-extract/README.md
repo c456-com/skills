@@ -7,7 +7,7 @@ PDF / 拍照 → `raw/books/`。**不试跑、不自动判断** — Agent 直接
 ## 快速开始
 
 ```
-请用 npx skills 安装 c456-com/skills 的 book-extract（未安装则先安装；缺 wiki-book-ingest / karpathy-wiki 也一并安装），
+请用 npx skills 安装 c456-com/skills 的 book-extract（未安装则先安装；缺 wiki-book-ingest / llm-wiki-domains 也一并安装），
 帮我把这本 PDF 录入 domains/stock-trading。
 必须先直接问我选 MinerU（A）还是视觉（B），可附自行判断说明，但不要试跑 PDF 或替我决定；选 B 时再问 agent_native 还是 external_api。
 展示预览后我确认再执行。
@@ -61,6 +61,6 @@ npx skills update book-extract -y
 
 Agent 会按 [skill-install.md](references/skill-install.md) 缺则安装：
 
-1. **karpathy-wiki**
+1. **llm-wiki-domains**
 2. **book-extract**
 3. **wiki-book-ingest**
