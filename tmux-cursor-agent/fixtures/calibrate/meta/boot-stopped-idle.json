@@ -1,0 +1,10 @@
+{
+  "id": "boot-stopped-idle",
+  "mode": "auto",
+  "expected": "stopped",
+  "reason": "idle",
+  "trigger": "沙箱启动后空闲",
+  "session": "cursor-calibrate:0",
+  "captured_at": "2026-06-23T19:41:14+08:00",
+  "content_hash": "690c6e1346758f2516730a986a20631a"
+}

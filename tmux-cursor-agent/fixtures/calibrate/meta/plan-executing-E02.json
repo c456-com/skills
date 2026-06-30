@@ -1,0 +1,10 @@
+{
+  "id": "plan-executing-E02",
+  "mode": "plan",
+  "expected": "executing",
+  "reason": "",
+  "trigger": "生成计划中",
+  "session": "cursor-calibrate:0",
+  "captured_at": "2026-06-23T19:34:47+08:00",
+  "content_hash": "33cf08062a6e04a5ed4abcb0de0c7cd1"
+}

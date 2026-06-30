@@ -1,0 +1,50 @@
+
+  ╭──────────────────────────────────────────────────────────────────────────╮
+  │                                                                          │
+  │  ⚠ Workspace Trust Required                                              │
+  │                                                                          │
+  │  Cursor Agent can execute code and access files in this directory.       │
+  │                                                                          │
+  │  Do you trust the contents of this directory?                            │
+  │                                                                          │
+  │    /tmp/cursor-calibrate-sandbox                                         │
+  │                                                                          │
+  │                                                                          │
+  │    [a] Trust this workspace                                              │
+  │    [q] Quit                                                              │
+  │                                                                          │
+  │  ⏳ Trusting workspace...                                                │
+  │                                                                          │
+  ╰──────────────────────────────────────────────────────────────────────────╯
+
+
+  Cursor Agent
+  v2026.06.19-20-24-33-653a7fb
+  Use /plan to iterate on an implementation plan before code changes.
+
+
+  场景 auto-E01：思考 10 秒后只回答数字 7。不要改文件。
+
+
+    Used using-superpowers
+
+  $ sleep 10 10s
+
+  7
+
+
+  场景 auto-E02：只读 README.md 第一句话，用中文复述。不要改文件。
+
+
+    Read README.md
+
+  这是用于监控状态检测的空目录。
+
+
+
+
+  → Add a follow-up
+
+
+  Auto · 7.4%                                                   Run Everything
+  /tmp/cursor-calibrate-sandbox

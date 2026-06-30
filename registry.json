@@ -93,6 +93,18 @@
         "meta-wiki"
       ],
       "version": "2.1.0"
+    },
+    {
+      "name": "tmux-cursor-agent",
+      "description": "通过 tmux 控制与监控 Cursor AI Agent — 状态检测 (EXECUTING/STOPPED)、四步法消息协议、取消操作、监控 daemon",
+      "tags": [
+        "tmux",
+        "cursor",
+        "agent",
+        "automation",
+        "monitoring"
+      ],
+      "version": "0.1.0"
     }
   ]
 }

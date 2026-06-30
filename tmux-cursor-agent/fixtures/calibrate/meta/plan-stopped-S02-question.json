@@ -1,0 +1,10 @@
+{
+  "id": "plan-stopped-S02-question",
+  "mode": "plan",
+  "expected": "stopped",
+  "reason": "needs_input",
+  "trigger": "Question 多选",
+  "session": "cursor-calibrate:0",
+  "captured_at": "2026-06-23T19:42:36+08:00",
+  "content_hash": "8f39e38790d5fcd2d593aa59ff1db256"
+}

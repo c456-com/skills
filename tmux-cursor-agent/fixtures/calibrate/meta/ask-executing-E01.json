@@ -1,0 +1,10 @@
+{
+  "id": "ask-executing-E01",
+  "mode": "ask",
+  "expected": "executing",
+  "reason": "",
+  "trigger": "Ask Reading",
+  "session": "cursor-calibrate:0",
+  "captured_at": "2026-06-23T19:36:27+08:00",
+  "content_hash": "9af6df3f2365ca9c31764762635108ab"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "debug-executing-E01",
+  "mode": "debug",
+  "expected": "executing",
+  "reason": "",
+  "trigger": "Debug 分析中",
+  "session": "cursor-calibrate:0",
+  "captured_at": "2026-06-23T19:37:24+08:00",
+  "content_hash": "23ec9901a91230f6d079325f860e5b59"
+}

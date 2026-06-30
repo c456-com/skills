@@ -1,0 +1,10 @@
+{
+  "id": "auto-executing-E01",
+  "mode": "auto",
+  "expected": "executing",
+  "reason": "",
+  "trigger": "Thinking spinner",
+  "session": "cursor-calibrate:0",
+  "captured_at": "2026-06-23T19:31:52+08:00",
+  "content_hash": "a922481828039718f1ed9a6109bf39fa"
+}

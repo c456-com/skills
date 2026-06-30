@@ -1,0 +1,10 @@
+{
+  "id": "auto-stopped-S03",
+  "mode": "auto",
+  "expected": "stopped",
+  "reason": "idle",
+  "trigger": "读完后静止",
+  "session": "cursor-calibrate:0",
+  "captured_at": "2026-06-23T19:33:09+08:00",
+  "content_hash": "b7aea4baa316b6ac9869d0a8fdbe1904"
+}

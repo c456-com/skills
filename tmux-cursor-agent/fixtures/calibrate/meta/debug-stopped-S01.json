@@ -1,0 +1,10 @@
+{
+  "id": "debug-stopped-S01",
+  "mode": "debug",
+  "expected": "stopped",
+  "reason": "idle",
+  "trigger": "Debug 空闲",
+  "session": "cursor-calibrate:0",
+  "captured_at": "2026-06-23T19:37:18+08:00",
+  "content_hash": "55ebb3bb6b92edd3c00905ffdd99a2ae"
+}

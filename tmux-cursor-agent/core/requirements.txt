@@ -1,0 +1,2 @@
+# tmux-cursor-agent - core dependencies (zero external deps)
+# All tools use only Python stdlib + tmux CLI.

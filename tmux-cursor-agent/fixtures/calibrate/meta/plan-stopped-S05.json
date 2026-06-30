@@ -1,0 +1,10 @@
+{
+  "id": "plan-stopped-S05",
+  "mode": "plan",
+  "expected": "stopped",
+  "reason": "needs_input",
+  "trigger": "Ready to build",
+  "session": "cursor-calibrate:0",
+  "captured_at": "2026-06-23T19:35:11+08:00",
+  "content_hash": "ec38a759c5fc4d717a700b52276a1067"
+}

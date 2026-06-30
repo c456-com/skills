@@ -1,0 +1,10 @@
+{
+  "id": "ask-stopped-S02",
+  "mode": "ask",
+  "expected": "stopped",
+  "reason": "idle",
+  "trigger": "Ask 回答完成",
+  "session": "cursor-calibrate:0",
+  "captured_at": "2026-06-23T19:36:36+08:00",
+  "content_hash": "ffb1486e72eb29f2de4fa9869caef196"
+}

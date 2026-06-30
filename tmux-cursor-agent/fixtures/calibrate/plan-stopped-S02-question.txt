@@ -1,0 +1,31 @@
+
+
+  Cursor Agent
+  v2026.06.19-20-24-33-653a7fb
+  Use subagents to parallelize work and preserve context.
+
+
+  场景 plan-question：为「部署到生产环境」写计划。我只说了这一句话，细节全
+  无。你必须用 AskQuestion 问我至少 2
+  个多选问题，在我回答前不要生成计划、不要读很多文件、不要写文件。
+
+
+  在制定部署计划前，需要先确认几个关键信息。
+
+ ┌────────────────────────────────────────────────────────────────────────────┐
+ │ 生产环境部署 - 需求确认                                                    │
+ │                                                                            │
+ │ Question 1 of 3                                                            │
+ │                                                                            │
+ │ 1. 目标生产环境/平台是？（可多选） (multi-select)                          │
+ │                                                                            │
+ │   › [ ] 公有云（AWS / GCP / Azure 等）                                     │
+ │     [ ] Kubernetes 集群（自建或托管）                                      │
+ │     [ ] PaaS（Vercel / Railway / Fly.io / Heroku 等）                      │
+ │     [ ] VPS / 裸机 / 自有服务器                                            │
+ │     [ ] 企业内网 / 私有化部署                                              │
+ │     [ ] 还不确定，需要建议                                                 │
+ │     [ ] Other: (type to answer)                                            │
+ │                                                                            │
+ │ ↑/↓ option · ←/→ question · Space select · Enter next/submit · Esc to skip │
+ └────────────────────────────────────────────────────────────────────────────┘

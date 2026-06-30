@@ -1,0 +1,10 @@
+{
+  "id": "auto-stopped-S02",
+  "mode": "auto",
+  "expected": "stopped",
+  "reason": "idle",
+  "trigger": "思考完成后静止",
+  "session": "cursor-calibrate:0",
+  "captured_at": "2026-06-23T19:32:37+08:00",
+  "content_hash": "232f41283c13ff7c1c79d2e6975840f9"
+}

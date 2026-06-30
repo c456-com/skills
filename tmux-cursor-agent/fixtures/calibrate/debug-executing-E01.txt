@@ -1,0 +1,90 @@
+
+  3. 打开与验证
+  • 在 Cursor 中打开该工作区
+  • 阅读 README「配合说明」，确认不创建/编辑/删除文件、不运行改系统命令
+  • 收到「校准场景 N」指令后，仅模拟对应 UI 行为
+
+  4. 安装步骤（建议正文）
+
+  1. 克隆或挂载校准沙箱目录到本地
+  2. 用 Cursor 打开该目录作为工作区
+  3. 阅读 README 中的配合说明与约束
+  4. 等待校准场景指令，按场景模拟行为即可
+
+  5. 常见问题
+  • 目录为空是否正常：是，本沙箱 intentionally 仅含 README
+  • 是否需要 npm install / pip install：否
+  • 能否修改文件：否，仅限本目录内模拟，且不改动任何文件
+
+  篇幅与风格
+
+  • 约 15–25 行，与现有「配合说明」「测试文件」同级
+  • 语气简洁、步骤编号清晰
+  • 强调「零依赖、只读配合、不改动系统」
+
+  不包含内容
+
+  • 不编写实际安装脚本
+  • 不引入外部链接或版本号（除非后续有正式发布）
+  • 不扩展为本目录外的安装说明
+
+  ────────────────────────────────────────
+
+  以上为纯文本计划，未写入磁盘。
+
+
+  【UI校准沙箱】这是监控检测专用空目录。请只读 README.md
+  配合模拟，禁止创建/编辑/删除任何文件，禁止运行 shell 命令。 场景 ask-S01：Ask
+  模式保持空闲。
+
+
+    Read README.md
+
+  ask-S01：Ask 模式保持空闲
+
+  已按 README.md (/tmp/cursor-calibrate-sandbox/README.md) 配合说明完成模拟。
+
+  状态：空闲 — 无提问、无检索、无文件操作、无命令执行。
+
+  本场景仅用于验证 Ask 模式在空闲状态下的 UI 表现，确认后即可结束。
+
+
+  场景 ask-E01：只读 README.md 并一句话说明用途。不要改任何文件。
+
+
+    Read README.md
+
+  这是 Cursor 监控状态检测 专用的校准沙箱空目录，供 Agent 在收到校准场景指令时只读配合、模拟 UI
+  行为，且不改动任何文件或系统。
+
+
+  【UI校准沙箱】这是监控检测专用空目录。请只读 README.md
+  配合模拟，禁止创建/编辑/删除任何文件，禁止运行 shell 命令。 场景 debug-S01：Debug
+  模式保持空闲。
+
+
+    Read README.md
+
+  debug-S01：Debug 模式保持空闲
+
+  已按 README.md (/tmp/cursor-calibrate-sandbox/README.md) 配合说明完成模拟。
+
+  状态：空闲 — 无假设生成、无代码插桩、无日志读写、无文件操作、无命令执行。
+
+  本场景仅用于验证 Debug 模式在空闲状态下的 UI 表现，确认后即可结束。
+
+
+  场景 debug-E01：阅读 README.md，分析「若 sandu --help
+  失败可能有哪些原因」（纯推理，不要运行命令）。
+
+
+ ⠘⠆ Working
+    Tip: Type ? in the prompt bar to show in-app hints.
+
+
+  → Add a follow-up                                                                 ctrl+c to stop
+
+
+  Debug (shift+tab to cycle)
+  Auto · 11%                                                                        Run Everything
+  /tmp/cursor-calibrate-sandbox

@@ -1,0 +1,21 @@
+{
+  "ask-executing-E01": "executing",
+  "ask-stopped-S01": "executing",
+  "ask-stopped-S02": "stopped",
+  "auto-executing-E01": "executing",
+  "auto-executing-E02": "executing",
+  "auto-stopped-S01": "stopped",
+  "auto-stopped-S02": "stopped",
+  "auto-stopped-S03": "stopped",
+  "auto-stopped-S04-user-draft": "stopped",
+  "boot-stopped-idle": "stopped",
+  "debug-executing-E01": "executing",
+  "debug-stopped-S01": "stopped",
+  "debug-stopped-S02": "stopped",
+  "plan-executing-E01": "executing",
+  "plan-executing-E02": "executing",
+  "plan-stopped-S01": "stopped",
+  "plan-stopped-S02-question": "stopped",
+  "plan-stopped-S05-ready-to-build": "stopped",
+  "plan-stopped-S05": "stopped"
+}

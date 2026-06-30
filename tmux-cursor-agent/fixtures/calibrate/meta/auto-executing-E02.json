@@ -1,0 +1,10 @@
+{
+  "id": "auto-executing-E02",
+  "mode": "auto",
+  "expected": "executing",
+  "reason": "",
+  "trigger": "Reading",
+  "session": "cursor-calibrate:0",
+  "captured_at": "2026-06-23T19:32:43+08:00",
+  "content_hash": "74983b8f2a892b44708f6d2fcd238da5"
+}

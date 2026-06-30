@@ -1,0 +1,10 @@
+{
+  "id": "plan-stopped-S01",
+  "mode": "plan",
+  "expected": "stopped",
+  "reason": "idle",
+  "trigger": "Plan 空闲",
+  "session": "cursor-calibrate:0",
+  "captured_at": "2026-06-23T19:34:15+08:00",
+  "content_hash": "0eb9ab7a96d27e8f621827ebdada67ac"
+}

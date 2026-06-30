@@ -1,0 +1,10 @@
+{
+  "id": "plan-executing-E01",
+  "mode": "plan",
+  "expected": "executing",
+  "reason": "",
+  "trigger": "读 README 调研中",
+  "session": "cursor-calibrate:0",
+  "captured_at": "2026-06-23T19:34:21+08:00",
+  "content_hash": "1cb4035b00c7bbe003c63e6b091a274e"
+}
