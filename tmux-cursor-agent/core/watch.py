@@ -85,27 +85,30 @@ def watch_state_prefix() -> str:
     return pfx or ""
 
 
-def _state_file(session: str, window: str) -> Path:
+def _state_file(session: str, window: str, pane: str | None = None) -> Path:
     pfx = watch_state_prefix()
-    base = f"cursor-watch-{session}-{window}"
+    pane_suffix = f"-{pane}" if pane is not None else ""
+    base = f"cursor-watch-{session}-{window}{pane_suffix}"
     if pfx:
-        base = f"cursor-watch-{pfx}-{session}-{window}"
+        base = f"cursor-watch-{pfx}-{session}-{window}{pane_suffix}"
     return watch_state_dir() / f"{base}.state"
 
 
-def _boot_file(session: str, window: str) -> Path:
+def _boot_file(session: str, window: str, pane: str | None = None) -> Path:
     pfx = watch_state_prefix()
-    base = f"cursor-watch-{session}-{window}"
+    pane_suffix = f"-{pane}" if pane is not None else ""
+    base = f"cursor-watch-{session}-{window}{pane_suffix}"
     if pfx:
-        base = f"cursor-watch-{pfx}-{session}-{window}"
+        base = f"cursor-watch-{pfx}-{session}-{window}{pane_suffix}"
     return watch_state_dir() / f"{base}.boot"
 
 
-def _hash_file(session: str, window: str) -> Path:
+def _hash_file(session: str, window: str, pane: str | None = None) -> Path:
     pfx = watch_state_prefix()
-    base = f"cursor-watch-{session}-{window}"
+    pane_suffix = f"-{pane}" if pane is not None else ""
+    base = f"cursor-watch-{session}-{window}{pane_suffix}"
     if pfx:
-        base = f"cursor-watch-{pfx}-{session}-{window}"
+        base = f"cursor-watch-{pfx}-{session}-{window}{pane_suffix}"
     return watch_state_dir() / f"{base}.notify-hash"
 
 
@@ -175,8 +178,8 @@ def classify_reason(content: str, bottom: str) -> str:
     return "idle"
 
 
-def capture_pane(session: str, window: str, lines: int) -> str:
-    target = f"{session}:{window}"
+def capture_pane(session: str, window: str, lines: int, pane: str | None = None) -> str:
+    target = f"{session}:{window}.{pane}" if pane is not None else f"{session}:{window}"
     result = subprocess.run(
         ["tmux", "capture-pane", "-t", target, "-p", "-S", f"-{lines}"],
         capture_output=True,
@@ -190,16 +193,17 @@ def run_watch(
     window: str,
     lines: int = 15,
     *,
+    pane: str | None = None,
     fixture_file: Path | None = None,
     debug: bool = False,
 ) -> WatchResult:
     """Returns watch outcome; notify_line set when agent should be notified."""
-    target = f"{session}:{window}"
+    target = f"{session}:{window}.{pane}" if pane is not None else f"{session}:{window}"
     if fixture_file is not None:
         content = fixture_file.read_text(encoding="utf-8")
         target = f"fixture:{fixture_file.name}"
     else:
-        content = capture_pane(session, window, lines)
+        content = capture_pane(session, window, lines, pane=pane)
 
     if not content:
         if debug:
@@ -213,9 +217,9 @@ def run_watch(
     stopped = not executing
     state = "executing" if executing else "stopped"
 
-    state_file = _state_file(session, window)
-    boot_file = _boot_file(session, window)
-    hash_file = _hash_file(session, window)
+    state_file = _state_file(session, window, pane=pane)
+    boot_file = _boot_file(session, window, pane=pane)
+    hash_file = _hash_file(session, window, pane=pane)
     watch_state_dir().mkdir(parents=True, exist_ok=True)
 
     last = state_file.read_text(encoding="utf-8").strip() if state_file.is_file() else ""
@@ -252,7 +256,7 @@ def run_watch(
             should_notify = True
 
     if should_notify:
-        notify = f"CURSOR-STOPPED:{session}:{window}:{reason}"
+        notify = f"CURSOR-STOPPED:{session}:{window}:{pane}:{reason}" if pane else f"CURSOR-STOPPED:{session}:{window}:{reason}"
         state_file.write_text("idle", encoding="utf-8")
         hash_file.write_text(content_hash, encoding="utf-8")
         return WatchResult(notify, content, state, reason)
@@ -303,6 +307,7 @@ def main() -> int:
     parser.add_argument("--fixture", type=Path, help="fixture file path")
     parser.add_argument("--test-fixtures", action="store_true", help="run fixture regression")
     parser.add_argument("--fixtures-dir", type=Path, help="fixtures directory for --test-fixtures")
+    parser.add_argument("--pane", default=None, help="pane index within window")
     parser.add_argument("session", nargs="?", default="cursor")
     parser.add_argument("window", nargs="?", default="3")
     parser.add_argument("lines", nargs="?", type=int, default=15)
@@ -319,6 +324,7 @@ def main() -> int:
             args.session,
             str(args.window),
             args.lines,
+            pane=args.pane,
             fixture_file=args.fixture,
             debug=args.debug,
         )
@@ -327,6 +333,7 @@ def main() -> int:
             args.session,
             str(args.window),
             args.lines,
+            pane=args.pane,
             debug=args.debug,
         )
 

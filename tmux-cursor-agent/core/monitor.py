@@ -37,9 +37,9 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).astimezone().isoformat()
 
 
-def _find_monitor(data: dict[str, Any], session: str, window: int) -> dict[str, Any] | None:
+def _find_monitor(data: dict[str, Any], session: str, window: int, pane: str | None = None) -> dict[str, Any] | None:
     for m in data["monitors"]:
-        if m["session"] == session and int(m["window"]) == int(window):
+        if m["session"] == session and int(m["window"]) == int(window) and m.get("pane") == pane:
             return m
     return None
 
@@ -71,27 +71,32 @@ def cmd_group_remove(args: argparse.Namespace) -> int:
 def cmd_add(args: argparse.Namespace) -> int:
     data = load_group_state(args.group)
     window = int(args.window)
-    existing = _find_monitor(data, args.session, window)
+    pane = args.pane
+    existing = _find_monitor(data, args.session, window, pane=pane)
     if existing:
         existing["enabled"] = True
         if args.label:
             existing["label"] = args.label
         save_group_state(args.group, data)
-        print(f"UPDATED {existing['id']} ({args.session}:{window})")
+        loc = f"{args.session}:{window}.{pane}" if pane else f"{args.session}:{window}"
+        print(f"UPDATED {existing['id']} ({loc})")
         return 0
-    mid = (args.label or f"{args.session}-{window}").replace(" ", "-").lower()[:40]
+    pane_suffix = f"-{pane}" if pane else ""
+    mid = (args.label or f"{args.session}-{window}{pane_suffix}").replace(" ", "-").lower()[:40]
     entry = {
         "id": mid,
         "session": args.session,
         "window": window,
-        "label": args.label or f"{args.session}:{window}",
+        "pane": pane,
+        "label": args.label or f"{args.session}:{window}{pane_suffix}",
         "enabled": True,
         "created_at": _now_iso(),
         "pending": None,
     }
     data["monitors"].append(entry)
     save_group_state(args.group, data)
-    print(f"ADDED {mid} ({args.session}:{window})")
+    loc = f"{args.session}:{window}.{pane}" if pane else f"{args.session}:{window}"
+    print(f"ADDED {mid} ({loc})")
     return 0
 
 
@@ -130,7 +135,8 @@ def cmd_list(args: argparse.Namespace) -> int:
                 continue
             pending = m.get("pending")
             p = f" pending={pending['reason']}" if pending else ""
-            print(f"{m['id']}\t{m['session']}:{m['window']}\t{m.get('label', '')}{p}")
+            loc = f"{m['session']}:{m['window']}.{m.get('pane')}" if m.get('pane') else f"{m['session']}:{m['window']}"
+            print(f"{m['id']}\t{loc}\t{m.get('label', '')}{p}")
     return 0
 
 
@@ -142,7 +148,8 @@ def cmd_status(args: argparse.Namespace) -> int:
     for m in data["monitors"]:
         if not m.get("enabled", True):
             continue
-        print(f"monitor\t{m['session']}:{m['window']}\t{m.get('label', '')}")
+        loc = f"{m['session']}:{m['window']}.{m.get('pane')}" if m.get('pane') else f"{m['session']}:{m['window']}"
+        print(f"monitor\t{loc}\t{m.get('label', '')}")
     return 0
 
 
@@ -172,25 +179,24 @@ def cmd_clear_pending(args: argparse.Namespace) -> int:
     return 0
 
 
-def _invoke_watch(session: str, window: int, lines: int, debug: bool) -> WatchResult:
+def _invoke_watch(session: str, window: int, lines: int, debug: bool, pane: str | None = None) -> WatchResult:
     """Run watch in-process; reload module so long-running daemon picks up script edits."""
     import importlib
 
     from core import watch as cw
 
     importlib.reload(cw)
-    return cw.run_watch(session, str(window), lines, debug=debug)
+    return cw.run_watch(session, str(window), lines, pane=pane, debug=debug)
 
 
 def _format_stopped(group: str, raw_line: str) -> str:
-    """Convert CURSOR-STOPPED:sess:win:reason -> CURSOR-STOPPED:group:sess:win:reason"""
+    """Convert CURSOR-STOPPED:sess:win:... -> CURSOR-STOPPED:group:sess:win:..."""
     if not raw_line.startswith("CURSOR-STOPPED:"):
         return raw_line
-    parts = raw_line.split(":", 4)
-    if len(parts) == 4:
-        _, session, window, reason = parts
-        return f"CURSOR-STOPPED:{group}:{session}:{window}:{reason}"
-    return raw_line
+    # Format: CURSOR-STOPPED:session:window:pane:reason or CURSOR-STOPPED:session:window:reason
+    prefix = "CURSOR-STOPPED:"
+    rest = raw_line[len(prefix):]
+    return f"{prefix}{group}:{rest}"
 
 
 def daemon_tick(group: str, lines: int, debug: bool, log: MonitorLog) -> tuple[int, int, int]:
@@ -201,7 +207,8 @@ def daemon_tick(group: str, lines: int, debug: bool, log: MonitorLog) -> tuple[i
             continue
         session = m["session"]
         window = int(m["window"])
-        target = f"{session}:{window}"
+        pane = m.get("pane")
+        target = f"{session}:{window}.{pane}" if pane else f"{session}:{window}"
         if subprocess.run(["tmux", "has-session", "-t", session], capture_output=True).returncode != 0:
             if debug:
                 print(f"  [{target}] SKIP session missing", file=sys.stderr)
@@ -210,7 +217,7 @@ def daemon_tick(group: str, lines: int, debug: bool, log: MonitorLog) -> tuple[i
             )
             skipped += 1
             continue
-        result = _invoke_watch(session, window, lines, debug)
+        result = _invoke_watch(session, window, lines, debug, pane=pane)
         ok += 1
         log.emit(
             f"CURSOR-MONITOR-WATCH group={group} session={target} "
@@ -299,6 +306,7 @@ def main() -> int:
     p_add.add_argument("--group", required=True)
     p_add.add_argument("session")
     p_add.add_argument("window")
+    p_add.add_argument("--pane", default=None, help="pane index within window")
     p_add.add_argument("--label", default="")
     p_add.set_defaults(func=cmd_add)
 

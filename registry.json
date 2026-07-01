@@ -101,13 +101,27 @@
     },
     {
       "name": "tmux-cursor-agent",
-      "description": "通过 tmux 控制与监控 Cursor AI Agent — 状态检测 (EXECUTING/STOPPED)、四步法消息协议、取消操作、监控 daemon",
+      "description": "通过 tmux 控制与监控 Cursor AI Agent — 状态检测 (EXECUTING/STOPPED)、四步法消息协议、取消操作、监控 daemon。支持 pane 级别监控。",
       "tags": [
         "tmux",
         "cursor",
         "agent",
         "automation",
         "monitoring"
+      ],
+      "version": "0.2.0"
+    },
+    {
+      "name": "c456-ai-summit",
+      "description": "Host AI 圆桌峰会 — 多角色 cursor-agent 在 tmux 中协同讨论，动态布局切换、pane 级监控、共享会议日志、agency-agents 角色集成。",
+      "tags": [
+        "tmux",
+        "cursor",
+        "summit",
+        "conference",
+        "multi-agent",
+        "dynamic-layout",
+        "meeting-log"
       ],
       "version": "0.1.0"
     },
