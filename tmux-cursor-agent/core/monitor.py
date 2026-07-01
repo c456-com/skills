@@ -238,6 +238,7 @@ def cmd_daemon(args: argparse.Namespace) -> int:
     lines = int(os.environ.get("CURSOR_MONITOR_LINES", "15"))
     debug = args.debug
     once = args.once
+    auto_layout = args.auto_layout
     log_path = Path(args.log_file) if args.log_file else None
     log = MonitorLog(group, log_path)
 
@@ -267,6 +268,15 @@ def cmd_daemon(args: argparse.Namespace) -> int:
             if debug:
                 _log(f"tick {time.strftime('%H:%M:%S')}")
             ok, skipped, total = daemon_tick(group, lines, debug, log)
+            # Auto-layout: run layout.sh auto after each tick
+            if auto_layout:
+                try:
+                    subprocess.run(
+                        ["bash", os.path.expanduser("~/Codes/c456-com/c456-react/.hermes/layout.sh"), "auto"],
+                        capture_output=True, timeout=5,
+                    )
+                except Exception:
+                    pass
             tick_count += 1
             log.emit(
                 f"CURSOR-MONITOR-TICK group={group} ok={ok} skipped={skipped} total={total}"
@@ -340,6 +350,7 @@ def main() -> int:
     p_d.add_argument("--debug", action="store_true")
     p_d.add_argument("--once", action="store_true")
     p_d.add_argument("--log-file", default="", help="override log path (or CURSOR_MONITOR_LOG)")
+    p_d.add_argument("--auto-layout", action="store_true", help="auto-switch tmux layout on state change")
     p_d.set_defaults(func=cmd_daemon)
 
     args = parser.parse_args()

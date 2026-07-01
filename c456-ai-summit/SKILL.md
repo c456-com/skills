@@ -21,6 +21,58 @@ metadata:
 > Host multi-role AI roundtable discussions using tmux + cursor-agent + agency-agents.
 > Dynamic layout, per-pane monitoring, meeting log with timeline.
 
+## Meeting Design (REQUIRED — define before opening any pane)
+
+Before inviting any agent, define these six items to ensure the summit converges:
+
+### 1. Topic / Content
+What is this meeting about? (e.g., "c456 产品升级方向", "性能优化方案评审")
+
+### 2. Purpose
+Why are we holding this meeting? (e.g., "评估 AI 知识基座方向的可行性", "决定 Go/No-Go")
+
+### 3. Constraints (REQUIRED — this changes everything)
+What are the hard constraints? Examples:
+
+| Constraint | Example |
+|-----------|---------|
+| Team size | "1-person team" vs "well-funded startup" |
+| Funding | "cash-strapped, need quick revenue" vs "series A" |
+| Timeline | "need results in 2 weeks" vs "6-month build" |
+| Target outcome | "hot money" vs "hot users" vs "enterprise sales" |
+
+**Always share constraints with ALL roles before discussion starts.** Otherwise agents default to "well-resourced team, build platform" assumptions.
+
+### 4. Required Deliverables
+What concrete outputs must each role produce?
+
+| Role | Deliverable |
+|------|------------|
+| PM | Product plan / M0 scope / roadmap |
+| ARCH | Technical architecture review |
+| MAS | Agent integration protocol assessment |
+| GROWTH | Go-to-market strategy |
+| UX | User experience evaluation |
+| SEC | Security threat model |
+
+### 5. Agenda (speaker order)
+Define who speaks when. Example:
+```
+1. TREND — market trends
+2. PRICE — pricing proposal
+3. OFFER — product packaging
+4. GROWTH — go-to-market
+5. ARCH — technical feasibility
+6. PM — synthesis
+```
+
+### 6. Output File
+The final deliverable is written to a shared file by the responsible role.
+
+For the full meeting protocol (Sequential Discussion A with feedback rounds), see the **[cursor-agent-orchestration](skill:autonomous-ai-agents/cursor-agent-orchestration)** skill.
+
+---
+
 ## Prerequisites
 
 - **tmux-cursor-agent** skill (monitoring daemon)

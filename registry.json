@@ -109,7 +109,7 @@
         "automation",
         "monitoring"
       ],
-      "version": "0.2.0"
+      "version": "0.3.0"
     },
     {
       "name": "c456-ai-summit",
@@ -135,6 +135,20 @@
         "handoff",
         "sop",
         "workflow"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "cursor-agent-orchestration",
+      "description": "编排多个 Cursor Agent 在 tmux 中的团队协作 — 多 session 工作模式、启动序列、预检清单、状态恢复。与 tmux-cursor-agent / c456-ai-summit / doc-driven-multi-agent 配套使用",
+      "tags": [
+        "cursor",
+        "agent",
+        "orchestration",
+        "tmux",
+        "multi-agent",
+        "team-work",
+        "coordination"
       ],
       "version": "1.0.0"
     }
