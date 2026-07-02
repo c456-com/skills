@@ -122,8 +122,8 @@ def _set_status(task_id: str, status: str) -> int:
 
 def cmd_resume(args: argparse.Namespace) -> int:
     t = load_task(args.task_id)
-    v2 = Path(__file__).resolve().parent
-    skill = v2.parent
+    skill_dir = Path(__file__).resolve().parent.parent
+    mon = f"cd {skill_dir} && python3 -m core.monitor"
     print(f"# Resume checklist for {args.task_id}")
     print(f"task_id={t['task_id']}")
     print(f"project={t['project_path']}")
@@ -131,18 +131,18 @@ def cmd_resume(args: argparse.Namespace) -> int:
     print(f"dev_session={t['dev_session']}")
     print(f"last_summary={t.get('last_summary','')}")
     print("--- commands ---")
-    print(f'python3 "{v2}/cursor_monitor.py" group-create {t["task_id"]} --label "{t.get("label","")}"')
+    print(f'{mon} group-create {t["task_id"]} --label "{t.get("label","")}"')
     print(f"# tmux: recreate {t['pm_session']} and {t['dev_session']}")
     print(
-        f'python3 "{v2}/cursor_monitor.py" add --group {t["task_id"]} '
+        f'{mon} add --group {t["task_id"]} '
         f'{t["pm_session"]} 0 --label "PM"'
     )
     print(
-        f'python3 "{v2}/cursor_monitor.py" add --group {t["task_id"]} '
+        f'{mon} add --group {t["task_id"]} '
         f'{t["dev_session"]} 0 --label "Dev"'
     )
     print(
-        f'python3 "{v2}/cursor_monitor.py" daemon --group {t["task_id"]}'
+        f'{mon} daemon --group {t["task_id"]}'
     )
     print(f"# Ask PM: 我们上次停在哪？ last: {t.get('last_summary','')}")
     return 0
