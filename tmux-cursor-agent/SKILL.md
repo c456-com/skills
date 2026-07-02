@@ -3,7 +3,7 @@ name: tmux-cursor-agent
 category: autonomous-ai-agents
 tags: [tmux, cursor, agent, monitoring, automation]
 description: "Control and monitor Cursor AI agents through tmux — session lifecycle, state detection (EXECUTING/STOPPED), four-step messaging protocol, cancel operations, and monitoring daemon. Supports pane-level monitoring (--pane flag for session:window.pane)."
-version: 0.3.0
+version: 0.4.0
 author: Hermes Agent
 license: MIT
 metadata:
