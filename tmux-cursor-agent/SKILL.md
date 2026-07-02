@@ -84,18 +84,77 @@ python3 -m core.watch cursor 0 --debug
 
 ### Send Message (Four-Step Protocol)
 
+Send messages to cursor-agent using the four-step protocol. **Never** combine text and Enter in one command.
+
 ```bash
-# 1. Verify idle + clean input
-tmux capture-pane -t cursor:0 -p -S -5
-# 2. Type (NO Enter!)
-tmux send-keys -t cursor:0 "Your message here"
-# 3. Wait
-sleep 2
-# 4. Enter + verify
-tmux send-keys -t cursor:0 Enter
-sleep 3
-tmux capture-pane -t cursor:0 -p -S -5
+# Step 0: Pre-send check — verify agent is idle and input is clean
+tmux capture-pane -t cursor:0 -p -S -15
+# Check for:
+#  - EXECUTING: spinner/Working/Running/Waiting → DO NOT send, wait
+#  - Input box residual: `→ YOUR_TEXT` → clear first (see cleanup below)
+#  - Clean: `→ Add a follow-up` or similar placeholder → OK to send
 ```
+
+**Input box states:**
+
+| Bottom bar shows | Meaning | Action |
+|-----------------|---------|--------|
+| `→ Add a follow-up` (or Plan placeholder) | ✅ Clean, ready to send | Proceed with step 1 |
+| `→ YOUR_TEXT` (your previous text still there) | ❌ Unsubmitted residual | Clear first (see below) |
+| `┌─ follow-ups ───┐` + `○ … enter send now` | ❌ Queue mode | Press Enter once to submit as active message |
+| Multi-line text not in conversation history | ❌ Residual | Clear first |
+
+**Clear residual (before sending):**
+
+```bash
+# Preferred: Escape to clear input
+tmux send-keys -t cursor:0 Escape
+sleep 1
+tmux capture-pane -t cursor:0 -p -S -10   # Verify only placeholder remains
+
+# If Escape fails: submit the stale text by pressing Enter,
+# wait for agent to process it, then send the real message.
+# Do NOT type new text on top of stale text.
+```
+
+**Do NOT use Ctrl+C to clear input.** Ctrl+C triggers "Press Ctrl+C again to exit" state where Enter means "don't exit" not "submit".
+
+```bash
+# Step 1: Type message content (NO Enter!)
+tmux send-keys -t cursor:0 "Your message here"
+# Step 2: Wait
+sleep 2
+# Step 3: Press Enter ONCE
+tmux send-keys -t cursor:0 Enter
+# Step 4: Verify delivery
+sleep 3
+tmux capture-pane -t cursor:0 -p -S -15
+```
+
+**Verify delivery (Step 4):**
+
+| You see | Meaning | Next step |
+|---------|---------|-----------|
+| Text in conversation history + Working/spinner | ✅ Delivered, executing | Done |
+| Text in conversation history, no spinner yet | ✅ Delivered, waiting | Wait a few seconds |
+| `→ YOUR_TEXT` at input bar | ❌ Stuck in input | sleep 2 + press Enter once, re-verify |
+| `○ … enter send now` follow-ups box | ❌ Queued, not active | Press Enter once in empty input to promote |
+| Text not visible in pane at all | ❌ Not delivered | Check session:window, retry four-step |
+| `Press Ctrl+C again to exit` | ❌ Accidental C-c | Press Enter once to recover, then retry |
+
+**Do NOT declare "message sent" without Step 4 verification.**
+
+#### Common messaging pitfalls
+
+| Pitfall | Symptom | Fix |
+|---------|---------|-----|
+| Text + Enter in one command | Enter swallowed, text stuck in input | Always separate (sleep 2 between) |
+| Sending while agent is **Waiting** for shell | Text enters input buffer, never reaches agent | Ctrl+C to cancel shell → Enter to recover → Escape to clear → re-send |
+| Sending while agent is **Running** a foreground command | Text goes to follow-ups queue, not processed immediately | Press Enter once in empty input to promote to active message |
+| Shell special characters (`<xxx>`, `` ` ``, `$()`, `>`, `\|`) | Shell interprets as redirect/command substitution, agent gets garbage or error | Replace `<xxx>` with `[xxx]`, remove backticks, avoid `$()` |
+| Silent submission (text in history but agent stays idle) | Compass suggestions or sidebar intercept | Press Enter once more (no new text) to trigger execution |
+| Sending multiple messages rapidly | Second+ messages become follow-ups, never seen by agent | Send everything in ONE message, do not split |
+| Sending shell commands (echo/cat) instead of plain text | Executes in shell behind cursor-agent, never reaches conversation | Use plain text only (see `references/messaging.md` Anti-patterns)
 
 ### Cancel
 
@@ -312,6 +371,7 @@ For cursor-agent's title updates to stick:
 tmux set -t session:window automatic-rename off   # Prevent tmux overriding titles
 tmux set -g allow-rename on                        # Allow programs to set titles
 tmux set -t session pane-border-status top         # Show titles in pane borders
+tmux set -t session pane-border-format '#{pane_title}'  # Show pane title in border
 ```
 
 ## Pitfalls
@@ -363,3 +423,4 @@ Full docs in the repository `tmux-cursor-agent/docs/`:
 | [`references/state-detection.md`](references/state-detection.md) | State detection patterns & edge cases |
 | [`references/messaging.md`](references/messaging.md) | Messaging protocol deep dive |
 | [`references/publishing-pattern.md`](references/publishing-pattern.md) | How to add/rename/remove a skill in c456-com/skills repo |
+| [`scripts/team_tasks.py`](scripts/team_tasks.py) | Persistent team task ledger — create/update/list/complete tasks |
