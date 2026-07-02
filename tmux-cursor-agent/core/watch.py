@@ -154,7 +154,7 @@ def normalize_for_hash(content: str) -> str:
     return "\n".join(kept)
 
 
-def is_executing(activity_text: str) -> bool:
+def is_executing(activity_text: str, bottom: str = "") -> bool:
     if BRAILLE_RE.search(activity_text):
         return True
     if ACTIVITY_RE.search(activity_text):
@@ -163,6 +163,11 @@ def is_executing(activity_text: str) -> bool:
         return True
     if MONITORING_RE.search(activity_text):
         return True
+    # "N task" / "N tasks" in status footer means background jobs are running
+    if bottom:
+        for line in bottom.splitlines():
+            if TASK_COUNT_RE.match(line.strip()):
+                return True
     return False
 
 
@@ -213,7 +218,7 @@ def run_watch(
     bottom = "\n".join(content.splitlines()[-10:])
     activity_text = _activity_region(content)
     content_hash = hashlib.md5(normalize_for_hash(content).encode()).hexdigest()
-    executing = is_executing(activity_text)
+    executing = is_executing(activity_text, bottom=bottom)
     stopped = not executing
     state = "executing" if executing else "stopped"
 
