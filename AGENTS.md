@@ -57,16 +57,50 @@
 
 ### 新增技能
 
-1. 在根目录创建 `<skill-name>/SKILL.md`（`name` 与目录名一致）。
-2. 在 `registry.json` 添加条目：`name`（英文）、`description`（中文）、`tags`、`version`。
+1. 在根目录创建 `<skill-name>/SKILL.md`（`name` 与目录名一致，`version: 1.0.0`）。
+2. 在 `registry.json` 添加条目：`name`（英文）、`description`（中文）、`tags`、`version`（与 SKILL.md 一致，初始 `1.0.0`）。
 3. 在 `README.md` 对应分类表格中增加一行（名称英文、说明中文）。
 4. 如需用户向说明，可补充 `<skill-name>/README.md`（中文）。
 
 ### 修改技能
 
-- 改行为 → 更新 `SKILL.md` 正文（中文）。
-- 改一句话摘要 → 同步 `SKILL.md` frontmatter `description`、`registry.json`（若有）、`README.md` 表格，三处保持一致。
-- 版本 bump → 更新 `registry.json` 中该技能的 `version`。
+- 改行为 → 更新 `SKILL.md` 正文（中文），并**按语义化版本规范 bump 版本号**（见下文）。
+- 改一句话摘要 → 同步 `SKILL.md` frontmatter `description`、`registry.json`（若有）、`README.md` 表格，三处保持一致；若摘要变更反映功能变化，同样需要 bump 版本号。
+- 仅改错别字、链接、排版且**不影响 Agent 行为** → 可不 bump，或仅 bump PATCH（维护者自行判断，建议在 commit message 中说明）。
+
+### 版本号规范（SemVer）
+
+技能更新后**必须**同步 bump 版本号，否则 `npx skills check` 与用户无法感知该技能已变更。版本号遵循 **[语义化版本 2.0.0](https://semver.org/lang/zh-CN/)**（`MAJOR.MINOR.PATCH`）：
+
+| 变更类型 |  bump | 示例 |
+|----------|-------|------|
+| 修复 bug、纠正错误步骤/命令、不改变对外行为的小修正 | **PATCH** +1 | `1.2.3` → `1.2.4` |
+| 新增能力、扩展流程、新 references/脚本、向后兼容的行为增强 | **MINOR** +1（PATCH 归零） | `1.2.3` → `1.3.0` |
+| 删除或重命名关键步骤、改变默认行为、破坏已有调用约定 | **MAJOR** +1（MINOR/PATCH 归零） | `1.2.3` → `2.0.0` |
+
+**首次发布**从 `1.0.0` 起（实验性技能可用 `0.y.z`，`0` 阶段 MINOR 视为可能不兼容变更）。
+
+**必须同步更新的位置（两处保持一致）：**
+
+1. **`registry.json`** — 对应技能条目的 `"version"`（`npx skills` 发现与更新检测的来源）
+2. **`SKILL.md` frontmatter** — 同名字段 `version:`（若该技能已有此字段；新增技能建议一并写上）
+
+```yaml
+---
+name: book-extract
+description: 书籍素材提取：PDF 或拍照书页 → raw/books/（MinerU 或视觉大模型）。
+version: 1.1.3
+---
+```
+
+**变更流程：**
+
+1. 完成技能内容修改
+2. 根据上表判断 bump PATCH / MINOR / MAJOR
+3. 同时更新 `registry.json` 与 `SKILL.md` 的 `version`
+4. commit message 中注明技能名与新版本，如 `fix(book-extract): … bump to 1.1.3`
+
+若一次 commit 改多个技能，**每个被改动的技能各自独立 bump**，不要共用版本号。
 
 ### SKILL.md frontmatter 示例（本地技能）
 
@@ -74,10 +108,11 @@
 ---
 name: book-extract
 description: 书籍素材提取：PDF 或拍照书页 → raw/books/（MinerU 或视觉大模型）。
+version: 1.1.3
 ---
 ```
 
-`name` 英文；`description` 中文，含触发场景关键词。
+`name` 英文；`description` 中文，含触发场景关键词；`version` 与 `registry.json` 一致。
 
 ## 第三方技能（submodule）
 
@@ -107,5 +142,6 @@ git submodule update --remote <pack-name>
 - [ ] 用户向文档是否为中文？
 - [ ] 技能名称是否保持原始英文（目录、`name`、链接路径）？
 - [ ] 描述是否为中文，且 README / registry / SKILL frontmatter 已同步？
+- [ ] **技能内容有实质变更时，`registry.json` 与 `SKILL.md` 的 `version` 是否已按 SemVer bump 且两处一致？**
 - [ ] README 是否仍面向用户（无多余内部架构图/流水线）？
 - [ ] 第三方技能是否只改 README 中文索引，未改 submodule 原文？
