@@ -90,10 +90,9 @@ Send messages to cursor-agent using the four-step protocol. **Never** combine te
 # Step 0: Focus the target pane — ALWAYS zoom before talking
 #    Makes pane full-screen for readability. Leave zoomed to watch response.
 #    Indices stay unchanged, other panes are temporarily hidden.
-#    IMPORTANT: if another pane was zoomed, unzoom it first, then zoom target.
-tmux resize-pane -Z -t session:old_pane          # Unzoom previous (if any)
-tmux resize-pane -Z -t session:target_pane       # Zoom target
-
+#    Direct switching: resize-pane -Z switches which pane is zoomed automatically;
+#    no need to unzoom first. Tmux handles the transition.
+tmux resize-pane -Z -t session:window.pane
 # Step 1: Pre-send check — ALWAYS verify agent state before ANY message
 tmux capture-pane -t cursor:0 -p -S -15
 

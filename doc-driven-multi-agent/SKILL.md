@@ -365,6 +365,53 @@ See [references/onboarding-interview.md](references/onboarding-interview.md) for
 | **Per-project override** | Place `.skills/team-config.local.yaml` in project root — fields deep-merge on top of global config |
 | **Stable team detected** | After 3+ features with same roles → ask to save as default |
 
+## Documentation Writing Methodology (Bottom-Up, Atomic→Composite)
+
+> **Don't write docs by reading code.** Understand the product first, then design the document structure from scratch.  
+> **Building a house:** Foundation (atomic algorithms) → Walls (composite logic) → Roof (strategy layer).
+
+### When to use this
+
+Use for **logic / algorithm / domain layers** where each rule or computation has a theoretical foundation and combines sub-algorithms into higher-level policies. Not needed for infrastructure or data-layer docs where code cross-check suffices.
+
+### Per-algorithm template
+
+Every atomic algorithm chapter **should** document these fields where applicable:
+
+| Field | Description |
+|-------|-------------|
+| **Definition** | What the algorithm does |
+| **Theory source** | Origin (book, paper, industry standard, domain expert) |
+| **Formula** | Precise mathematical/logical expression |
+| **Input data** | What data it consumes |
+| **Parameter source** | Why thresholds/coefficients have their values |
+| **Edge cases** | What happens at boundaries |
+
+### Document hierarchy (bottom-up)
+
+```
+atomic algorithms (primitives, single-responsibility functions)
+         ↓
+composite algorithms (combinations of atomic algorithms)
+         ↓
+strategy / policy layer (rules, decisions, scoring)
+```
+
+Each level references the level below, never the reverse.
+
+### Role boundaries (generic)
+
+These are functional descriptions, not job titles. Map them to your project's roles:
+
+- **Structure designer** — defines chapter hierarchy and dependency graph first (no content yet)
+- **Content writer** — fills each chapter using the per-algorithm template
+- **Validator** — cross-checks written docs against the actual implementation/practice AFTER docs are written
+- **Implementer** — does NOT write documentation (only reads it)
+
+The point: **document first, validate after.** Never write docs by reading the final output backwards.
+
+**SoT:** Keep project-local documentation standard in sync with this skill.
+
 ### References
 
 - [Team Config Schema](references/team-config-schema.md) — full YAML field documentation
