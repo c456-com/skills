@@ -112,6 +112,18 @@
       "version": "0.4.2"
     },
     {
+      "name": "tmux-pane-workflow",
+      "description": "Tmux pane 操作规范：zoom 前后、发前检查 agent 状态、发后验证送达。独立于任何项目，适用于所有 tmux + cursor-agent 协作场景。",
+      "tags": [
+        "tmux",
+        "cursor",
+        "pane",
+        "workflow",
+        "messaging"
+      ],
+      "version": "1.0.0"
+    },
+    {
       "name": "c456-ai-summit",
       "description": "Host AI 圆桌峰会 — 多角色 cursor-agent 在 tmux 中协同讨论，动态布局切换、pane 级监控、共享会议日志、agency-agents 角色集成。",
       "tags": [

@@ -14,6 +14,7 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | [book-extract](book-extract/SKILL.md) | PDF/拍照 → raw/books（MinerU 或视觉；[README](book-extract/README.md)） |
 | [wiki-book-ingest](wiki-book-ingest/SKILL.md) | raw/books → wiki 书籍编译（[README](wiki-book-ingest/README.md)） |
 | [tmux-cursor-agent](tmux-cursor-agent/SKILL.md) | 通过 tmux 控制与监控 Cursor AI Agent — 状态检测、消息协议、监控 daemon，支持 pane 级别监控 |
+| [tmux-pane-workflow](tmux-pane-workflow/SKILL.md) | Tmux pane 基本操作规范：zoom 前后、发前检查 agent 状态、发后验证送达。独立于任何项目 |
 | [cursor-agent-orchestration](cursor-agent-orchestration/SKILL.md) | 编排多个 Cursor Agent 在 tmux 中的团队协作 — 多 session 工作模式、启动序列、预检清单、状态恢复 |
 | [doc-driven-multi-agent](doc-driven-multi-agent/SKILL.md) | 文档驱动多代理协作协议 — 角色 SOP、handoff 三要素、门禁 G0–G4、越界拒绝、团队配置持久化 |
 | [c456-software-dev-sop](c456-software-dev-sop/SKILL.md) | 通用软件开发 SOP — 需求→理论调研→兼容性评估→编码→文档同步→验收 |
