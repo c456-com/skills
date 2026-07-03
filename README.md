@@ -2,56 +2,6 @@
 
 C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https://github.com/vercel-labs/skills)**（GitHub 为技能源）。
 
-## 安装
-
-在**项目根目录**执行（会写入对应 Agent 的技能目录并生成 `skills-lock.json`）：
-
-```bash
-# 列出本仓库所有技能
-npx skills add c456-com/skills -l
-
-# 安装单个（CLI 会询问或自动识别当前 Agent，勿手写 -a）
-npx skills add c456-com/skills --skill llm-wiki-domains -y
-
-# 一次装全部
-npx skills add c456-com/skills --all -y
-```
-
-### 第三方技能
-
-第三方技能（如 PM 技能包）从上游仓库安装。安装时使用**技能短名**（如 `create-prd`），而非仓库内路径（如 `pm-skills/pm-execution/create-prd`）：
-
-```bash
-# 列出 PM 技能包内全部 68 个技能
-npx skills add phuryn/pm-skills -l
-
-# 安装单个
-npx skills add phuryn/pm-skills --skill create-prd -y
-
-# 一次装全部
-npx skills add phuryn/pm-skills --all -y
-```
-
-未加 `-a` 时：`npx skills` 根据环境交互选择 Agent（Cursor、Claude Code、Codex 等），或由执行安装的 AI 代为判断。仅当用户明确指定某 Agent 时才加 `-a <agent>`。
-
-`skills-lock.json` 可提交到 Git，团队对齐同一版本。
-
-不安装、仅对话里读 GitHub 原文亦可（见各技能 `SKILL.md` 链接）。
-
-## 更新
-
-```bash
-npx skills check              # 查看哪些技能有更新
-npx skills update -y          # 更新全部已安装技能
-npx skills update llm-wiki-domains -y   # 只更新一个
-```
-
-从锁文件还原（类似 `npm ci`）：
-
-```bash
-npx skills experimental_install
-```
-
 ## 技能列表
 
 ### 🧰 通用技能
@@ -65,7 +15,7 @@ npx skills experimental_install
 | [wiki-book-ingest](wiki-book-ingest/SKILL.md) | raw/books → wiki 书籍编译（[README](wiki-book-ingest/README.md)） |
 | [tmux-cursor-agent](tmux-cursor-agent/SKILL.md) | 通过 tmux 控制与监控 Cursor AI Agent — 状态检测、消息协议、监控 daemon，支持 pane 级别监控 |
 | [cursor-agent-orchestration](cursor-agent-orchestration/SKILL.md) | 编排多个 Cursor Agent 在 tmux 中的团队协作 — 多 session 工作模式、启动序列、预检清单、状态恢复 |
-| [doc-driven-multi-agent](doc-driven-multi-agent/SKILL.md) | 文档驱动多代理协作协议 — 角色 SOP、handoff 三要素、门禁 G0–G4、越界拒绝 |
+| [doc-driven-multi-agent](doc-driven-multi-agent/SKILL.md) | 文档驱动多代理协作协议 — 角色 SOP、handoff 三要素、门禁 G0–G4、越界拒绝、团队配置持久化 |
 | [c456-software-dev-sop](c456-software-dev-sop/SKILL.md) | 通用软件开发 SOP — 需求→理论调研→兼容性评估→编码→文档同步→验收 |
 | [c456-ai-summit](c456-ai-summit/SKILL.md) | 主持 AI 圆桌峰会 — 多角色 cursor-agent 在 tmux 中协同讨论，动态布局切换、日志体系、agency-agents 集成 |
 
@@ -198,6 +148,56 @@ npx skills experimental_install
 | [pm-skills/pm-toolkit/grammar-check](pm-skills/pm-toolkit/skills/grammar-check/SKILL.md) | 识别文本中的语法、逻辑与行文问题，给出针对性修改建议，不重写全文。 |
 | [pm-skills/pm-toolkit/privacy-policy](pm-skills/pm-toolkit/skills/privacy-policy/SKILL.md) | 起草详细隐私政策：数据类型、司法辖区、GDPR 与合规考量及需法务审核的条款。 |
 | [pm-skills/pm-toolkit/review-resume](pm-skills/pm-toolkit/skills/review-resume/SKILL.md) | 全面 PM 简历审阅与定制：10 项最佳实践，含 XYZ+S 公式、关键词优化、岗位定制与结构。 |
+
+## 安装
+
+在**项目根目录**执行（会写入对应 Agent 的技能目录并生成 `skills-lock.json`）：
+
+```bash
+# 列出本仓库所有技能
+npx skills add c456-com/skills -l
+
+# 安装单个（CLI 会询问或自动识别当前 Agent，勿手写 -a）
+npx skills add c456-com/skills --skill llm-wiki-domains -y
+
+# 一次装全部
+npx skills add c456-com/skills --all -y
+```
+
+### 第三方技能
+
+第三方技能（如 PM 技能包）从上游仓库安装。安装时使用**技能短名**（如 `create-prd`），而非仓库内路径（如 `pm-skills/pm-execution/create-prd`）：
+
+```bash
+# 列出 PM 技能包内全部 68 个技能
+npx skills add phuryn/pm-skills -l
+
+# 安装单个
+npx skills add phuryn/pm-skills --skill create-prd -y
+
+# 一次装全部
+npx skills add phuryn/pm-skills --all -y
+```
+
+未加 `-a` 时：`npx skills` 根据环境交互选择 Agent（Cursor、Claude Code、Codex 等），或由执行安装的 AI 代为判断。仅当用户明确指定某 Agent 时才加 `-a <agent>`。
+
+`skills-lock.json` 可提交到 Git，团队对齐同一版本。
+
+不安装、仅对话里读 GitHub 原文亦可（见各技能 `SKILL.md` 链接）。
+
+## 更新
+
+```bash
+npx skills check              # 查看哪些技能有更新
+npx skills update -y          # 更新全部已安装技能
+npx skills update llm-wiki-domains -y   # 只更新一个
+```
+
+从锁文件还原（类似 `npm ci`）：
+
+```bash
+npx skills experimental_install
+```
 
 ## 维护（仓库维护者）
 

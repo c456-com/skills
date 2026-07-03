@@ -127,7 +127,7 @@
     },
     {
       "name": "doc-driven-multi-agent",
-      "description": "文档驱动多代理协作协议 — 角色 SOP、handoff 三要素、门禁 G0–G4、越界拒绝。平台无关，适用于 Cursor/Claude Code/Copilot/Hermes 等任意 AI Agent",
+      "description": "文档驱动多代理协作协议 — 角色 SOP、handoff 三要素、门禁 G0–G4、越界拒绝、团队配置持久化。平台无关，适用于 Cursor/Claude Code/Copilot/Hermes 等任意 AI Agent",
       "tags": [
         "multi-agent",
         "coordination",
@@ -136,7 +136,7 @@
         "sop",
         "workflow"
       ],
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "name": "cursor-agent-orchestration",

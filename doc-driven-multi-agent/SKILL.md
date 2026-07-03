@@ -9,6 +9,9 @@ triggers:
   - 角色间需要通过文档 handoff 交接工作时
   - 代理不确定自己的角色或收到越界请求时
   - 设计/实现/验收流程需要通过 G0–G4 门禁控制时
+  - 首次使用需要配置团队架构时
+  - 需要保存或加载团队配置时
+  - 团队配置过时需要更新时
 related_skills: [cursor-agent-orchestration, opencode, hermes-agent]
 ---
 
@@ -181,6 +184,7 @@ The protocol defines five gates that control the progression of work. No work pr
 - [ ] **Append comm** — must include: `agent=`, `Skills used:`, `Read:`, `Said / Decided:`, **Handoff three elements**, `Blockers:`
 - [ ] Update role-owned documents (plan checkboxes, review, ADR, daily log)
 - [ ] **Reply to human** — attach copyable handoff block (first person, fenced markdown)
+- [ ] **Team stability check** — if roles have been stable for 3+ features and no team config saved yet, ask: "Team structure looks stable. Save as default config for next session?" (saves to `~/.config/skills/doc-driven-multi-agent/team-config.yaml`)
 - [ ] Update daily log (`docs/ops/daily/YYYY-MM-DD.md`)
 - [ ] Pass verification checks appropriate to role (`make ci` for Dev, review docs for Arch/Analyst)
 
@@ -292,6 +296,8 @@ git branch -d feat/<topic>
 | Developer (Dev) | [references/role-sop-dev.md](references/role-sop-dev.md) |
 | Data Analyst (Analyst) | [references/role-sop-analyst.md](references/role-sop-analyst.md) |
 | Handoff Chat Templates | [references/handoff-chat-templates.md](references/handoff-chat-templates.md) |
+| Team Config Schema | [references/team-config-schema.md](references/team-config-schema.md) |
+| Onboarding Interview | [references/onboarding-interview.md](references/onboarding-interview.md) |
 
 ## Templates
 
@@ -300,6 +306,7 @@ git branch -d feat/<topic>
 - **[Comm Entry](templates/comm-entry.md)** — Comm log entry with handoff block
 - **[Arch Review](templates/arch-review.md)** — Architecture review document
 - **[Analyst Review](templates/analyst-review.md)** — Data verification report
+- **[Team Config YAML](templates/team-config.yaml)** — Editable starter team config
 
 ---
 
@@ -319,11 +326,50 @@ Use **both together**: `cursor-agent-orchestration` to run agent processes, this
 ## Adapting to Your Project
 
 1. **Create document skeleton:** `AGENTS.md` → `docs/ops/WORKFLOW.md` → `docs/product/GOALS.md`
-2. **Define roles** in your project context (which agents play which roles)
+2. **Define roles** — first-time users: the agent will interview you to build a reusable team config (saved to `~/.config/skills/doc-driven-multi-agent/team-config.yaml`); experienced users: copy [templates/team-config.yaml](templates/team-config.yaml) and edit manually
 3. **Start with one feature** — create `docs/superpowers/comms/my-first-feature.md` + spec
 4. **Enforce the handoff protocol** from day one — no chat handoffs, ever
 5. **Add role SOPs** one at a time as your team grows
 6. **Use git worktrees** — safe parallel agent work
+
+---
+
+## Team Onboarding & Configuration
+
+The protocol can remember your team structure so you don't describe it every session.
+
+### Quick Start
+
+1. **First time?** Load this skill — the agent detects no config and starts the onboarding interview
+2. **Answer ~7 short questions** about your team roles, agents, and preferences
+3. Config is saved to `~/.config/skills/doc-driven-multi-agent/team-config.yaml` (global, shared across all your projects)
+4. **Next session:** agent loads config automatically — skip the interview
+
+### Config Schema
+
+See [references/team-config-schema.md](references/team-config-schema.md) for all available fields.
+
+### Interview Protocol
+
+See [references/onboarding-interview.md](references/onboarding-interview.md) for the full interview flow — questions, branching logic, and answer processing.
+
+### Config Lifecycle
+
+| Event | Behavior |
+|-------|----------|
+| **First skill load** | No config → auto-start onboarding interview |
+| **Config exists** | Load silently; announce "Loaded team: {name}" |
+| **Force reconfigure** | Say "reconfigure team" → re-run interview → overwrite |
+| **Config stale (>30d)** | Prompt "Is your team config still accurate?" |
+| **Manual edit** | Edit `~/.config/skills/doc-driven-multi-agent/team-config.yaml` directly; reload on next session |
+| **Per-project override** | Place `.skills/team-config.local.yaml` in project root — fields deep-merge on top of global config |
+| **Stable team detected** | After 3+ features with same roles → ask to save as default |
+
+### References
+
+- [Team Config Schema](references/team-config-schema.md) — full YAML field documentation
+- [Onboarding Interview](references/onboarding-interview.md) — interview protocol for AI agents
+- [Team Config Template](templates/team-config.yaml) — editable starter config
 
 ---
 
