@@ -3,7 +3,7 @@ name: tmux-cursor-agent
 category: autonomous-ai-agents
 tags: [tmux, cursor, agent, monitoring, automation]
 description: "Control and monitor Cursor AI agents through tmux — session lifecycle, state detection (EXECUTING/STOPPED), four-step messaging protocol, cancel operations, and monitoring daemon. Supports pane-level monitoring (--pane flag for session:window.pane)."
-version: 0.5.0
+version: 0.4.2
 author: Hermes Agent
 license: MIT
 metadata:
@@ -87,12 +87,33 @@ python3 -m core.watch cursor 0 --debug
 Send messages to cursor-agent using the four-step protocol. **Never** combine text and Enter in one command.
 
 ```bash
-# Step 0: Pre-send check — verify agent is idle and input is clean
+# Step 0: Focus the target pane — ALWAYS zoom before talking
+#    Makes pane full-screen for readability. Leave zoomed to watch response.
+#    Indices stay unchanged, other panes are temporarily hidden.
+#    CORRECT SYNTAX: select-pane first, then zoom in one command chain.
+#    resize-pane -Z -t (without select-pane first) FAILS silently when
+#    another pane was previously zoomed.
+tmux select-pane -t session:window.pane \; resize-pane -Z
+# Step 1: Pre-send check — ALWAYS verify agent state before ANY message
 tmux capture-pane -t cursor:0 -p -S -15
-# Check for:
-#  - EXECUTING: spinner/Working/Running/Waiting → DO NOT send, wait
-#  - Input box residual: `→ YOUR_TEXT` → clear first (see cleanup below)
-#  - Clean: `→ Add a follow-up` or similar placeholder → OK to send
+
+# Check current state and decide if you can send:
+#
+# 1. WORKING (spinner / "Working" / "Running" / "Editing" / "Grepping" / "Reading"):
+#    → DO NOT interrupt. Agent is actively processing. Wait for it to finish.
+#      The message will either pile up or confuse the agent's context.
+#      Only send if the user explicitly says to interrupt.
+#
+# 2. WAITING ("Waiting Nm for shell" / "Monitoring background task"):
+#    → Message goes to follow-ups queue (`┌─ follow-ups ───┐`).
+#      Still sendable, but need one extra Enter to submit from queue.
+#      Agent will process it after current shell completes.
+#
+# 3. IDLE ("→ Add a follow-up" / "Auto" / no spinner):
+#    → Clean to send. Proceed.
+#
+# 4. Input residual ("→ YOUR_TEXT" visible):
+#    → Clear first (see cleanup below). Never type on top of stale text.
 ```
 
 **Input box states:**
@@ -119,6 +140,8 @@ tmux capture-pane -t cursor:0 -p -S -10   # Verify only placeholder remains
 
 **Do NOT use Ctrl+C to clear input.** Ctrl+C triggers "Press Ctrl+C again to exit" state where Enter means "don't exit" not "submit".
 
+> For a complete reference of all messaging gotchas (agent states, input box states, follow-up queue, shell characters), see [`references/messaging-pitfalls.md`](references/messaging-pitfalls.md).
+
 ```bash
 # Step 1: Type message content (NO Enter!)
 tmux send-keys -t cursor:0 "Your message here"
@@ -142,7 +165,14 @@ tmux capture-pane -t cursor:0 -p -S -15
 | Text not visible in pane at all | ❌ Not delivered | Check session:window, retry four-step |
 | `Press Ctrl+C again to exit` | ❌ Accidental C-c | Press Enter once to recover, then retry |
 
-**Do NOT declare "message sent" without Step 4 verification.**
+Do NOT declare "message sent" without Step 4 verification.
+
+```bash
+# No unzoom needed — stay zoomed to watch the agent's response.
+# Unzoom only when you need to see or talk to another pane.
+```
+
+**⛔ Most common mistake:** Forgetting Step 0 (zoom). Without zoom you cannot read the agent output clearly. Stay zoomed — the other panes are temporarily hidden but the agent you're talking to is what matters right now. Unzoom only when you need to see or talk to another pane.
 
 #### Common messaging pitfalls
 
@@ -402,6 +432,46 @@ tmux set -t session pane-border-format '#{pane_title}'  # Show pane title in bor
 
 25. **Daemon without `watch_patterns` = no CURSOR-STOPPED notifications**: If the daemon is started via `terminal(background=true)` WITHOUT `watch_patterns=["CURSOR-STOPPED:"]`, the state-change output goes to the daemon's stdout which Hermes captures as plain process output — it is NEVER forwarded to the conversation. You can `process(action='poll')` to see current states, but you will never learn WHEN a pane transitioned from executing→stopped. Always pair `background=true` with `watch_patterns=["CURSOR-STOPPED:"]`. Note: `notify_on_complete=true` fires once when the daemon exits (not useful for a long-lived daemon); `watch_patterns` fires on every matching line. They serve different purposes and cannot substitute for each other.
 
+26. **Agent stuck Waiting for shell due to pipe buffer deadlock**: A cursor-agent may show Waiting Ns for shell indefinitely (0% CPU, no progress) when its shell command uses a pipe with tee and tail (e.g. make ci-quick 2>&1 | tee log | tail -25). The OS pipe buffer (4KB-64KB) blocks tee from writing until tail reads, and tail does not read until enough input arrives or the pipe closes, creating a circular deadlock. Recovery: (a) find the stuck PID with ps aux, (b) kill it, (c) the agent resumes. Retry without the pipe pipeline (just make ci-quick 2>&1) or use stdbuf -oL.
+
+27. **Daemon lost after Hermes session restart**: When the Hermes session restarts (connection lost, /new, or process restart), daemon processes stop. tmux sessions and cursor-agents persist, but no CURSOR-STOPPED notifications fire until the daemon is restarted. Recovery: (a) verify group exists with python3 -m core.monitor list --group YOUR_GROUP, (b) restart daemon via terminal(background=true, watch_patterns=[CURSOR-STOPPED:]). The group state file (~/.hermes/logs/cursor-monitors/) survives across Hermes restarts.
+
+28. **"N task" / "N tasks" in footer has TWO failure modes — not just one**:
+
+    **Failure mode A (v0.4.0-: under-reports executing — fixed by TASK_COUNT_RE):** Before the `TASK_COUNT_RE` fix in `core/watch.py`, the daemon reported STOPPED/idle even when agent had active background tasks. The footer line "1 task" was stripped by `_is_footer_line()` before `is_executing()` could see it → daemon falsely thought agent was idle. Fix: added `TASK_COUNT_RE` scan in `is_executing(bottom=...)`.
+
+    **Failure mode B (v0.4.0+: over-reports executing — current bug):** Now `TASK_COUNT_RE` in `is_executing()` returns `True` (executing) for ANY footer line matching "N task" — even when the agent is perfectly idle (`→ Add a follow-up`, no spinner, no Working/Running). A stale background shell process (e.g. a finished Python script that left behind a process group) keeps the task counter at "1 task" forever. The daemon **never fires CURSOR-STOPPED**, and you never learn the agent finished.
+
+    **Fix approach:** In `is_executing()`, only treat TASK_COUNT as an executing signal if the `activity_text` (conversation area above footer) ALSO shows executing signals (spinner, Working, Running, Reading, "N background tasks" mention). If `activity_text` is clean (agent idle, showing `→ Add a follow-up`), the background task is stale — return `False` (stopped).
+
+    ```python
+    # Proposed fix in is_executing():
+    if bottom:
+        for line in bottom.splitlines():
+            if TASK_COUNT_RE.match(line.strip()):
+                # Only executing if agent also shows activity
+                if (BRAILLE_RE.search(activity_text) or
+                    ACTIVITY_RE.search(activity_text) or
+                    BACKGROUND_RE.search(activity_text)):
+                    return True
+                # Agent idle with stale bg task → not executing
+                return False
+    ```
+
+    **Workaround until fix is deployed:** `process(action='poll')` the daemon to see `CURSOR-MONITOR-WATCH` lines; manually `capture-pane` any pane that stayed in `state=executing reason=idle` for >2 minutes when you expected it to finish. Kill stale processes: `pkill -f <stale-cmd>` or drop into the pane and Ctrl+C to clear the task count.
+
+29. **Confusable Unicode characters trigger security scan blocks**: When sending messages via `tmux send-keys`, avoid Unicode characters that visually resemble ASCII but have different code points (mathematical alphanumerics, Cyrillic lookalikes, Greek letters). The Hermes security scanner flags these as potential homoglyph attacks and blocks the command or prompts for approval. Use plain ASCII only — no Unicode dashes, no smart quotes, no mathematical symbols. This is especially important in multi-line messages containing code paths or technical terms.
+
+30. **Worker count must not exceed 80% of CPU cores**: When running parallel data tasks (minute-1m, rollup, board-daily), setting worker count above `cores * 0.8` wastes resources. Workers beyond CPU capacity all wait on I/O (API rate limits, disk) instead of computing. On a 32-core machine, max effective workers = 25. More workers = more API throttling, not faster completion.
+
+31. **Daemon restart after Hermes session loss**: When Hermes restarts (connection lost, /new), daemon processes stop but tmux sessions and cursor-agents persist. Recovery: (a) verify group exists: `python3 -m core.monitor list --group GROUP`, (b) DO NOT re-register panes (state persists in `~/.hermes/logs/cursor-monitors/`), (c) start daemon: `terminal(background=true, watch_patterns=["CURSOR-STOPPED:"], command="exec python3 -m core.monitor daemon --group GROUP")`.
+
+32. **TASK_COUNT in footer suppresses CURSOR-STOPPED (fixed 2026-07-04)**: When an agent's status footer shows "1 task" / "N tasks" (stale background shell process), the old `is_executing()` code returned True based on `TASK_COUNT_RE` matching the footer line, preventing the daemon from ever firing CURSOR-STOPPED. The agent could be fully idle (`→ Add a follow-up`) but the daemon would never notify because it thought execution was ongoing.  
+
+**Fix (watch.py `is_executing()`):** Removed the TASK_COUNT check from `is_executing()`. Bottom-footer task counts are residual indicators — they don't mean the agent is actively processing. The real activity signals (spinner/BRAILLE, Working/ACTIVITY, background tasks/BACKGROUND_RE, monitoring/MONITORING_RE) are already caught earlier in the function. If none of those match, activity_text above the footer is clean and the agent is idle, regardless of stale "N task" in the footer.  
+
+**Verification:** After the fix, an agent showing `→ Add a follow-up` with `1 task` in the footer will correctly report `state=stopped reason=idle` instead of perpetually showing `state=executing`. This allows the daemon to fire CURSOR-STOPPED notifications for idle agents with stale background processes.
+
 ## Documentation
 
 Full docs in the repository `tmux-cursor-agent/docs/`:
@@ -421,6 +491,5 @@ Full docs in the repository `tmux-cursor-agent/docs/`:
 |------|-------|
 | [`references/calibration.md`](references/calibration.md) | Fixture test framework & how to add/modify state detection tests |
 | [`references/state-detection.md`](references/state-detection.md) | State detection patterns & edge cases |
-| [`references/messaging.md`](references/messaging.md) | Messaging protocol deep dive |
-| [`references/publishing-pattern.md`](references/publishing-pattern.md) | How to add/rename/remove a skill in c456-com/skills repo |
+|| [`references/messaging.md`](references/messaging.md) | Messaging protocol deep dive |\n|| [`references/messaging-pitfalls.md`](references/messaging-pitfalls.md) | Complete messaging gotchas (states, input, queue) |\n| [`references/task-count-bug-20260704.md`](references/task-count-bug-20260704.md) | TASK_COUNT footer bug (fix, reproduction, verification) |\n| [`references/publishing-pattern.md`](references/publishing-pattern.md) | How to add/rename/remove a skill in c456-com/skills repo |
 | [`scripts/team_tasks.py`](scripts/team_tasks.py) | Persistent team task ledger — create/update/list/complete tasks |

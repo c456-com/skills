@@ -163,11 +163,12 @@ def is_executing(activity_text: str, bottom: str = "") -> bool:
         return True
     if MONITORING_RE.search(activity_text):
         return True
-    # "N task" / "N tasks" in status footer means background jobs are running
-    if bottom:
-        for line in bottom.splitlines():
-            if TASK_COUNT_RE.match(line.strip()):
-                return True
+    # "N task" / "N tasks" in footer are stale background job counts.
+    # They don't mean the agent is actively working — agent can be idle
+    # (→ Add a follow-up) with a residual shell process. Only activity_text
+    # above the footer determines real agent activity.
+    # See is_executing for TASK_COUNT — all real-activity signals are
+    # already caught above (BRAILLE/ACTIVITY/BACKGROUND/MONITORING).
     return False
 
 
