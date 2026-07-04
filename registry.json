@@ -201,6 +201,12 @@
         "wechat"
       ],
       "version": "1.1.0"
+    },
+    {
+      "name": "c456-playbook-publishing",
+      "description": "向 c456.com 发布长文（playbook）— frontmatter 规范、配图规则、CLI 发布、本地元数据同步",
+      "tags": ["c456", "playbook", "publishing", "content", "wiki-sync"],
+      "version": "1.0.0"
     }
   ]
 }
