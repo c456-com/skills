@@ -17,6 +17,8 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | [tmux-pane-workflow](tmux-pane-workflow/SKILL.md) | Tmux pane 基本操作规范：zoom 前后、发前检查 agent 状态、发后验证送达。独立于任何项目 |
 | [cursor-agent-orchestration](cursor-agent-orchestration/SKILL.md) | 编排多个 Cursor Agent 在 tmux 中的团队协作 — 多 session 工作模式、启动序列、预检清单、状态恢复 |
 | [doc-driven-multi-agent](doc-driven-multi-agent/SKILL.md) | 文档驱动多代理协作协议 — 角色 SOP、handoff 三要素、门禁 G0–G4、越界拒绝、团队配置持久化 |
+| [camofox-scraping](camofox-scraping/SKILL.md) | 用 CamoFox 反检测浏览器爬取受 Cloudflare 保护的页面。npx 运行，不 clone。通不过就用 web_search 兜底 |
+| [product-niche-discovery](product-niche-discovery/SKILL.md) | 找赛道、挖痛点 — 52 渠道的结构化产品调研。关键词生成 → 差评挖掘 → 定价抓取 → 输出原始数据喂给分析框架 |
 | [c456-software-dev-sop](c456-software-dev-sop/SKILL.md) | 通用软件开发 SOP — 需求→理论调研→兼容性评估→编码→文档同步→验收 |
 | [c456-ai-summit](c456-ai-summit/SKILL.md) | 主持 AI 圆桌峰会 — 多角色 cursor-agent 在 tmux 中协同讨论，动态布局切换、日志体系、agency-agents 集成 |
 

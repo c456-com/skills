@@ -163,6 +163,30 @@
         "coordination"
       ],
       "version": "1.0.0"
+    },
+    {
+      "name": "camofox-scraping",
+      "description": "Scrape Cloudflare-protected pages using CamoFox anti-detection browser via npx. No local clone needed. If a site blocks CamoFox, fall back to web_search.",
+      "tags": [
+        "scraping",
+        "camofox",
+        "browser-automation",
+        "research",
+        "cloudflare"
+      ],
+      "version": "1.2.0"
+    },
+    {
+      "name": "product-niche-discovery",
+      "description": "找赛道、挖痛点 — 52渠道的结构化产品调研技能。方向层交 phuryn/pm-skills 方法论，本技能负责执行层：渠道遍历、关键词生成、差评挖掘、定价抓取。",
+      "tags": [
+        "product-discovery",
+        "pain-points",
+        "market-research",
+        "niche-finding",
+        "competitive-analysis"
+      ],
+      "version": "1.2.0"
     }
   ]
 }
