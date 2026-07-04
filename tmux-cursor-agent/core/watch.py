@@ -256,6 +256,9 @@ def run_watch(
             should_notify = True
         elif boot:
             should_notify = True
+        elif last == "notified":
+            # Already notified for this idle period; don't repeat
+            should_notify = False
         elif last == "idle" and content_hash != last_hash:
             should_notify = True
         elif last == "held":
@@ -263,7 +266,7 @@ def run_watch(
 
     if should_notify:
         notify = f"CURSOR-STOPPED:{session}:{window}:{pane}:{reason}" if pane else f"CURSOR-STOPPED:{session}:{window}:{reason}"
-        state_file.write_text("idle", encoding="utf-8")
+        state_file.write_text("notified", encoding="utf-8")
         hash_file.write_text(content_hash, encoding="utf-8")
         return WatchResult(notify, content, state, reason)
 
