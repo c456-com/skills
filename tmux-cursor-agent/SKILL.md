@@ -3,7 +3,7 @@ name: tmux-cursor-agent
 category: autonomous-ai-agents
 tags: [tmux, cursor, agent, monitoring, automation]
 description: "Control and monitor Cursor AI agents through tmux — session lifecycle, state detection (EXECUTING/STOPPED), four-step messaging protocol, cancel operations, and monitoring daemon. Supports pane-level monitoring (--pane flag for session:window.pane)."
-version: 0.4.2
+version: 0.4.4
 author: Hermes Agent
 license: MIT
 metadata:
@@ -102,7 +102,11 @@ tmux capture-pane -t cursor:0 -p -S -15
 # 1. WORKING (spinner / "Working" / "Running" / "Editing" / "Grepping" / "Reading"):
 #    → DO NOT interrupt. Agent is actively processing. Wait for it to finish.
 #      The message will either pile up or confuse the agent's context.
-#      Only send if the user explicitly says to interrupt.
+#
+#      EXCEPTION: If the user explicitly says to send NOW (urgent correction/supplement),
+#      send with double-Enter to force-submit past the follow-ups queue:
+#        send-keys "text" → sleep 1 → send-keys Enter → sleep 0.5 → send-keys Enter
+#      Single Enter during Working lands text in follow-ups not active conversation.
 #
 # 2. WAITING ("Waiting Nm for shell" / "Monitoring background task"):
 #    → Message goes to follow-ups queue (`┌─ follow-ups ───┐`).
@@ -436,29 +440,7 @@ tmux set -t session pane-border-format '#{pane_title}'  # Show pane title in bor
 
 27. **Daemon lost after Hermes session restart**: When the Hermes session restarts (connection lost, /new, or process restart), daemon processes stop. tmux sessions and cursor-agents persist, but no CURSOR-STOPPED notifications fire until the daemon is restarted. Recovery: (a) verify group exists with python3 -m core.monitor list --group YOUR_GROUP, (b) restart daemon via terminal(background=true, watch_patterns=[CURSOR-STOPPED:]). The group state file (~/.hermes/logs/cursor-monitors/) survives across Hermes restarts.
 
-28. **"N task" / "N tasks" in footer has TWO failure modes — not just one**:
-
-    **Failure mode A (v0.4.0-: under-reports executing — fixed by TASK_COUNT_RE):** Before the `TASK_COUNT_RE` fix in `core/watch.py`, the daemon reported STOPPED/idle even when agent had active background tasks. The footer line "1 task" was stripped by `_is_footer_line()` before `is_executing()` could see it → daemon falsely thought agent was idle. Fix: added `TASK_COUNT_RE` scan in `is_executing(bottom=...)`.
-
-    **Failure mode B (v0.4.0+: over-reports executing — current bug):** Now `TASK_COUNT_RE` in `is_executing()` returns `True` (executing) for ANY footer line matching "N task" — even when the agent is perfectly idle (`→ Add a follow-up`, no spinner, no Working/Running). A stale background shell process (e.g. a finished Python script that left behind a process group) keeps the task counter at "1 task" forever. The daemon **never fires CURSOR-STOPPED**, and you never learn the agent finished.
-
-    **Fix approach:** In `is_executing()`, only treat TASK_COUNT as an executing signal if the `activity_text` (conversation area above footer) ALSO shows executing signals (spinner, Working, Running, Reading, "N background tasks" mention). If `activity_text` is clean (agent idle, showing `→ Add a follow-up`), the background task is stale — return `False` (stopped).
-
-    ```python
-    # Proposed fix in is_executing():
-    if bottom:
-        for line in bottom.splitlines():
-            if TASK_COUNT_RE.match(line.strip()):
-                # Only executing if agent also shows activity
-                if (BRAILLE_RE.search(activity_text) or
-                    ACTIVITY_RE.search(activity_text) or
-                    BACKGROUND_RE.search(activity_text)):
-                    return True
-                # Agent idle with stale bg task → not executing
-                return False
-    ```
-
-    **Workaround until fix is deployed:** `process(action='poll')` the daemon to see `CURSOR-MONITOR-WATCH` lines; manually `capture-pane` any pane that stayed in `state=executing reason=idle` for >2 minutes when you expected it to finish. Kill stale processes: `pkill -f <stale-cmd>` or drop into the pane and Ctrl+C to clear the task count.
+28. **TASK_COUNT footer bug history — fixed in v0.4.2**: See pitfall #32 below for the actual watch.py fix applied 2026-07-04. Two failure modes existed: (A) TASK_COUNT_RE was added to fix under-reporting; (B) it caused over-reporting where stale "N task" forever blocked CURSOR-STOPPED. Both resolved by removing TASK_COUNT from is_executing() — real activity signals are already caught earlier. Full details in [`references/task-count-bug-20260704.md`](references/task-count-bug-20260704.md).
 
 29. **Confusable Unicode characters trigger security scan blocks**: When sending messages via `tmux send-keys`, avoid Unicode characters that visually resemble ASCII but have different code points (mathematical alphanumerics, Cyrillic lookalikes, Greek letters). The Hermes security scanner flags these as potential homoglyph attacks and blocks the command or prompts for approval. Use plain ASCII only — no Unicode dashes, no smart quotes, no mathematical symbols. This is especially important in multi-line messages containing code paths or technical terms.
 
@@ -471,6 +453,24 @@ tmux set -t session pane-border-format '#{pane_title}'  # Show pane title in bor
 **Fix (watch.py `is_executing()`):** Removed the TASK_COUNT check from `is_executing()`. Bottom-footer task counts are residual indicators — they don't mean the agent is actively processing. The real activity signals (spinner/BRAILLE, Working/ACTIVITY, background tasks/BACKGROUND_RE, monitoring/MONITORING_RE) are already caught earlier in the function. If none of those match, activity_text above the footer is clean and the agent is idle, regardless of stale "N task" in the footer.  
 
 **Verification:** After the fix, an agent showing `→ Add a follow-up` with `1 task` in the footer will correctly report `state=stopped reason=idle` instead of perpetually showing `state=executing`. This allows the daemon to fire CURSOR-STOPPED notifications for idle agents with stale background processes.
+
+33. **Daemon poll interval tuning (`CURSOR_MONITOR_INTERVAL`)**: The daemon checks pane states every N seconds, controlled by the environment variable `CURSOR_MONITOR_INTERVAL` (default: `15`). To change, kill old daemon and restart with the new value:
+
+```bash
+# Default 15s (no env var needed)
+cd ~/.hermes/skills/autonomous-ai-agents/tmux-cursor-agent
+exec python3 -m core.monitor daemon --group YOUR_GROUP
+
+# 10s — more responsive, user preferred in 2026-07-04 session
+CURSOR_MONITOR_INTERVAL=10 exec python3 -m core.monitor daemon --group YOUR_GROUP
+
+# 5s — aggressive, use only when responsiveness critical
+CURSOR_MONITOR_INTERVAL=5 exec python3 -m core.monitor daemon --group YOUR_GROUP
+```
+
+Other tunable env vars: `CURSOR_MONITOR_STATUS_INTERVAL` (heartbeat log, default 600s), `CURSOR_MONITOR_LINES` (pane capture lines, default 15). Lowering below 10s increases CPU for marginal gain — most workflows are fine at 10s or 15s.
+
+**Note on early notifications after fix:** After the TASK_COUNT fix (pitfall #32), agents submitting background shell commands (e.g., `make ci-quick`) show idle while the shell runs — this is CORRECT behavior. The agent is not actively processing; it's waiting. Frequent `CURSOR-STOPPED:idle` during a long shell command are expected, not a regression. The daemon now accurately reports agent activity rather than conflating background process count with agent state.
 
 ## Documentation
 
@@ -491,5 +491,7 @@ Full docs in the repository `tmux-cursor-agent/docs/`:
 |------|-------|
 | [`references/calibration.md`](references/calibration.md) | Fixture test framework & how to add/modify state detection tests |
 | [`references/state-detection.md`](references/state-detection.md) | State detection patterns & edge cases |
-|| [`references/messaging.md`](references/messaging.md) | Messaging protocol deep dive |\n|| [`references/messaging-pitfalls.md`](references/messaging-pitfalls.md) | Complete messaging gotchas (states, input, queue) |\n| [`references/task-count-bug-20260704.md`](references/task-count-bug-20260704.md) | TASK_COUNT footer bug (fix, reproduction, verification) |\n| [`references/publishing-pattern.md`](references/publishing-pattern.md) | How to add/rename/remove a skill in c456-com/skills repo |
+|| [`references/messaging.md`](references/messaging.md) | Messaging protocol deep dive |\n|| [`references/messaging-pitfalls.md`](references/messaging-pitfalls.md) | Complete messaging gotchas (states, input, queue) |
+|| [`references/daemon-poll-behavior.md`](references/daemon-poll-behavior.md) | Daemon poll behavior & premature idle detection |\n| [`references/task-count-bug-20260704.md`](references/task-count-bug-20260704.md) | TASK_COUNT footer bug (fix, reproduction, verification) |\n| [`references/publishing-pattern.md`](references/publishing-pattern.md) | How to add/rename/remove a skill in c456-com/skills repo |
+| [`references/daemon-poll-interval.md`](references/daemon-poll-interval.md) | Daemon poll interval config (CURSOR_MONITOR_INTERVAL env var) |
 | [`scripts/team_tasks.py`](scripts/team_tasks.py) | Persistent team task ledger — create/update/list/complete tasks |
