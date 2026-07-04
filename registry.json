@@ -2,7 +2,7 @@
   "skills": [
     {
       "name": "c456-software-dev-sop",
-      "description": "通用软件开发 SOP — 需求分析 → 理论调研 → 兼容性评估 → 编码 → 文档同步 → 验收。集成 llm-wiki 知识库工作流。",
+      "description": "\u901a\u7528\u8f6f\u4ef6\u5f00\u53d1 SOP \u2014 \u9700\u6c42\u5206\u6790 \u2192 \u7406\u8bba\u8c03\u7814 \u2192 \u517c\u5bb9\u6027\u8bc4\u4f30 \u2192 \u7f16\u7801 \u2192 \u6587\u6863\u540c\u6b65 \u2192 \u9a8c\u6536\u3002\u96c6\u6210 llm-wiki \u77e5\u8bc6\u5e93\u5de5\u4f5c\u6d41\u3002",
       "tags": [
         "development",
         "sop",
@@ -22,7 +22,7 @@
     },
     {
       "name": "c456-llm-wiki",
-      "description": "在 llm-wiki-domains 多领域知识库基础上集成 C456.com 双向同步 — c456-sync/ 镜像层、signal/tool/channel/playbook/walkthrough 类型映射、CLI 发布工作流",
+      "description": "\u5728 llm-wiki-domains \u591a\u9886\u57df\u77e5\u8bc6\u5e93\u57fa\u7840\u4e0a\u96c6\u6210 C456.com \u53cc\u5411\u540c\u6b65 \u2014 c456-sync/ \u955c\u50cf\u5c42\u3001signal/tool/channel/playbook/walkthrough \u7c7b\u578b\u6620\u5c04\u3001CLI \u53d1\u5e03\u5de5\u4f5c\u6d41",
       "tags": [
         "c456",
         "wiki",
@@ -66,7 +66,7 @@
     },
     {
       "name": "book-extract",
-      "description": "书籍素材提取：PDF/拍照 → raw/books（MinerU 或视觉）",
+      "description": "\u4e66\u7c4d\u7d20\u6750\u63d0\u53d6\uff1aPDF/\u62cd\u7167 \u2192 raw/books\uff08MinerU \u6216\u89c6\u89c9\uff09",
       "tags": [
         "knowledge-base",
         "book",
@@ -78,7 +78,7 @@
     },
     {
       "name": "wiki-book-ingest",
-      "description": "raw/books → wiki 书籍编译：逐章 Ingest、K 线图转文字、章节 Lint",
+      "description": "raw/books \u2192 wiki \u4e66\u7c4d\u7f16\u8bd1\uff1a\u9010\u7ae0 Ingest\u3001K \u7ebf\u56fe\u8f6c\u6587\u5b57\u3001\u7ae0\u8282 Lint",
       "tags": [
         "knowledge-base",
         "book",
@@ -101,7 +101,7 @@
     },
     {
       "name": "tmux-cursor-agent",
-      "description": "通过 tmux 控制与监控 Cursor AI Agent — 状态检测 (EXECUTING/STOPPED)、四步法消息协议、取消操作、监控 daemon。支持 pane 级别监控。",
+      "description": "\u901a\u8fc7 tmux \u63a7\u5236\u4e0e\u76d1\u63a7 Cursor AI Agent \u2014 \u72b6\u6001\u68c0\u6d4b (EXECUTING/STOPPED)\u3001\u56db\u6b65\u6cd5\u6d88\u606f\u534f\u8bae\u3001\u53d6\u6d88\u64cd\u4f5c\u3001\u76d1\u63a7 daemon\u3002\u652f\u6301 pane \u7ea7\u522b\u76d1\u63a7\u3002",
       "tags": [
         "tmux",
         "cursor",
@@ -113,7 +113,7 @@
     },
     {
       "name": "tmux-pane-workflow",
-      "description": "Tmux pane 操作规范：zoom 前后、发前检查 agent 状态、发后验证送达。独立于任何项目，适用于所有 tmux + cursor-agent 协作场景。",
+      "description": "Tmux pane \u64cd\u4f5c\u89c4\u8303\uff1azoom \u524d\u540e\u3001\u53d1\u524d\u68c0\u67e5 agent \u72b6\u6001\u3001\u53d1\u540e\u9a8c\u8bc1\u9001\u8fbe\u3002\u72ec\u7acb\u4e8e\u4efb\u4f55\u9879\u76ee\uff0c\u9002\u7528\u4e8e\u6240\u6709 tmux + cursor-agent \u534f\u4f5c\u573a\u666f\u3002",
       "tags": [
         "tmux",
         "cursor",
@@ -125,7 +125,7 @@
     },
     {
       "name": "c456-ai-summit",
-      "description": "Host AI 圆桌峰会 — 多角色 cursor-agent 在 tmux 中协同讨论，动态布局切换、pane 级监控、共享会议日志、agency-agents 角色集成。",
+      "description": "Host AI \u5706\u684c\u5cf0\u4f1a \u2014 \u591a\u89d2\u8272 cursor-agent \u5728 tmux \u4e2d\u534f\u540c\u8ba8\u8bba\uff0c\u52a8\u6001\u5e03\u5c40\u5207\u6362\u3001pane \u7ea7\u76d1\u63a7\u3001\u5171\u4eab\u4f1a\u8bae\u65e5\u5fd7\u3001agency-agents \u89d2\u8272\u96c6\u6210\u3002",
       "tags": [
         "tmux",
         "cursor",
@@ -139,7 +139,7 @@
     },
     {
       "name": "doc-driven-multi-agent",
-      "description": "文档驱动多代理协作协议 — 角色 SOP、handoff 三要素、门禁 G0–G4、越界拒绝、团队配置持久化。平台无关，适用于 Cursor/Claude Code/Copilot/Hermes 等任意 AI Agent",
+      "description": "\u6587\u6863\u9a71\u52a8\u591a\u4ee3\u7406\u534f\u4f5c\u534f\u8bae \u2014 \u89d2\u8272 SOP\u3001handoff \u4e09\u8981\u7d20\u3001\u95e8\u7981 G0\u2013G4\u3001\u8d8a\u754c\u62d2\u7edd\u3001\u56e2\u961f\u914d\u7f6e\u6301\u4e45\u5316\u3002\u5e73\u53f0\u65e0\u5173\uff0c\u9002\u7528\u4e8e Cursor/Claude Code/Copilot/Hermes \u7b49\u4efb\u610f AI Agent",
       "tags": [
         "multi-agent",
         "coordination",
@@ -152,7 +152,7 @@
     },
     {
       "name": "cursor-agent-orchestration",
-      "description": "编排多个 Cursor Agent 在 tmux 中的团队协作 — 多 session 工作模式、启动序列、预检清单、状态恢复。与 tmux-cursor-agent / c456-ai-summit / doc-driven-multi-agent 配套使用",
+      "description": "\u7f16\u6392\u591a\u4e2a Cursor Agent \u5728 tmux \u4e2d\u7684\u56e2\u961f\u534f\u4f5c \u2014 \u591a session \u5de5\u4f5c\u6a21\u5f0f\u3001\u542f\u52a8\u5e8f\u5217\u3001\u9884\u68c0\u6e05\u5355\u3001\u72b6\u6001\u6062\u590d\u3002\u4e0e tmux-cursor-agent / c456-ai-summit / doc-driven-multi-agent \u914d\u5957\u4f7f\u7528",
       "tags": [
         "cursor",
         "agent",
@@ -178,7 +178,7 @@
     },
     {
       "name": "product-niche-discovery",
-      "description": "找赛道、挖痛点 — 52渠道的结构化产品调研技能。方向层交 phuryn/pm-skills 方法论，本技能负责执行层：渠道遍历、关键词生成、差评挖掘、定价抓取。",
+      "description": "\u627e\u8d5b\u9053\u3001\u6316\u75db\u70b9 \u2014 52\u6e20\u9053\u7684\u7ed3\u6784\u5316\u4ea7\u54c1\u8c03\u7814\u6280\u80fd\u3002\u65b9\u5411\u5c42\u4ea4 phuryn/pm-skills \u65b9\u6cd5\u8bba\uff0c\u672c\u6280\u80fd\u8d1f\u8d23\u6267\u884c\u5c42\uff1a\u6e20\u9053\u904d\u5386\u3001\u5173\u952e\u8bcd\u751f\u6210\u3001\u5dee\u8bc4\u6316\u6398\u3001\u5b9a\u4ef7\u6293\u53d6\u3002",
       "tags": [
         "product-discovery",
         "pain-points",
@@ -186,7 +186,7 @@
         "niche-finding",
         "competitive-analysis"
       ],
-      "version": "1.2.0"
+      "version": "1.2.1"
     }
   ]
 }
