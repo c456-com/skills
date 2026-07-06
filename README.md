@@ -20,6 +20,7 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | [camofox-scraping](camofox-scraping/SKILL.md) | 用 CamoFox 反检测浏览器爬取受 Cloudflare 保护的页面。npx 运行，不 clone。通不过就用 web_search 兜底 |
 | [product-niche-discovery](product-niche-discovery/SKILL.md) | 找赛道、挖痛点 — 52 渠道的结构化产品调研。关键词生成 → 差评挖掘 → 定价抓取 → 输出原始数据喂给分析框架 |
 | [short-viral-content](short-viral-content/SKILL.md) | 短视频爆款内容引擎 — 中心思想+受众→平台特化标题/关键词/标签 |
+| [c456-team-work](c456-team-work/SKILL.md) | 辉常团队多角色 AI Agent 协作工作流 — 团队启动、角色边界、四步法通信、handoff 三要素、开发闭环、助理铁律 |
 | [c456-software-dev-sop](c456-software-dev-sop/SKILL.md) | 通用软件开发 SOP — 需求→理论调研→兼容性评估→编码→文档同步→验收 |
 | [c456-ai-summit](c456-ai-summit/SKILL.md) | 主持 AI 圆桌峰会 — 多角色 cursor-agent 在 tmux 中协同讨论，动态布局切换、日志体系、agency-agents 集成 |
 

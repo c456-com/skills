@@ -1,6 +1,20 @@
 {
   "skills": [
     {
+      "name": "c456-team-work",
+      "description": "辉常团队多角色 AI Agent 协作工作流 — 团队启动、角色边界、四步法通信协议、通知驱动工作流、handoff 三要素、开发闭环、多工作组管理、助理铁律",
+      "tags": [
+        "team",
+        "workflow",
+        "multi-agent",
+        "coordination",
+        "handoff",
+        "relay",
+        "monitoring"
+      ],
+      "version": "1.0.0"
+    },
+    {
       "name": "c456-software-dev-sop",
       "description": "\u901a\u7528\u8f6f\u4ef6\u5f00\u53d1 SOP \u2014 \u9700\u6c42\u5206\u6790 \u2192 \u7406\u8bba\u8c03\u7814 \u2192 \u517c\u5bb9\u6027\u8bc4\u4f30 \u2192 \u7f16\u7801 \u2192 \u6587\u6863\u540c\u6b65 \u2192 \u9a8c\u6536\u3002\u96c6\u6210 llm-wiki \u77e5\u8bc6\u5e93\u5de5\u4f5c\u6d41\u3002",
       "tags": [
