@@ -36,6 +36,7 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | [c456-signal-researcher](c456-signal-researcher/SKILL.md) | 新闻研究员风格 signal 写作 |
 | [c456-sync-public-markdown](c456-sync-public-markdown/SKILL.md) | C456 公开 Markdown 同步规范 |
 | [c456-playbook-publishing](c456-playbook-publishing/SKILL.md) | 向 c456.com 发布长文（playbook）— frontmatter 规范、配图规则（c456 asset upload）、CLI 发布、本地元数据同步 |
+| [c456-rails-startup](c456-rails-startup/SKILL.md) | Rails + Inertia + React + shadcn/ui 从零脚手架 — 环境搭建、项目初始化、集成功能、Hello World 验证 |
 
 ### 📦 第三方技能
 

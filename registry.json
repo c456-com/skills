@@ -207,6 +207,12 @@
       "description": "向 c456.com 发布长文（playbook）— frontmatter 规范、配图规则、CLI 发布、本地元数据同步",
       "tags": ["c456", "playbook", "publishing", "content", "wiki-sync"],
       "version": "1.0.0"
+    },
+    {
+      "name": "c456-rails-startup",
+      "description": "Bootstrap Rails + Inertia.js + React + TypeScript + Vite + shadcn/ui + Tailwind CSS v4 from scratch. Environment setup, project init, integration, and hello-world verification.",
+      "tags": ["rails", "inertia", "react", "shadcn", "vite", "startup", "scaffold", "full-stack"],
+      "version": "1.0.0"
     }
   ]
 }
