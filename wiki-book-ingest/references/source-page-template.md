@@ -15,7 +15,7 @@ tags: [book]
 | 全名 | {{FULL_TITLE}} |
 | 作者 | {{AUTHOR}} |
 | ISBN | {{ISBN}} |
-| PDF | {{PDF_PATH}} |
+| PDF | {{PDF_FILENAME}}（完整路径在 `.extract-meta.yml`） |
 
 ## 内容概要
 

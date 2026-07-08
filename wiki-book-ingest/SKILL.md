@@ -73,7 +73,7 @@ version: 1.1.0
   
   - **书籍**: [[source-page-name]] — 第X章：章节名
   - **页码范围**: 第XX-YY页（PDF页码约第XX-YY页）
-  - **PDF**: `/path/to/book.pdf`
+  - **PDF**: `{{PDF_FILENAME}}`（完整路径在 `.extract-meta.yml`）
   ```
   出处信息来自 raw/books/ 的 `.extract-meta.yml`（PDF路径）和各 page-*.md 的内容分析（章节标题、页码）。
 
