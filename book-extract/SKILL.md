@@ -1,7 +1,7 @@
 ---
 name: book-extract
 description: "书籍素材提取 / book extract：当用户要把 PDF、扫描件、拍照书页、OCR 书页或 MinerU 输出转成 raw/books/ Markdown + 图片时触发；用于书籍入库前的素材提取和来源整理。"
-version: 1.1.3
+version: 1.2.0
 ---
 
 # Book Extract（书籍素材提取）
@@ -165,7 +165,8 @@ python3 "$BOOK_EXTRACT_PATH/scripts/vision_openai_compatible.py" \
 
 1. `.config/book-extract.json` 设 `"vision_mode": "agent_native"`
 2. 从 `.tmp/book-extract/<book-name>/pages/`（或 `photos/`）**逐张** Read → `domains/.../raw/books/<book>/pages/page-NNN.md`
-3. 跳过已有页 = resume
+3. **重要：读图时必须让大模型自然识别实际页码和所属章节** — 按 `references/vision-extract-prompt.md` 的要求，在输出内容中自然描述页码和章节信息（如"第5页，第一章…"）。不要用脚本解析页码，让模型根据内容判断
+4. 跳过已有页 = resume
 
 ### `external_api` 流程（禁止即兴写代码）
 
