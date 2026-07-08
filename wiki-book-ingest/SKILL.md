@@ -1,7 +1,7 @@
 ---
 name: wiki-book-ingest
 description: "书籍知识摄取 / book ingest：当用户要把 raw/books/ 编译进 llm-wiki、逐章提取概念/来源/线索、处理图表文字化或做章节 lint 时触发；用于书籍知识库写入和质量检查。"
-version: 1.2.0
+version: 1.3.0
 ---
 
 # Wiki Book Ingest（书籍知识编译）
@@ -62,6 +62,8 @@ version: 1.2.0
 
 - 模板：[`references/source-page-template.md`](references/source-page-template.md)
 - 命名与 raw 呼应；frontmatter 含 `raw:` 溯源
+- **frontmatter 必须维护 `derived:` 字段**，记录本来源衍生的所有概念/线索/实体页（自动随 Ingest 更新）
+- **页内「衍生知识」章节**，列出所有从本来源编译的 wiki 页，每页一行
 
 ### 概念页 `wiki/concepts/`
 
@@ -102,6 +104,8 @@ version: 1.2.0
 
 - 更新 `wiki/index.md`
 - 追加 `wiki/log.md`：`## [DATE] ingest | <书名> <章节范围>`
+- **更新来源页**：在来源页的 `derived:` frontmatter 和「衍生知识」章节添加新建的概念/线索/实体链接
+- **更新共享来源图谱**：`shared/wiki/来源图谱.md` 中对应书籍条目下添加衍生页链接
 
 ---
 

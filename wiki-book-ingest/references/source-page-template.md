@@ -2,8 +2,12 @@
 type: source
 date: {{DATE}}
 raw: raw/books/{{BOOK_SLUG}}/
-book-pages: {{PAGE_RANGE}}
 tags: [book]
+# 衍生知识 — 自动维护，新增概念/线索/实体时同步更新
+derived:
+  concepts: []
+  threads: []
+  entities: []
 ---
 
 # {{TITLE}}
@@ -26,6 +30,22 @@ tags: [book]
 | 章节 | 页码 | 概念页 |
 |------|------|--------|
 | 第一章 | pXX-YY | [[concept-name]] |
+
+## 衍生知识
+
+> 本来源共衍生以下知识页。新增时同步更新。
+
+### 概念
+
+- [[concept-name]] — 一句话摘要
+
+### 线索
+
+- [[thread-name]] — 一句话摘要
+
+### 实体
+
+- [[entity-name]] — 一句话摘要
 
 ## 图表说明
 
