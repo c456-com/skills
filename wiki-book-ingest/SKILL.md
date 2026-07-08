@@ -1,7 +1,7 @@
 ---
 name: wiki-book-ingest
 description: "书籍知识摄取 / book ingest：当用户要把 raw/books/ 编译进 llm-wiki、逐章提取概念/来源/线索、处理图表文字化或做章节 lint 时触发；用于书籍知识库写入和质量检查。"
-version: 1.0.1
+version: 1.1.0
 ---
 
 # Wiki Book Ingest（书籍知识编译）
@@ -67,6 +67,15 @@ version: 1.0.1
 
 - 定义与原理、分类、适用场景、与其他概念 Wikilink
 - **每个独立战法/方法单独成页**
+- **页尾必须包含「来源」章节**，记录完整出处：
+  ```markdown
+  ## 来源
+  
+  - **书籍**: [[source-page-name]] — 第X章：章节名
+  - **页码范围**: 第XX-YY页（PDF页码约第XX-YY页）
+  - **PDF**: `/path/to/book.pdf`
+  ```
+  出处信息来自 raw/books/ 的 `.extract-meta.yml`（PDF路径）和各 page-*.md 的内容分析（章节标题、页码）。
 
 ### 线索页 `wiki/threads/`
 
