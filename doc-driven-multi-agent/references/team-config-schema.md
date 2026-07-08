@@ -1,5 +1,5 @@
 ---
-title: Team Config Schema Reference
+title: 团队配置 Schema 参考
 type: reference
 status: active
 last-reviewed: 2026-07-03
@@ -7,35 +7,35 @@ last-reviewed: 2026-07-03
 
 # Team Config Schema
 
-> The `team-config.yaml` file stores your team structure, role assignments, document paths, and engineering preferences so the skill doesn't ask you every session.
+> `team-config.yaml` 保存团队结构、角色分配、文档路径和工程偏好，避免技能每次会话都重新询问。
 
-## File Location
+## 文件位置
 
-| Scope | Path | Behavior |
+| 范围 | 路径 | 行为 |
 |-------|------|----------|
-| **Global (shared across projects)** | `~/.config/skills/doc-driven-multi-agent/team-config.yaml` | Auto-loaded on every skill invocation. Created by onboarding interview or manually. |
-| **Per-project override** | `<project-root>/.skills/team-config.local.yaml` | If present, fields deep-merge on top of the global config. Only specify fields you want to override. |
+| **全局（跨项目共享）** | `~/.config/skills/doc-driven-multi-agent/team-config.yaml` | 每次调用技能时自动加载。可由 onboarding interview 创建，也可手动创建。 |
+| **项目级覆盖** | `<project-root>/.skills/team-config.local.yaml` | 如果存在，会深度合并到全局配置上。只需填写要覆盖的字段。 |
 
-The agent checks for global config first; if found, loads it. Then checks for per-project override; if found, merges fields on top (deep merge — nested fields like `roles.*` are merged, not replaced wholesale).
+Agent 会先检查全局配置；如果存在则加载。随后检查项目级覆盖；如果存在，则把字段深度合并到全局配置上（例如 `roles.*` 这样的嵌套字段会逐项合并，而不是整体替换）。
 
-## Full Schema
+## 完整 Schema
 
 ```yaml
 # ~/.config/skills/doc-driven-multi-agent/team-config.yaml
 version: "1.0"
-team_name: "My AI Team"
+team_name: "我的 AI 团队"
 created: "2026-07-03T14:30CST"
 last_used: "2026-07-03T14:30CST"
 
-# ── Roles ──────────────────────────────────────────────────────
-# Each of the 5 protocol roles. enabled=false means the role
-# is skipped in the handoff chain (e.g. no Analyst in your team).
+# ── 角色 ──────────────────────────────────────────────────────
+# 协议中的 5 个角色。enabled=false 表示该角色会在 handoff 链路中跳过
+# （例如你的团队暂时不需要 Analyst）。
 roles:
   project_manager:
     enabled: true
-    played_by: "Hermes Agent"                # Human-readable name
+    played_by: "Hermes Agent"                # 人类可读名称
     agent_type: "hermes"                     # hermes | cursor-agent | claude-code | copilot | human
-    session_template: ""                     # e.g. "cursor-pm-{task}" for tmux sessions
+    session_template: ""                     # 例如 tmux session 使用 "cursor-pm-{task}"
     notes: ""
 
   product_owner:
@@ -64,11 +64,11 @@ roles:
     played_by: ""
     agent_type: ""
     session_template: ""
-    notes: "Not needed yet"
+    notes: "暂时不需要"
 
-# ── Document Paths ──────────────────────────────────────────────
-# Where the protocol documents live in your project.
-# Change these if your project uses a different layout.
+# ── 文档路径 ───────────────────────────────────────────────────
+# 协议文档在项目中的位置。
+# 如果你的项目使用不同目录结构，可以修改这些路径。
 document_paths:
   root: "."
   workflow: "docs/ops/"
@@ -80,107 +80,106 @@ document_paths:
   daily: "docs/ops/daily/"
   worktrees: ".worktrees/"
 
-# ── Feature Slug Convention ─────────────────────────────────────
-# Template for generating new feature slugs.
-# Available variables: {tag}, {date}, {ticket}
+# ── Feature Slug 约定 ──────────────────────────────────────────
+# 生成新 feature slug 的模板。
+# 可用变量：{tag}, {date}, {ticket}
 feature_slug_pattern: "{tag}-{date}"
 
-# ── Handoff Chain ───────────────────────────────────────────────
-# The order in which roles hand off work to the next role.
-# This is the default from the protocol; override if your team
-# uses a different flow (e.g. no Analyst, or Arch does pre-review
-# before Dev starts).
+# ── Handoff 链路 ───────────────────────────────────────────────
+# 角色交接工作的默认顺序。
+# 这是协议默认值；如果团队流程不同，可以覆盖
+# （例如没有 Analyst，或 Arch 在 Dev 开工前预审）。
 handoff_chain:
-  - "po"          # design / spec
-  - "pm"          # plan / schedule
-  - "arch"        # pre-review (if complex, before Dev)
-  - "dev"         # implement
-  - "arch"        # code review
-  - "analyst"     # data verification (skipped if disabled)
-  - "po"          # product acceptance
-  - "pm"          # closure
+  - "po"          # 设计 / spec
+  - "pm"          # plan / 排期
+  - "arch"        # 预审（复杂任务，在 Dev 前）
+  - "dev"         # 实现
+  - "arch"        # 代码评审
+  - "analyst"     # 数据验证（如果 disabled 则跳过）
+  - "po"          # 产品验收
+  - "pm"          # 关闭
 
-# ── Engineering Preferences ─────────────────────────────────────
+# ── 工程偏好 ───────────────────────────────────────────────────
 engineering:
   use_worktrees: true
   preferred_ci: "make ci"
   timestamp_tz: "Asia/Shanghai"
 ```
 
-## Field Reference
+## 字段参考
 
-### Top-Level
+### 顶层字段
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `version` | string | yes | Schema version (currently `"1.0"`) |
-| `team_name` | string | yes | Human-readable team name |
-| `created` | string | yes | ISO timestamp when config was first created |
-| `last_used` | string | auto | Updated each time config is loaded |
-| `roles` | object | yes | Role assignments (see below) |
-| `document_paths` | object | yes | Document directory layout |
-| `feature_slug_pattern` | string | no | Template for auto-generating feature slugs |
-| `handoff_chain` | array | yes | Ordered list of roles in the handoff pipeline |
-| `engineering` | object | yes | CI, worktree, timezone preferences |
+| `version` | string | 是 | Schema 版本（当前为 `"1.0"`） |
+| `team_name` | string | 是 | 人类可读的团队名称 |
+| `created` | string | 是 | 配置首次创建时的 ISO 时间戳 |
+| `last_used` | string | 自动 | 每次加载配置时更新 |
+| `roles` | object | 是 | 角色分配，见下文 |
+| `document_paths` | object | 是 | 文档目录布局 |
+| `feature_slug_pattern` | string | 否 | 自动生成 feature slug 的模板 |
+| `handoff_chain` | array | 是 | handoff 流水线中的角色顺序 |
+| `engineering` | object | 是 | CI、worktree、时区偏好 |
 
 ### Roles.`<role>`
 
-Each role key is one of: `project_manager`, `product_owner`, `architect`, `developer`, `data_analyst`.
+每个 role key 是以下之一：`project_manager`、`product_owner`、`architect`、`developer`、`data_analyst`。
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `enabled` | boolean | yes | Whether this role is active in your team |
-| `played_by` | string | no | Human-readable name of the person/agent playing this role |
-| `agent_type` | string | no | One of: `hermes`, `cursor-agent`, `claude-code`, `copilot`, `human` |
-| `session_template` | string | no | tmux session name template (e.g. `cursor-arch-{task}`). Only relevant when using cursor-agent-orchestration. |
-| `notes` | string | no | Free-text notes about this role assignment |
+| `enabled` | boolean | 是 | 该角色是否在团队中启用 |
+| `played_by` | string | 否 | 扮演该角色的人或 Agent 的可读名称 |
+| `agent_type` | string | 否 | 可选值：`hermes`、`cursor-agent`、`claude-code`、`copilot`、`human` |
+| `session_template` | string | 否 | tmux session 名称模板（如 `cursor-arch-{task}`），仅在使用具体 `tmux-*-agent` 技能时相关，例如 `tmux-cursor-agent` |
+| `notes` | string | 否 | 关于该角色分配的自由文本备注 |
 
 ### Document Paths
 
-| Field | Default | Description |
+| 字段 | 默认值 | 说明 |
 |-------|---------|-------------|
-| `root` | `.` | Project root (usually keeps default) |
-| `workflow` | `docs/ops/` | Workflow documents |
-| `product` | `docs/product/` | Product goals and decisions |
-| `specs` | `docs/superpowers/specs/` | Feature specifications |
-| `comms` | `docs/superpowers/comms/` | Communication log |
-| `plans` | `docs/superpowers/plans/` | Task plans |
-| `reviews` | `docs/superpowers/reviews/` | Verification reviews |
-| `daily` | `docs/ops/daily/` | Daily engineering logs |
-| `worktrees` | `.worktrees/` | Git worktree directory |
+| `root` | `.` | 项目根目录，通常保持默认 |
+| `workflow` | `docs/ops/` | 工作流文档 |
+| `product` | `docs/product/` | 产品目标和决策 |
+| `specs` | `docs/superpowers/specs/` | Feature 规格文档 |
+| `comms` | `docs/superpowers/comms/` | 沟通日志 |
+| `plans` | `docs/superpowers/plans/` | 任务计划 |
+| `reviews` | `docs/superpowers/reviews/` | 验证评审 |
+| `daily` | `docs/ops/daily/` | 工程日报 |
+| `worktrees` | `.worktrees/` | Git worktree 目录 |
 
 ### Handoff Chain
 
-Each entry is a role code: `pm`, `po`, `arch`, `dev`, `analyst`. The order defines the pipeline. Roles with `enabled: false` are skipped automatically.
+每一项都是角色代码：`pm`、`po`、`arch`、`dev`、`analyst`。顺序定义流水线；`enabled: false` 的角色会自动跳过。
 
 ### Engineering
 
-| Field | Default | Description |
+| 字段 | 默认值 | 说明 |
 |-------|---------|-------------|
-| `use_worktrees` | `true` | Whether to use git worktrees for task isolation |
-| `preferred_ci` | `make ci` | CI command to run before handoff |
-| `timestamp_tz` | `Asia/Shanghai` | IANA timezone for comm log timestamps |
+| `use_worktrees` | `true` | 是否用 git worktree 做任务隔离 |
+| `preferred_ci` | `make ci` | handoff 前运行的 CI 命令 |
+| `timestamp_tz` | `Asia/Shanghai` | comm log 时间戳使用的 IANA 时区 |
 
-## Per-Project Override Example
+## 项目级覆盖示例
 
-Create `.skills/team-config.local.yaml` in your project root to override specific fields:
+在项目根目录创建 `.skills/team-config.local.yaml`，覆盖特定字段：
 
 ```yaml
-# .skills/team-config.local.yaml — overrides global config for this project only
+# .skills/team-config.local.yaml — 只覆盖当前项目的全局配置
 document_paths:
-  specs: "docs/specs/"            # different spec directory for this project
+  specs: "docs/specs/"            # 当前项目使用不同 spec 目录
   comms: "docs/handoffs/"
 
 engineering:
-  preferred_ci: "pnpm ci"         # different CI tool
+  preferred_ci: "pnpm ci"         # 当前项目使用不同 CI 工具
 ```
 
-Only the specified fields are merged; all other fields fall through to the global config.
+只会合并指定字段；其他字段继续使用全局配置。
 
-## Auto-Generation
+## 自动生成
 
-This file is auto-generated by the onboarding interview (see [onboarding-interview.md](onboarding-interview.md)). You can also:
+此文件可由 onboarding interview 自动生成，详见 [onboarding-interview.md](onboarding-interview.md)。你也可以：
 
-- **Edit manually** — any text editor; YAML syntax
-- **Re-run interview** — say "reconfigure team" in chat
-- **Copy template** — use [templates/team-config.yaml](../templates/team-config.yaml) as a starting point
+- **手动编辑**：用任意文本编辑器，保持 YAML 语法
+- **重新访谈**：在聊天中说 “reconfigure team”
+- **复制模板**：用 [templates/team-config.yaml](../templates/team-config.yaml) 作为起点

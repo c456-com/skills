@@ -2,7 +2,8 @@
 name: doc-driven-multi-agent
 category: autonomous-ai-agents
 tags: [multi-agent, coordination, document-driven, handoff, roles, SOP, workflow, protocol]
-description: "Platform-agnostic document-driven multi-agent coordination protocol — role-based SOPs, handoff protocol (三要素: target/address/task), gates G0–G4, boundary enforcement, and session lifecycle. Works with any AI agent platform (Cursor, Claude Code, Copilot, Gemini, Hermes)."
+description: "文档驱动多代理协作 / document-driven multi-agent：当用户要定义 AI Agent 角色 SOP、handoff 三要素、G0-G4 门禁、越界拒绝、团队配置持久化或跨平台协作协议时触发；适用于 Cursor/Claude Code/Copilot/Gemini/Hermes 等。"
+version: 1.2.0
 triggers:
   - 启动/重启多代理协作 session 时
   - 需要定义 AI Agent 角色及其职权边界时
@@ -12,414 +13,413 @@ triggers:
   - 首次使用需要配置团队架构时
   - 需要保存或加载团队配置时
   - 团队配置过时需要更新时
-related_skills: [cursor-agent-orchestration, opencode, hermes-agent]
+related_skills: [tmux-pane-workspace, tmux-cursor-agent, c456-team-work, c456-software-dev-sop]
 ---
 
-# Document-Driven Multi-Agent Coordination Protocol
+# 文档驱动多代理协作协议
 
-Coordinate multiple AI agents through **document-driven handoffs** rather than chat-based communication. Every decision, task transfer, and review is recorded in project documents forming an auditable chain of custody.
+通过**文档驱动的交接**协调多个 AI Agent，而不是依赖聊天记录传话。每个决策、任务流转和评审都必须写入项目文档，形成可审计、可追溯的责任链。
 
-> **Core rule:** No document = no handoff = no work start.
+> **核心规则：** 没有文档 = 没有交接 = 不能开工。
 
 ---
 
-## Why Document-Driven, Not Chat-Driven
+## 为什么用文档驱动，而不是聊天驱动
 
-| Approach | Problem |
+| 方式 | 问题 |
 |----------|---------|
-| Chat handoff | Message is buried in conversation history; next agent can't find it |
-| Session-only decisions | Lost when session ends or model switches |
-| Verbal task assignment | Ambiguous; no audit trail |
-| **Document-driven** | Every handoff, decision, and review has a permanent file path |
+| 聊天交接 | 信息埋在对话历史里，下一个 Agent 很难定位 |
+| 只在会话里决策 | 会话结束或模型切换后容易丢失 |
+| 口头分派任务 | 边界模糊，没有审计记录 |
+| **文档驱动** | 每次交接、决策和评审都有稳定文件路径 |
 
-This protocol emerged from running 4–5 AI agent roles (PM, PO, Architect, Developer, Analyst) on a single codebase where each agent operates in its own isolated session. The key insight: **agents don't talk to each other; they write files for each other.** The comm log (communication log) serves as the shared memory that persists across sessions, models, and platforms.
+这个协议来自在同一个代码库中运行 4–5 个 AI Agent 角色（PM、PO、Architect、Developer、Analyst）的实践；每个 Agent 都在独立会话里工作。关键原则是：**Agent 之间不直接聊天，它们为彼此写文件。** `comm` log（沟通日志）就是跨会话、跨模型、跨平台保存下来的共享记忆。
 
 ---
 
-## Document Chain (Source of Truth Hierarchy)
+## 文档链（事实来源层级）
 
 ```
-AGENTS.md                        ← Entry point (mandatory checklist for every agent)
-  └── WORKFLOW.md                ← Canonical workflow (this protocol)
-        └── GOALS.md             ← Product/project goals
-              └── spec           ← What to build + acceptance criteria
-                    ├── comm     ← Communication log (decisions, handoffs)
-                    ├── plan     ← Task breakdown with checkboxes
-                    └── code     ← Worktree implementation + tests
-                          └── review  ← Verification evidence
-                                └── daily  ← Engineering daily log
+AGENTS.md                        ← 入口文件（每个 Agent 的必读清单）
+  └── WORKFLOW.md                ← 标准工作流（本协议）
+        └── GOALS.md             ← 产品 / 项目目标
+              └── spec           ← 要做什么 + 验收标准
+                    ├── comm     ← 沟通日志（决策、交接）
+                    ├── plan     ← 带 checkbox 的任务拆解
+                    └── code     ← worktree 实现与测试
+                          └── review  ← 验证证据
+                                └── daily  ← 工程日报
 ```
 
-| Document | Path Convention | Purpose | Maintainer |
+| 文档 | 路径约定 | 用途 | 维护者 |
 |----------|----------------|---------|------------|
-| Entry point | `<root>/AGENTS.md` | Mandatory session checklist | All agents read |
-| Workflow | `docs/ops/WORKFLOW.md` | Full protocol (this document) | All agents read |
-| Goals | `docs/product/GOALS.md` | High-level objectives | PO |
-| Spec | `docs/superpowers/specs/<feature>.md` | What to build + acceptance criteria | PO |
-| **Comm Log** | `docs/superpowers/comms/<feature>.md` | **Decisions, handoffs, conversation history** | **All agents append** |
-| Plan | `docs/superpowers/plans/YYYY-MM-DD-<feature>.md` | Task items with checkboxes | PM |
-| Review | `docs/superpowers/reviews/<feature>-YYYY-MM-DD.md` | Verification evidence | Arch / Analyst |
-| Daily Log | `docs/ops/daily/YYYY-MM-DD.md` | Daily engineering summary | All agents |
+| 入口 | `<root>/AGENTS.md` | 会话必读清单 | 所有 Agent 读取 |
+| 工作流 | `docs/ops/WORKFLOW.md` | 完整协议 | 所有 Agent 读取 |
+| 目标 | `docs/product/GOALS.md` | 高层目标 | PO |
+| 规格 | `docs/superpowers/specs/<feature>.md` | 要做什么 + 验收标准 | PO |
+| **沟通日志** | `docs/superpowers/comms/<feature>.md` | **决策、交接、关键上下文** | **所有 Agent 追加** |
+| 计划 | `docs/superpowers/plans/YYYY-MM-DD-<feature>.md` | 带 checkbox 的任务项 | PM |
+| 评审 | `docs/superpowers/reviews/<feature>-YYYY-MM-DD.md` | 验证证据 | Arch / Analyst |
+| 日报 | `docs/ops/daily/YYYY-MM-DD.md` | 工程日总结 | 所有 Agent |
 
-**Iron rules:**
-- **Comm Log** = conversation & decision SoT (single source of truth)
-- **Spec / Plan** = requirements & task SoT
-- **Reviews** = verification SoT
-- Chat alone is NEVER sufficient for handoff or decision recording
+**铁律：**
+- **Comm Log** = 沟通与决策的唯一事实来源（SoT）
+- **Spec / Plan** = 需求与任务的唯一事实来源
+- **Reviews** = 验证证据的唯一事实来源
+- 只有聊天记录，永远不足以完成交接或记录决策
 
 ---
 
-## Five Role Model
+## 五角色模型
 
-The protocol defines five distinct roles with **strict responsibilities and hard boundaries**. Every agent must know its role before starting work. If unsure, the agent MUST stop and ask.
+协议定义五个角色，每个角色都有**严格职责和硬边界**。每个 Agent 开工前必须知道自己当前扮演的角色；如果不确定，必须停下来询问。
 
-| Role | Code | Responsibility | Writes Code? | Key Deliverables |
+| 角色 | 代码 | 职责 | 写代码？ | 关键产出 |
 |------|------|---------------|:------------:|------------------|
-| **Project Manager** | `PM` | Task planning, worktree lifecycle, gate G4 closure | **No** | plan, comm, worktree management |
-| **Product Owner** | `PO` | Product definition, spec writing, acceptance signing | **No** | spec, acceptance decisions, theory refs |
-| **Architect** | `Arch` | Architecture decisions (ADR), code review, minor direct edits | **Limited** | ADR, arch-review, minor code tweaks |
-| **Developer** | `Dev` | **Only code writer** — implementation + tests | **Yes** | code, tests, verification evidence |
-| **Data Analyst** | `Analyst` | Data verification, bug reports, acceptance evidence | **No** | review reports, DATA_PASS/FAIL |
+| **Project Manager** | `PM` | 任务规划、worktree 生命周期、G4 关闭 | **否** | plan、comm、worktree 管理 |
+| **Product Owner** | `PO` | 产品定义、spec 编写、验收签字 | **否** | spec、验收决策、理论引用 |
+| **Architect** | `Arch` | 架构决策（ADR）、代码评审、少量直接修正 | **有限** | ADR、arch-review、小修 |
+| **Developer** | `Dev` | **唯一主要代码编写者**，负责实现与测试 | **是** | code、tests、验证证据 |
+| **Data Analyst** | `Analyst` | 数据验证、bug 报告、验收证据 | **否** | review 报告、DATA_PASS/FAIL |
 
-### Role Boundaries
+### 角色边界
 
-| Role | Can Do | Cannot Do |
+| 角色 | 可以做 | 不能做 |
 |------|--------|-----------|
-| PM | Plans, schedules, worktree create/merge/cleanup | Write any product code, run data analysis, code review |
-| PO | Specs, product decisions, acceptance, theory references | Write code, modify architecture ADRs |
-| Arch | ADRs, code review, small direct edits (naming/typo/bug) | Modify product spec/definitions without PO; take full Dev tasks |
-| Dev | Code + tests in worktree, implementation docs | Modify spec, PO docs, ADRs; expand scope without approval |
-| Analyst | Data verification, bug reports with reproduction steps | Modify product code, specs, or architecture docs |
+| PM | 计划、排期、创建/合并/清理 worktree | 写产品代码、跑数据分析、做代码评审 |
+| PO | spec、产品决策、验收、理论引用 | 写代码、修改架构 ADR |
+| Arch | ADR、代码评审、小范围直接修正（命名/错别字/明显 bug） | 未经 PO 修改产品定义；承接完整 Dev 任务 |
+| Dev | worktree 中写代码和测试、实现说明 | 修改 spec、PO 文档、ADR；未审批扩 scope |
+| Analyst | 数据验证、带复现步骤的 bug 报告 | 修改产品代码、spec 或架构文档 |
 
-### Escalation Chain
+### 升级链路
 
 ```
-Dev implementation question / blocker ──→ Arch
-Arch product semantics issue ──→ PO (ESCALATE_PO)
-Arch schedule/scope impact ──→ PM (ESCALATE_PM)
-Analyst data bug ──→ Dev (code) | Arch (architecture) | PO (product definition)
+Dev 实现问题 / blocker ──→ Arch
+Arch 发现产品语义问题 ──→ PO (ESCALATE_PO)
+Arch 发现排期 / 范围影响 ──→ PM (ESCALATE_PM)
+Analyst 发现数据 bug ──→ Dev（代码）| Arch（架构）| PO（产品定义）
 ```
 
-**Dev must NEVER bypass Arch to ask PO for spec changes.** All communication flows through the chain.
+**Dev 永远不能绕过 Arch 直接找 PO 改 spec。** 所有沟通必须沿链路流转。
 
 ---
 
-## Handoff Protocol (三要素 — Three Mandatory Fields)
+## Handoff 协议（三要素）
 
-This is the **core mechanism** of the protocol. Every task transfer between roles must include three elements written as a structured block in the comm log:
+这是本协议的**核心机制**。任意角色之间交接任务，都必须在 comm log 中写入结构化区块，并包含三要素：
 
-| Element | Field Name | Requirement |
+| 要素 | 字段名 | 要求 |
 |---------|-----------|-------------|
-| **Target** | `对象` | Role full name + code, e.g., `Developer (Dev)` |
-| **Address** | `地址` | Repository paths (this comm entry, spec, plan, review, code) — at least 1 |
-| **Task** | `事项` | One/two sentences describing what the next role should do |
+| **Target** | `对象` | 角色全名 + code，例如 `Developer (Dev)` |
+| **Address** | `地址` | 仓库路径（当前 comm、spec、plan、review、code 等），至少 1 个 |
+| **Task** | `事项` | 用一两句话说明下一个角色要做什么 |
 
-### Standard Handoff Block
+### 标准 Handoff 区块
 
 ```markdown
 **Handoff:**
 - **Target:** Developer (Dev)
-- **Address:** `docs/superpowers/comms/<feature>.md` (this entry), `docs/superpowers/specs/<feature>.md`
-- **Task:** Implement plan Task 3.2 per spec §4 acceptance criteria; work in worktree `.worktrees/feat-<topic>`
+- **Address:** `docs/superpowers/comms/<feature>.md`（当前条目）, `docs/superpowers/specs/<feature>.md`
+- **Task:** 按 spec §4 验收标准实现 plan Task 3.2；只在 worktree `.worktrees/feat-<topic>` 中工作
 ```
 
-### Invalid Handoffs (next agent MUST refuse)
+### 无效 Handoff（下一个 Agent 必须拒绝）
 
-- Handoff exists only in chat/agent reply — not in comm log
-- Handoff in comm log but missing target, address, OR task (any one absent → BLOCKED)
-- Decision only exists in session conversation, not in comm/spec/plan/review
-- Rework items only in PR comments, not registered in comm entry
-- Using `@role` or verbal notification instead of **appending comm log**
+- Handoff 只存在于聊天 / Agent 回复中，没有写进 comm log
+- comm log 里有 Handoff，但缺少 target、address 或 task 中任意一个（缺一项 → `BLOCKED`）
+- 决策只存在于会话对话中，没有写入 comm/spec/plan/review
+- 返工项只在 PR comments 里，没有登记到 comm entry
+- 用 `@role` 或口头通知代替**追加 comm log**
 
-### Receiving a Handoff (pre-work checklist)
+### 接收 Handoff（开工前检查）
 
-The next agent, before starting work, MUST:
+下一个 Agent 开工前必须：
 
-1. Open the comm log and find the latest entry where **Target** matches the agent's current role
-2. Verify all three fields (target, address, task) are present; if not → `BLOCKED: invalid handoff`
-3. Read every document listed in `Address` and `Read:` fields
-4. Declare read list in comm or session reply
+1. 打开 comm log，找到最新一条 **Target** 匹配当前角色的记录
+2. 确认 target、address、task 三项齐全；否则 → `BLOCKED: invalid handoff`
+3. 阅读 `Address` 和 `Read:` 字段列出的所有文档
+4. 在 comm 或会话回复中声明已读列表
 
 ---
 
-## Gates (G0–G4)
+## 门禁（G0–G4）
 
-The protocol defines five gates that control the progression of work. No work proceeds past a gate without the gate conditions being met:
+协议定义五个门禁控制工作推进。未满足门禁条件时，不得进入下一阶段：
 
-| Gate | Name | Owner | Condition |
+| 门禁 | 名称 | 负责人 | 条件 |
 |------|------|-------|-----------|
-| **G0** | Initiation | PM + PO | `comms/<feature>.md` + spec placeholder exist (or `Status: exploring`) |
-| **G1** | Design Freeze | PO | spec status ≠ `draft`; comm has `APPROVED` from PO |
-| **G2** | Implementation Go | PO | plan exists; PO comm assigns Dev; complex tasks need Arch pre-review pass |
-| **G3** | Product Acceptance | PO | Analyst `DATA_PASS` + review document; PO signs `PRODUCT_ACCEPTED` |
-| **G4** | Closure | PM | All three parties `COMMIT_DONE`; merge + worktree cleanup; `TASK_CLOSED` |
+| **G0** | 启动 | PM + PO | `comms/<feature>.md` + spec 占位存在，或 `Status: exploring` |
+| **G1** | 设计冻结 | PO | spec status ≠ `draft`；comm 中有 PO 的 `APPROVED` |
+| **G2** | 实现放行 | PO | plan 存在；PO 在 comm 中分派 Dev；复杂任务需要 Arch 预审通过 |
+| **G3** | 产品验收 | PO | Analyst `DATA_PASS` + review 文档；PO 签署 `PRODUCT_ACCEPTED` |
+| **G4** | 关闭 | PM | 三方 `COMMIT_DONE`；合并 + 清理 worktree；记录 `TASK_CLOSED` |
 
-**Exception:** ≤3 file changes, or comm marked `EXCEPTION: trivial` + file list → may skip G1/G2.
-
----
-
-## Session Protocol (every agent must follow)
-
-### Before Starting (Checklist)
-
-- [ ] If role unknown → **stop and ask** what role you are assigned; read role SOP after confirmation
-- [ ] Read AGENTS.md → WORKFLOW.md (this document) → role SOP
-- [ ] Invoke Superpowers skills if available (`using-superpowers`, then stage-specific skill)
-- [ ] Confirm feature slug (if none → go G0: create comm + spec placeholder)
-- [ ] Read **spec → plan → comm log** in full; also read related module docs + GOALS
-- [ ] Confirm **worktree** path (new features: forbid main workspace; use `using-git-worktrees` pattern)
-- [ ] Declare read list in reply or append to comm
-- [ ] **Cross-role handoff check:** find comm entry where Target matches current role; if missing/invalid → `BLOCKED: invalid handoff`
-
-### During Work
-
-- Only modify files within plan scope
-- Write decisions and handoffs to comm log — **never only in chat**
-- Chat cannot replace comm handoff
-- Strategy/direction changes → append dedicated direction log
-
-### Before Ending (Checklist)
-
-- [ ] Comm timestamp: run `TZ='Asia/Shanghai' date +'%Y-%m-%dT%H:%M%Z'` — **never fabricate timestamps**
-- [ ] **Append comm** — must include: `agent=`, `Skills used:`, `Read:`, `Said / Decided:`, **Handoff three elements**, `Blockers:`
-- [ ] Update role-owned documents (plan checkboxes, review, ADR, daily log)
-- [ ] **Reply to human** — attach copyable handoff block (first person, fenced markdown)
-- [ ] **Team stability check** — if roles have been stable for 3+ features and no team config saved yet, ask: "Team structure looks stable. Save as default config for next session?" (saves to `~/.config/skills/doc-driven-multi-agent/team-config.yaml`)
-- [ ] Update daily log (`docs/ops/daily/YYYY-MM-DD.md`)
-- [ ] Pass verification checks appropriate to role (`make ci` for Dev, review docs for Arch/Analyst)
+**例外：** ≤3 个文件的小改动，或 comm 标记 `EXCEPTION: trivial` 并列出文件清单时，可以跳过 G1/G2。
 
 ---
 
-## Boundary Enforcement (越界拒绝)
+## 会话协议（每个 Agent 必须遵守）
 
-When an agent receives a request **clearly outside its role boundaries** (even from a human), it MUST proactively refuse rather than comply:
+### 开始前（Checklist）
 
-| Round | Agent Response |
+- [ ] 如果角色未知 → **停下来询问**当前被分配的角色；确认后再读对应 role SOP
+- [ ] 阅读 AGENTS.md → WORKFLOW.md（本协议）→ role SOP
+- [ ] 如果可用，调用 Superpowers 技能（先 `using-superpowers`，再调用阶段技能）
+- [ ] 确认 feature slug；如果没有 → 进入 G0：创建 comm + spec 占位
+- [ ] 完整阅读 **spec → plan → comm log**，并阅读相关模块文档 + GOALS
+- [ ] 确认 **worktree** 路径；新功能禁止在 main workspace 工作，应采用 `using-git-worktrees` 模式
+- [ ] 在回复或 comm 中声明已读列表
+- [ ] **跨角色 handoff 检查：** 找到 Target 匹配当前角色的 comm entry；缺失或无效 → `BLOCKED: invalid handoff`
+
+### 工作中
+
+- 只修改 plan 范围内的文件
+- 决策和 handoff 必须写入 comm log，**不能只写在聊天里**
+- 聊天不能替代 comm handoff
+- 策略 / 方向变化 → 追加专门的方向记录
+
+### 结束前（Checklist）
+
+- [ ] Comm timestamp：运行 `TZ='Asia/Shanghai' date +'%Y-%m-%dT%H:%M%Z'`，**不要编造时间戳**
+- [ ] **追加 comm**，必须包含：`agent=`、`Skills used:`、`Read:`、`Said / Decided:`、**Handoff 三要素**、`Blockers:`
+- [ ] 更新当前角色负责的文档（plan checkbox、review、ADR、daily log）
+- [ ] **回复人类用户**，附上可复制的 handoff block（第一人称，fenced markdown）
+- [ ] **团队稳定性检查**：如果同一套角色已稳定跑完 3+ 个 feature，且尚未保存 team config，询问：“团队结构看起来已经稳定，要保存为下次会话的默认配置吗？”（保存到 `~/.config/skills/doc-driven-multi-agent/team-config.yaml`）
+- [ ] 更新 daily log（`docs/ops/daily/YYYY-MM-DD.md`）
+- [ ] 通过角色对应的验证检查（Dev 跑 `make ci`，Arch/Analyst 写 review 文档）
+
+---
+
+## 边界执行（越界拒绝）
+
+当 Agent 收到**明显超出自身角色边界**的请求时，即使请求来自人类，也必须主动拒绝，而不是直接执行：
+
+| 轮次 | Agent 响应 |
 |-------|---------------|
-| **1st request** | **Refuse.** Explain which role should do it; recommend comm handoff path; **do not execute** |
-| **2nd request** (insistence) | **Refuse again.** Restate boundary and risks of violating role separation |
-| **3rd request** (explicit written confirmation) | May execute exceptionally; comm log `OVERRIDE_ROLE_BOUNDARY` + confirmation text |
+| **第 1 次请求** | **拒绝。** 说明应该由哪个角色处理；建议 comm handoff 路径；**不执行** |
+| **第 2 次请求**（坚持） | **再次拒绝。** 重申边界以及破坏角色隔离的风险 |
+| **第 3 次请求**（明确书面确认） | 可例外执行；comm log 必须记录 `OVERRIDE_ROLE_BOUNDARY` + 确认原文 |
 
-**"Explicit confirmation" definition:** After ≥2 refusals, the requester must explicitly state in writing that they want THIS role to do the work. Vague "continue", "just do it", "you decide" does NOT count.
+**“明确确认”的定义：** 在 ≥2 次拒绝后，请求者必须书面明确说明希望**当前这个角色**执行该工作。模糊的“继续”“就这么做”“你决定”不算确认。
 
-### Refusal Script
+### 拒绝话术
 
 ```
-I am <Role Name> (<Code>). The task you've requested ("<task summary>") belongs to 
-<Correct Role Name> (<Code>), not my role. I will not execute it.
+我是 <Role Name> (<Code>)。你请求的任务（“<task summary>”）属于
+<Correct Role Name> (<Code>)，不属于我的角色边界。我不会执行它。
 
-Correct path:
+正确路径：
 1. comm Handoff → Target: <Correct Role>
 2. Address: <spec/plan/review path>
-3. Task: <what that role should do>
+3. Task: <该角色要做什么>
 
-Please open a session for <Correct Role>, or ask a human to forward the above Handoff.
+请为 <Correct Role> 打开一个会话，或请人类转发上面的 Handoff。
 
-If you still insist I do this as <current role>, please confirm explicitly in writing 
-for the 3rd+ time; after confirmation I'll log OVERRIDE_ROLE_BOUNDARY and proceed.
+如果你仍坚持让我以 <current role> 身份执行，请在第 3 次或之后明确书面确认；
+确认后我会记录 OVERRIDE_ROLE_BOUNDARY 并继续。
 ```
 
 ---
 
-## Default Delivery Chain (Happy Path)
+## 默认交付链路（Happy Path）
 
 ```
-Step 1:  PM + PO      Init ──→ comm + spec placeholder
-Step 2:  PO            Design Freeze ──→ spec `approved`, comm `APPROVED` → PM
-Step 3:  PM            Schedule ──→ plan with tasks, comm schedule → Arch (complex) | PO (simple)
-Step 4*: Arch          Pre-review ──→ comm `ARCH_PRE_PASS` + ADR if needed → PO
-Step 5:  PO            Assign ──→ comm Handoff → Dev (三要素)
-Step 6:  Dev           Implement ──→ code + tests + verification evidence → Arch
-Step 7:  Arch          Code Review ──→ review + comm `ARCH_PASS/FAIL` → Analyst (PASS) | Dev (FAIL)
-Step 8:  Analyst       Verify ──→ `DATA_PASS/FAIL` + review report → PO (PASS) | Dev (FAIL)
-Step 9:  PO            Accept ──→ `PRODUCT_ACCEPTED` → PM
-Step 10: PM            Commit Request ──→ `COMMIT_REQUEST` → PO + Dev + Analyst
-Step 11: PO/Dev/Analyst Commit Done ──→ git commit + daily; `COMMIT_DONE` → PM
-Step 12: PM            Close ──→ merge + worktree cleanup; `TASK_CLOSED`; plan `[x]`
-Step 13: PM            Next ──→ new worktree + plan; Handoff next task
+Step 1:  PM + PO      启动 ──→ comm + spec 占位
+Step 2:  PO            设计冻结 ──→ spec `approved`，comm `APPROVED` → PM
+Step 3:  PM            排期 ──→ 带任务的 plan，comm schedule → Arch（复杂）| PO（简单）
+Step 4*: Arch          预审 ──→ comm `ARCH_PRE_PASS` + 必要 ADR → PO
+Step 5:  PO            分派 ──→ comm Handoff → Dev（三要素）
+Step 6:  Dev           实现 ──→ code + tests + verification evidence → Arch
+Step 7:  Arch          代码评审 ──→ review + comm `ARCH_PASS/FAIL` → Analyst（PASS）| Dev（FAIL）
+Step 8:  Analyst       验证 ──→ `DATA_PASS/FAIL` + review report → PO（PASS）| Dev（FAIL）
+Step 9:  PO            验收 ──→ `PRODUCT_ACCEPTED` → PM
+Step 10: PM            提交请求 ──→ `COMMIT_REQUEST` → PO + Dev + Analyst
+Step 11: PO/Dev/Analyst 完成提交 ──→ git commit + daily；`COMMIT_DONE` → PM
+Step 12: PM            关闭 ──→ merge + worktree cleanup；`TASK_CLOSED`；plan `[x]`
+Step 13: PM            下一步 ──→ 新 worktree + plan；Handoff 下一个任务
 ```
 
-\* Step 4 required for complex tasks (>3 files, new module, strategy/rule changes, storage changes, cross-module API changes).
+\* 复杂任务必须执行 Step 4：>3 个文件、新模块、策略/规则变化、存储变化、跨模块 API 变化。
 
 ---
 
-## Engineering Isolation (Git Worktree Pattern)
+## 工程隔离（Git Worktree 模式）
 
-Each task gets its own isolated git worktree to prevent branch conflicts:
+每个任务使用独立 git worktree，避免分支冲突：
 
 ```bash
-# PM creates worktree before assigning task
+# PM 在分派任务前创建 worktree
 git fetch origin
 git worktree add .worktrees/feat-<topic> -b feat/<topic> origin/main
-# Record: Worktree = .worktrees/feat-<topic> in plan meta + comm
+# 在 plan meta + comm 中记录：Worktree = .worktrees/feat-<topic>
 
-# Dev works exclusively in this worktree
+# Dev 只在这个 worktree 中工作
 cd .worktrees/feat-<topic>
 
-# PM cleans up after TASK_CLOSED
+# PM 在 TASK_CLOSED 后清理
 git checkout main && git pull
 git merge feat/<topic>
 git worktree remove .worktrees/feat-<topic>
 git branch -d feat/<topic>
 ```
 
-**Rules:** One worktree per task; forbid main workspace for new features; PM manages lifecycle.
+**规则：** 每个任务一个 worktree；新功能禁止在 main workspace 中开发；PM 负责生命周期。
 
 ---
 
-## Decision Tags (Comm Log Labels)
+## 决策标签（Comm Log Labels）
 
-| Tag | Meaning | Used By |
+| 标签 | 含义 | 使用者 |
 |-----|---------|---------|
-| `APPROVED` | Design or proposal approved | PO |
-| `ARCH_PASS` | Code review passed | Arch |
-| `ARCH_FAIL` | Code review failed; rework needed | Arch |
-| `DATA_PASS` | Data verification passed | Analyst |
-| `DATA_FAIL` | Data verification failed; bug list to Dev | Analyst |
-| `PRODUCT_ACCEPTED` | PO accepted; ready for PM closure | PO |
-| `COMMIT_REQUEST` | PM requests all parties commit + daily | PM |
-| `COMMIT_DONE` | Party completed commit + daily | PO / Dev / Analyst |
-| `TASK_CLOSED` | PM closed task: merged, worktree cleaned | PM |
-| `ESCALATE_PO` | Product definition decision needed | Arch / Analyst |
-| `ESCALATE_PM` | Schedule/resource decision needed | Arch / Dev / Analyst |
-| `OVERRIDE_ROLE_BOUNDARY` | Role exception after triple confirmation | Any |
+| `APPROVED` | 设计或方案已批准 | PO |
+| `ARCH_PASS` | 代码评审通过 | Arch |
+| `ARCH_FAIL` | 代码评审失败，需要返工 | Arch |
+| `DATA_PASS` | 数据验证通过 | Analyst |
+| `DATA_FAIL` | 数据验证失败，bug list 交给 Dev | Analyst |
+| `PRODUCT_ACCEPTED` | PO 已验收，可进入 PM 关闭 | PO |
+| `COMMIT_REQUEST` | PM 请求各方 commit + daily | PM |
+| `COMMIT_DONE` | 某方已完成 commit + daily | PO / Dev / Analyst |
+| `TASK_CLOSED` | PM 已关闭任务：合并并清理 worktree | PM |
+| `ESCALATE_PO` | 需要产品定义决策 | Arch / Analyst |
+| `ESCALATE_PM` | 需要排期 / 资源决策 | Arch / Dev / Analyst |
+| `OVERRIDE_ROLE_BOUNDARY` | 三次确认后的角色越界例外 | 任意角色 |
 
 ---
 
-## Role SOPs (Detailed Reference)
+## 角色 SOP（详细参考）
 
-| Role | File |
+| 角色 | 文件 |
 |------|------|
 | Project Manager (PM) | [references/role-sop-pm.md](references/role-sop-pm.md) |
 | Product Owner (PO) | [references/role-sop-po.md](references/role-sop-po.md) |
 | Architect (Arch) | [references/role-sop-arch.md](references/role-sop-arch.md) |
 | Developer (Dev) | [references/role-sop-dev.md](references/role-sop-dev.md) |
 | Data Analyst (Analyst) | [references/role-sop-analyst.md](references/role-sop-analyst.md) |
-| Handoff Chat Templates | [references/handoff-chat-templates.md](references/handoff-chat-templates.md) |
-| Team Config Schema | [references/team-config-schema.md](references/team-config-schema.md) |
-| Onboarding Interview | [references/onboarding-interview.md](references/onboarding-interview.md) |
+| Handoff 聊天模板 | [references/handoff-chat-templates.md](references/handoff-chat-templates.md) |
+| 团队配置 Schema | [references/team-config-schema.md](references/team-config-schema.md) |
+| 首次配置访谈 | [references/onboarding-interview.md](references/onboarding-interview.md) |
 
-## Templates
+## 模板
 
-- **[Spec Header](templates/spec-header.md)** — Spec with status, comm log ref, plan ref
-- **[Plan Header](templates/plan-header.md)** — Plan with task checkboxes
-- **[Comm Entry](templates/comm-entry.md)** — Comm log entry with handoff block
-- **[Arch Review](templates/arch-review.md)** — Architecture review document
-- **[Analyst Review](templates/analyst-review.md)** — Data verification report
-- **[Team Config YAML](templates/team-config.yaml)** — Editable starter team config
-
----
-
-## Comparison: This Protocol vs cursor-agent-orchestration
-
-| Dimension | doc-driven-multi-agent | cursor-agent-orchestration |
-|-----------|----------------------|---------------------------|
-| Layer | **Coordination** — what agents do | **Runtime** — how agents run |
-| Mechanism | Document handoffs, role boundaries, gates | tmux sessions, process lifecycle, state detection |
-| Platform | Any AI agent (Cursor, Claude Code, Copilot, Hermes) | Cursor Agent via tmux |
-| Key idea | Agents write files for each other | Agents run in separate tmux windows |
-
-Use **both together**: `cursor-agent-orchestration` to run agent processes, this protocol to coordinate them.
+- **[Spec Header](templates/spec-header.md)** — 带状态、comm log、plan 引用的 spec 模板
+- **[Plan Header](templates/plan-header.md)** — 带任务 checkbox 的 plan 模板
+- **[Comm Entry](templates/comm-entry.md)** — 带 handoff 区块的 comm log 条目模板
+- **[Arch Review](templates/arch-review.md)** — 架构评审文档模板
+- **[Analyst Review](templates/analyst-review.md)** — 数据验证报告模板
+- **[Team Config YAML](templates/team-config.yaml)** — 可编辑的团队配置起始模板
 
 ---
 
-## Adapting to Your Project
+## 与 tmux 工作区技能的关系
 
-1. **Create document skeleton:** `AGENTS.md` → `docs/ops/WORKFLOW.md` → `docs/product/GOALS.md`
-2. **Define roles** — first-time users: the agent will interview you to build a reusable team config (saved to `~/.config/skills/doc-driven-multi-agent/team-config.yaml`); experienced users: copy [templates/team-config.yaml](templates/team-config.yaml) and edit manually
-3. **Start with one feature** — create `docs/superpowers/comms/my-first-feature.md` + spec
-4. **Enforce the handoff protocol** from day one — no chat handoffs, ever
-5. **Add role SOPs** one at a time as your team grows
-6. **Use git worktrees** — safe parallel agent work
+| 技能 | 层级 | 职责 |
+|------|------|------|
+| `doc-driven-multi-agent` | 协作协议层 | Agent 做什么：角色 SOP、handoff、G0-G4、文档事实来源 |
+| `tmux-pane-workspace` | 工作空间层 | Agent 在哪里协作：pane 聚焦、布局、会议工作区、会议日志 |
+| `tmux-cursor-agent` | Cursor 运行时层 | Cursor Agent 怎么跑：启动、登录、状态检测、四步消息协议、daemon、恢复 |
+
+三者可以配合使用：`tmux-pane-workspace` 管 tmux 可见工作区，`tmux-cursor-agent` 管 Cursor Agent 运行细节，本协议管跨角色任务流转和可审计文档。
 
 ---
 
-## Team Onboarding & Configuration
+## 接入到你的项目
 
-The protocol can remember your team structure so you don't describe it every session.
+1. **创建文档骨架：** `AGENTS.md` → `docs/ops/WORKFLOW.md` → `docs/product/GOALS.md`
+2. **定义角色：** 首次使用时，Agent 会通过访谈生成可复用团队配置（保存到 `~/.config/skills/doc-driven-multi-agent/team-config.yaml`）；熟练用户也可以复制 [templates/team-config.yaml](templates/team-config.yaml) 手动编辑
+3. **从一个 feature 开始：** 创建 `docs/superpowers/comms/my-first-feature.md` + spec
+4. **第一天就执行 handoff 协议：** 不允许只靠聊天交接
+5. **随着团队增长逐步引入 role SOP**
+6. **使用 git worktree**，让多个 Agent 并行工作更安全
 
-### Quick Start
+---
 
-1. **First time?** Load this skill — the agent detects no config and starts the onboarding interview
-2. **Answer ~7 short questions** about your team roles, agents, and preferences
-3. Config is saved to `~/.config/skills/doc-driven-multi-agent/team-config.yaml` (global, shared across all your projects)
-4. **Next session:** agent loads config automatically — skip the interview
+## 团队引导与配置
 
-### Config Schema
+协议可以记住团队结构，避免每次会话重复描述角色分工。
 
-See [references/team-config-schema.md](references/team-config-schema.md) for all available fields.
+### 快速开始
 
-### Interview Protocol
+1. **第一次使用？** 加载此技能后，Agent 检测不到配置，会启动 onboarding interview
+2. **回答约 7 个短问题**，说明团队角色、Agent 类型和偏好
+3. 配置会保存到 `~/.config/skills/doc-driven-multi-agent/team-config.yaml`（全局配置，跨项目共享）
+4. **下次会话：** Agent 自动加载配置，跳过访谈
 
-See [references/onboarding-interview.md](references/onboarding-interview.md) for the full interview flow — questions, branching logic, and answer processing.
+### 配置 Schema
 
-### Config Lifecycle
+完整字段见 [references/team-config-schema.md](references/team-config-schema.md)。
 
-| Event | Behavior |
+### 访谈协议
+
+完整访谈流程、分支逻辑和答案处理见 [references/onboarding-interview.md](references/onboarding-interview.md)。
+
+### 配置生命周期
+
+| 事件 | 行为 |
 |-------|----------|
-| **First skill load** | No config → auto-start onboarding interview |
-| **Config exists** | Load silently; announce "Loaded team: {name}" |
-| **Force reconfigure** | Say "reconfigure team" → re-run interview → overwrite |
-| **Config stale (>30d)** | Prompt "Is your team config still accurate?" |
-| **Manual edit** | Edit `~/.config/skills/doc-driven-multi-agent/team-config.yaml` directly; reload on next session |
-| **Per-project override** | Place `.skills/team-config.local.yaml` in project root — fields deep-merge on top of global config |
-| **Stable team detected** | After 3+ features with same roles → ask to save as default |
+| **首次加载技能** | 没有配置 → 自动启动 onboarding interview |
+| **配置已存在** | 静默加载；提示 “Loaded team: {name}” |
+| **强制重新配置** | 用户说 “reconfigure team” → 重新访谈 → 覆盖配置 |
+| **配置过期（>30 天）** | 提示 “Is your team config still accurate?” |
+| **手动编辑** | 直接编辑 `~/.config/skills/doc-driven-multi-agent/team-config.yaml`；下次会话重新加载 |
+| **项目级覆盖** | 在项目根目录放 `.skills/team-config.local.yaml`，字段会深度合并到全局配置上 |
+| **检测到稳定团队** | 同一角色结构跑完 3+ 个 feature 后，询问是否保存为默认配置 |
 
-## Documentation Writing Methodology (Bottom-Up, Atomic→Composite)
+## 文档写作方法论（自底向上，原子→组合）
 
-> **Don't write docs by reading code.** Understand the product first, then design the document structure from scratch.  
-> **Building a house:** Foundation (atomic algorithms) → Walls (composite logic) → Roof (strategy layer).
+> **不要靠读代码倒推文档。** 先理解产品和领域，再从零设计文档结构。<br>
+> **像盖房子一样：** 地基（原子算法）→ 墙体（组合逻辑）→ 屋顶（策略层）。
 
-### When to use this
+### 什么时候使用
 
-Use for **logic / algorithm / domain layers** where each rule or computation has a theoretical foundation and combines sub-algorithms into higher-level policies. Not needed for infrastructure or data-layer docs where code cross-check suffices.
+适用于**逻辑层 / 算法层 / 领域层**文档：每条规则或计算都有理论来源，并会组合成更高层策略。基础设施或纯数据层文档通常只需代码交叉检查，不一定需要这套方法。
 
-### Per-algorithm template
+### 单个算法模板
 
-Every atomic algorithm chapter **should** document these fields where applicable:
+每个原子算法章节在适用时应记录这些字段：
 
-| Field | Description |
+| 字段 | 说明 |
 |-------|-------------|
-| **Definition** | What the algorithm does |
-| **Theory source** | Origin (book, paper, industry standard, domain expert) |
-| **Formula** | Precise mathematical/logical expression |
-| **Input data** | What data it consumes |
-| **Parameter source** | Why thresholds/coefficients have their values |
-| **Edge cases** | What happens at boundaries |
+| **Definition** | 算法做什么 |
+| **Theory source** | 来源（书籍、论文、行业标准、领域专家） |
+| **Formula** | 精确的数学 / 逻辑表达 |
+| **Input data** | 消耗哪些输入数据 |
+| **Parameter source** | 阈值 / 系数为什么取这个值 |
+| **Edge cases** | 边界条件下如何处理 |
 
-### Document hierarchy (bottom-up)
+### 文档层级（自底向上）
 
 ```
-atomic algorithms (primitives, single-responsibility functions)
+atomic algorithms（原语，单一职责函数）
          ↓
-composite algorithms (combinations of atomic algorithms)
+composite algorithms（原子算法组合）
          ↓
-strategy / policy layer (rules, decisions, scoring)
+strategy / policy layer（规则、决策、评分）
 ```
 
-Each level references the level below, never the reverse.
+每一层引用下一层，不能反向依赖。
 
-### Role boundaries (generic)
+### 角色边界（通用）
 
-These are functional descriptions, not job titles. Map them to your project's roles:
+这些是功能描述，不是固定职位名；可映射到你项目中的角色：
 
-- **Structure designer** — defines chapter hierarchy and dependency graph first (no content yet)
-- **Content writer** — fills each chapter using the per-algorithm template
-- **Validator** — cross-checks written docs against the actual implementation/practice AFTER docs are written
-- **Implementer** — does NOT write documentation (only reads it)
+- **结构设计者**：先定义章节层级和依赖图（暂不写正文）
+- **内容写作者**：按单算法模板填充每一章
+- **验证者**：文档写完后，再对照实际实现 / 实践交叉检查
+- **实现者**：不写文档，只阅读文档并实现
 
-The point: **document first, validate after.** Never write docs by reading the final output backwards.
+重点是：**先写文档，再做验证。** 不要通过阅读最终代码倒推文档。
 
-**SoT:** Keep project-local documentation standard in sync with this skill.
+**SoT：** 项目本地文档标准应与此技能保持同步。
 
-### References
+### 参考
 
-- [Team Config Schema](references/team-config-schema.md) — full YAML field documentation
-- [Onboarding Interview](references/onboarding-interview.md) — interview protocol for AI agents
-- [Team Config Template](templates/team-config.yaml) — editable starter config
+- [Team Config Schema](references/team-config-schema.md) — 完整 YAML 字段说明
+- [Onboarding Interview](references/onboarding-interview.md) — 给 AI Agent 使用的访谈协议
+- [Team Config Template](templates/team-config.yaml) — 可编辑的起始配置
 
 ---
 
-## License
+## 许可证
 
 MIT

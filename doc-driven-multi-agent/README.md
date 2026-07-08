@@ -1,83 +1,85 @@
 # doc-driven-multi-agent
 
-> **Platform-agnostic document-driven multi-agent coordination protocol — role-based SOPs, handoff protocol, gates G0–G4, and boundary enforcement.**
+> **跨平台的文档驱动多代理协作协议**：包含角色 SOP、handoff 协议、G0–G4 门禁和越界拒绝规则。
 
-A protocol for coordinating multiple AI agents through **document-driven handoffs** rather than chat-based communication. Every decision, task transfer, and review is recorded in project documents forming an auditable chain of custody.
+这个协议用于通过**文档驱动 handoff** 协调多个 AI Agent，而不是依赖聊天记录传话。每个决策、任务流转和评审都记录在项目文档中，形成可审计的责任链。
 
-**Core rule:** No document = no handoff = no work start.
+**核心规则：** 没有文档 = 没有交接 = 不能开工。
 
-## Quick Start
+## 快速开始
 
 ```bash
-# Install via npx skills
+# 通过 npx skills 安装
 npx skills add c456-com/skills --skill doc-driven-multi-agent -y
 ```
 
-Then in your project:
+然后在你的项目中：
 
-1. Read `SKILL.md` for the full protocol
-2. Create `AGENTS.md` as your entry point (see templates/spec-header.md for format)
-3. Define roles and create the document skeleton
-4. Start your first feature with a spec + comm log
+1. 阅读 `SKILL.md` 获取完整协议
+2. 创建 `AGENTS.md` 作为 Agent 入口文件
+3. 定义角色并创建文档骨架
+4. 用 spec + comm log 启动第一个 feature
 
-## What's Inside
+## 目录内容
 
 ```
 doc-driven-multi-agent/
-├── SKILL.md                    # Full protocol definition
+├── SKILL.md                    # 完整协议定义
 ├── references/
 │   ├── role-sop-pm.md          # Project Manager SOP
 │   ├── role-sop-po.md          # Product Owner SOP
 │   ├── role-sop-arch.md        # Architect SOP
 │   ├── role-sop-dev.md         # Developer SOP
 │   ├── role-sop-analyst.md     # Data Analyst SOP
-│   └── handoff-chat-templates.md # Chat handoff message templates
+│   └── handoff-chat-templates.md # 聊天 handoff 消息模板
 ├── templates/
-│   ├── spec-header.md          # Spec document template
-│   ├── plan-header.md          # Plan document template
-│   ├── comm-entry.md           # Comm log entry template
-│   ├── arch-review.md          # Architecture review template
-│   └── analyst-review.md       # Data verification report template
+│   ├── spec-header.md          # spec 文档模板
+│   ├── plan-header.md          # plan 文档模板
+│   ├── comm-entry.md           # comm log 条目模板
+│   ├── arch-review.md          # 架构评审模板
+│   └── analyst-review.md       # 数据验证报告模板
 ├── LICENSE                     # MIT
 └── README.md
 ```
 
-## Core Concepts
+## 核心概念
 
-### Document Chain
+### 文档链
 
 ```
 AGENTS.md → WORKFLOW.md → GOALS → spec → comm → plan → code → review → daily
 ```
 
-Every piece of work flows through this document chain. No document = no handoff = no work start.
+每项工作都沿这条文档链流转。没有文档 = 没有交接 = 不能开工。
 
-### Five Roles
+### 五个角色
 
-| Role | Code | Writes Code? |
+| 角色 | 代码 | 写代码？ |
 |------|------|:------------:|
-| Project Manager | PM | No |
-| Product Owner | PO | No |
-| Architect | Arch | Limited |
-| Developer | Dev | Yes |
-| Data Analyst | Analyst | No |
+| Project Manager | PM | 否 |
+| Product Owner | PO | 否 |
+| Architect | Arch | 有限 |
+| Developer | Dev | 是 |
+| Data Analyst | Analyst | 否 |
 
-### Handoff Protocol (三要素)
+### Handoff 协议（三要素）
 
-Every role transfer requires three fields in the comm log:
-- **Target** (对象) — Who receives the handoff
-- **Address** (地址) — Paths to relevant documents
-- **Task** (事项) — What the next role should do
+每次角色交接都必须在 comm log 中包含三个字段：
+- **Target**（对象）：谁接收交接
+- **Address**（地址）：相关文档路径
+- **Task**（事项）：下一个角色要做什么
 
-### Gates G0–G4
+### G0–G4 门禁
 
-G0 (Initiation) → G1 (Design Freeze) → G2 (Implementation Go) → G3 (Product Acceptance) → G4 (Closure)
+G0（启动）→ G1（设计冻结）→ G2（实现放行）→ G3（产品验收）→ G4（关闭）
 
-## Related Skills
+## 相关技能
 
-- **[tmux-cursor-agent](https://github.com/c456-com/skills/tree/main/tmux-cursor-agent)** — Runtime layer: run Cursor Agent processes via tmux
-- **[c456-software-dev-sop](https://github.com/c456-com/skills/tree/main/c456-software-dev-sop)** — General software development SOP
+- **[tmux-pane-workspace](https://github.com/c456-com/skills/tree/main/tmux-pane-workspace)**：tmux 工作空间层，负责 pane 聚焦缩放、多 pane 布局和会议工作区
+- **[tmux-cursor-agent](https://github.com/c456-com/skills/tree/main/tmux-cursor-agent)**：Cursor Agent 运行时层，负责状态检测、四步消息协议和监控 daemon
+- **[c456-team-work](https://github.com/c456-com/skills/tree/main/c456-team-work)**：C456 团队工作流，负责多角色协作闭环
+- **[c456-software-dev-sop](https://github.com/c456-com/skills/tree/main/c456-software-dev-sop)**：通用软件开发 SOP
 
-## License
+## 许可证
 
 MIT

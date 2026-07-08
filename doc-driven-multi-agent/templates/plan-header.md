@@ -1,26 +1,26 @@
-> **For agentic workers:** Read comm log + spec; Dev: use TDD + executing-plans.
+> **给 Agent 工作者：** 先读 comm log + spec；Dev 使用 TDD + executing-plans。
 > **Comm log:** docs/superpowers/comms/<feature>.md
 > **Spec:** docs/superpowers/specs/<feature>.md
 > **Worktree:** .worktrees/feat-<topic>
 > **PM:** <date>
 
-# Plan: <Feature> — YYYY-MM-DD
+# Plan：<Feature> — YYYY-MM-DD
 
-## Task List
+## 任务列表
 
-- [ ] Task 1: <description> (estimated: Xmin) — Owner: <role>
-- [ ] Task 2: <description> (estimated: Xmin) — Owner: <role>
-- [ ] Task 3: <description> (estimated: Xmin) — Owner: <role>
+- [ ] Task 1：<说明>（预计：Xmin）— Owner: <role>
+- [ ] Task 2：<说明>（预计：Xmin）— Owner: <role>
+- [ ] Task 3：<说明>（预计：Xmin）— Owner: <role>
 - [ ] …
 
-## Dependencies
+## 依赖
 
-- <external dependency or prerequisite task>
+- <外部依赖或前置任务>
 
-## Risks
+## 风险
 
-- <risk description>
+- <风险说明>
 
-## Deliverables
+## 交付物
 
-- <files or docs expected>
+- <预期文件或文档>

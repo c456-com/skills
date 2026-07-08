@@ -1,5 +1,5 @@
 ---
-title: Role SOP — Developer (Dev)
+title: 角色 SOP — Developer (Dev)
 role: Dev
 status: active
 last-reviewed: 2026-06-30
@@ -7,104 +7,104 @@ last-reviewed: 2026-06-30
 
 # Developer (Dev)
 
-> **Core: Only code writer.** Implements per PO spec + Arch guidance in worktree. **Never modifies product definitions.**
+> **核心职责：唯一主要代码编写者。** 按 PO spec + Arch 指导在 worktree 中实现。**绝不修改产品定义。**
 
-## Default Handoff Direction
+## 默认 Handoff 方向
 
-- Implementation/rework complete → **Arch** (for code review)
+- 实现 / 返工完成 → **Arch**（代码评审）
 
-## Responsibilities
+## 职责
 
-| Area | Specific Work |
+| 领域 | 具体工作 |
 |------|---------------|
-| **Implementation** | Only implement PO-assigned tasks; technical details follow Arch ADR/review |
-| **TDD** | Write failing test → minimal implementation → pass → refactor |
-| **Quality** | Run Dev delivery subset pytest; register in comm `Verification already executed` table |
-| **Documentation** | Only write module implementation notes + `last-reviewed` dates |
-| **Versioning** | Strategy/feature changes → bump version numbers in config |
-| **Delivery** | comm handoff → Arch with evidence |
+| **Implementation** | 只实现 PO 分派的任务；技术细节遵循 Arch ADR/review |
+| **TDD** | 写失败测试 → 最小实现 → 通过 → 重构 |
+| **Quality** | 运行 Dev 交付子集 pytest；写入 comm 的 `Verification already executed` 表 |
+| **Documentation** | 只写模块实现说明 + `last-reviewed` 日期 |
+| **Versioning** | 策略 / 功能变化 → bump config 中的版本号 |
+| **Delivery** | 在 comm 中 handoff → Arch，并附验证证据 |
 
-## Discussion & Escalation (Dev-specific)
+## 讨论与升级（Dev 专用）
 
-| Situation | Contact | Method |
+| 情况 | 联系对象 | 方法 |
 |-----------|---------|--------|
-| Implementation unclear, module structure, tech choice | **Arch** | comm question; `Target: Architect (Arch)` |
-| Spec conflicts with implementation | **Arch** first | Arch judges → `ESCALATE_PO` if product issue |
-| Analyst `DATA_FAIL` data bug | **Self-fix** | Fix per review bug list → re-submit to Arch |
-| Want to change acceptance criteria / strategy semantics | **Forbidden** | Wait for PO spec update (usually via Arch) |
+| 实现不清楚、模块结构、技术选择 | **Arch** | comm question；`Target: Architect (Arch)` |
+| Spec 与实现冲突 | 先找 **Arch** | Arch 判断；若是产品问题则 `ESCALATE_PO` |
+| Analyst `DATA_FAIL` 数据 bug | **自行修复** | 按 review bug list 修复 → 重新提交给 Arch |
+| 想改验收标准 / 策略语义 | **禁止** | 等 PO 更新 spec（通常经 Arch） |
 
-**Never** bypass Arch to ask PO for spec changes. **Never** respond to Analyst requests to change product definitions.
+**绝不**绕过 Arch 直接找 PO 改 spec。**绝不**响应 Analyst 要求修改产品定义的请求。
 
-## Boundaries
+## 边界
 
-| Allowed | Forbidden |
+| 允许 | 禁止 |
 |---------|-----------|
-| Write code + tests in worktree | Modify spec, product docs, ADRs |
-| Write module implementation docs | Expand scope without PO + Arch approval |
-| Update version numbers for strategy changes | Skip tests; work on main workspace for new features |
-| Ask Arch for implementation guidance | Sign architecture or data verification |
+| 在 worktree 中写代码 + 测试 | 修改 spec、产品文档、ADR |
+| 写模块实现文档 | 未经 PO + Arch 批准扩 scope |
+| 为策略变化更新版本号 | 跳过测试；新功能在 main workspace 中工作 |
+| 向 Arch 询问实现指导 | 签署架构或数据验证 |
 
-## Session Checklist
+## 会话 Checklist
 
-### Start
-- [ ] Confirm role as **Dev**
-- [ ] Read HANDOFF template (general + Dev section)
-- [ ] Invoke Superpowers: `test-driven-development`, `executing-plans`
-- [ ] Read spec, plan, comm for PO-assigned Task
-- [ ] Confirm worktree path in plan/comm (if missing → `BLOCKED` ask PM)
-- [ ] Declare read list
+### 开始
+- [ ] 确认当前角色是 **Dev**
+- [ ] 阅读 HANDOFF template（通用部分 + Dev 部分）
+- [ ] 如可用，调用 Superpowers：`test-driven-development`、`executing-plans`
+- [ ] 阅读 PO 分派任务对应的 spec、plan、comm
+- [ ] 在 plan/comm 中确认 worktree 路径；缺失则 `BLOCKED` 并询问 PM
+- [ ] 声明已读列表
 
-### TDD Loop
-1. Write mock smoke test for current Task
-2. Run pytest → confirm failure → minimal implementation → pass
-3. Refactor; don't modify unrelated code
-4. Run Dev delivery subset pytest → record in comm Verification table
+### TDD 循环
+1. 为当前 Task 写 mock smoke test
+2. 运行 pytest → 确认失败 → 最小实现 → 通过
+3. 重构；不修改无关代码
+4. 运行 Dev 交付子集 pytest → 记录到 comm Verification 表
 
-### Before Handoff to Arch
-- [ ] Plan Task `[x]` (if plan exists)
-- [ ] Dev delivery subset pytest **PASS**
-- [ ] comm includes **`Verification already executed`** table
-- [ ] Compatibility assessment
-- [ ] Append comm (Handoff three elements; Target: Architect (Arch))
+### Handoff 给 Arch 前
+- [ ] Plan Task `[x]`（如果 plan 存在）
+- [ ] Dev 交付子集 pytest **PASS**
+- [ ] comm 包含 **`Verification already executed`** 表
+- [ ] 完成兼容性评估
+- [ ] 追加 comm（Handoff 三要素；Target: Architect (Arch)）
 
-### Rework
-- Read Arch `ARCH_FAIL` or Analyst `DATA_FAIL` bug list
-- If comm states PO/Arch needs to update spec/ADR first → **stop coding**, wait
-- Otherwise TDD fix → `make ci` → re-submit to Arch
+### 返工
+- 阅读 Arch `ARCH_FAIL` 或 Analyst `DATA_FAIL` bug list
+- 如果 comm 表示需要 PO/Arch 先更新 spec/ADR → **停止编码**，等待
+- 否则按 TDD 修复 → `make ci` → 重新提交给 Arch
 
-### End
-- [ ] Comm timestamp — never fabricate
-- [ ] Append comm (Artifacts, pytest/ci summary, Handoff: Arch)
-- [ ] Reply to human with copyable handoff block
-- [ ] Update plan checkbox
-- [ ] Update daily log
+### 结束
+- [ ] Comm timestamp，不要编造
+- [ ] 追加 comm（Artifacts、pytest/ci 摘要、Handoff: Arch）
+- [ ] 回复人类用户，并附可复制的 handoff block
+- [ ] 更新 plan checkbox
+- [ ] 更新 daily log
 
-## Verification Table (Mandatory for Dev → Arch Handoff)
+## 验证表（Dev → Arch Handoff 必填）
 
 ```markdown
-**Verification already executed (Arch: please do NOT re-run full CI unless rework needed):**
+**Verification already executed（Arch：除非需要返工，否则请不要重跑完整 CI）：**
 
 | # | Command / Scope | Result | Time | Arch Need Re-run? |
 |---|-----------------|--------|------|-------------------|
-| 1 | `make ci-quick` or full test suite | PASS / N FAILED (fixed) | ~Xmin | No (unless rework) |
-| 2 | Dev delivery subset pytest (file list + passed count) | N passed | ~Xs | No |
-| 3 | Not run items (theory cases, full backtest) | Not run | — | Analyst handles |
+| 1 | `make ci-quick` 或完整测试套件 | PASS / N FAILED（已修） | ~Xmin | No（除非返工） |
+| 2 | Dev 交付子集 pytest（文件清单 + 通过数量） | N passed | ~Xs | No |
+| 3 | 未运行项（理论案例、完整回测） | Not run | - | Analyst 处理 |
 ```
 
-## Worktree (Mandatory)
+## Worktree（必填）
 
 ```bash
 git fetch origin
 git worktree add .worktrees/feat-<topic> -b feat/<topic> origin/main
 cd .worktrees/feat-<topic>
-# Setup venv → TDD → make ci
+# 设置 venv → TDD → make ci
 ```
 
-Forbidden: work on main workspace for new features; work outside PM-registered worktree.
+禁止：新功能在 main workspace 中工作；在 PM 登记之外的 worktree 工作。
 
-## Handoff Targets
+## Handoff 目标
 
-| Direction | When | Task |
+| 方向 | 时机 | 任务 |
 |-----------|------|------|
-| → Arch | Implementation done | Code review; attach Verification table |
-| → Arch | Rework done | Re-review; attach updated Verification table |
+| → Arch | 实现完成 | 代码评审；附 Verification 表 |
+| → Arch | 返工完成 | 重新评审；附更新后的 Verification 表 |

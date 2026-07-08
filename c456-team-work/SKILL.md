@@ -2,33 +2,56 @@
 name: c456-team-work
 category: autonomous-ai-agents
 tags: [team, workflow, multi-agent, coordination, handoff, relay, discipline, monitoring, roles]
-description: "辉常团队多角色 AI Agent 协作工作流 — 团队启动、角色边界、四步法通信协议、通知驱动工作流、handoff 三要素、开发闭环、多工作组管理、助理铁律。融合 team-discipline / 辉常团队 / assistant-boundaries 三个技能。"
-version: 1.0.0
+description: "辉常团队 / multi-agent team workflow：当用户要启动或重启多角色 AI Agent 团队、创建工作组、从 Agency Agents 等职业技能库选择专家角色、处理 handoff/relay/通知、做团队汇报或推进开发闭环时触发；用于团队入口路由、角色边界、助理纪律和多工作组协作。"
+version: 1.3.0
 triggers:
   - 启动/重启团队多角色协作 session 时
   - 创建新工作组或并行方向时
+  - 组建团队并需要选择 PM、Arch、Dev、Analyst 或外部专家角色时
   - 需要理解角色边界和 relay 纪律时
-  - 处理 daemon 通知（CURSOR-STOPPED）时
+  - 处理具体 Agent 的停止、等待输入或任务完成通知时
   - relay 角色间 handoff 时
   - 用户说「团队开工」「交给你们团队」「团队汇报」时
-related_skills: [tmux-cursor-agent, tmux-pane-workflow, doc-driven-multi-agent, cursor-agent-orchestration]
+related_skills: [tmux-pane-workspace, tmux-cursor-agent, doc-driven-multi-agent]
 ---
 
 # c456 Team Work — 辉常团队多角色协作工作流
 
-> 融合三个上游 Hermes 技能：`team-discipline`（助理行动纪律）、`辉常团队`（团队工作流）、`assistant-boundaries`（助理铁律）。
-> 上游技能仍在 Hermes `~/.hermes/skills/` 中持续更新；本技能是面向 c456-skills 库的稳定蒸馏版。
+> 本技能是辉哥团队协作入口层：负责判断什么时候组队、如何保持角色纪律、如何做 relay / handoff、什么时候汇报，以及把具体执行细节路由给专门技能。
+> 它不依赖特定 Agent 运行时；tmux、Cursor、文档协议等实现细节由相关技能负责。
 
-## 加载检查
+## 路由检查
 
-每次团队任务前，必须先加载以下上游技能获取精确的命令和协议：
+每次团队任务前，按场景读取相关技能，而不是在本技能中复制实现细节：
 
-```bash
-skill_view(name='tmux-cursor-agent')     # 四步法、daemon 监控、状态检测
-skill_view(name='tmux-pane-workflow')    # zoom/capture/verify 操作规范
-skill_view(name='doc-driven-multi-agent') # 文档驱动 handoff 协议
-skill_view(name='cursor-agent-orchestration')  # 多 agent 编排
-```
+| 场景 | 读取技能 | 用途 |
+|------|----------|------|
+| 需要 tmux pane / 多窗口工作区 | `tmux-pane-workspace` | pane 聚焦缩放、多 pane 布局、圆桌会议、职业角色来源 |
+| 需要控制 Cursor Agent | `tmux-cursor-agent` | Cursor Agent 启动、状态检测、消息发送、停止 / 恢复、监控 |
+| 需要角色协作协议 | `doc-driven-multi-agent` | handoff 三要素、comm log、G0-G4、角色 SOP |
+
+如果当前 Agent 环境没有“读取技能”的专用工具，就直接打开对应目录下的 `SKILL.md`。
+
+## 分层定位
+
+`c456-team-work` 是辉哥团队协作入口，负责角色纪律、relay 判断、通知响应和协作节奏；不复制通用 tmux、Cursor 运行时或文档协议实现。
+
+| 层级 | 使用技能 | 本技能如何使用 |
+|------|----------|----------------|
+| tmux 工作空间 | `tmux-pane-workspace` | pane 聚焦缩放、多 pane 布局、会议 workspace |
+| Cursor 运行时 | `tmux-cursor-agent` | Cursor Agent 启动、通信、状态检测、停止 / 恢复、监控 |
+| 协作协议 | `doc-driven-multi-agent` | handoff 三要素、comm log、G0-G4、角色 SOP |
+
+## 可选职业角色来源
+
+组建 multi-agent 团队时，如果默认 PM / Arch / Dev / Analyst 不够用，可以参考 [Agency Agents](https://github.com/msitarzewski/agency-agents) 下载或查看对应职业角色。它适合用来补充 Growth、Security、Finance、UX、QA、SRE、Legal、Marketing 等专家视角。
+
+使用边界：
+
+- 只把 Agency Agents 当作**职业角色目录**，不要把上游完整提示词直接塞给每个 pane。
+- 先按任务目标选择 2-6 个必要角色，再把人格、职责、交付物压缩成当前团队的角色定义。
+- 角色落地到 tmux 圆桌或多 pane workspace 时，按 `tmux-pane-workspace/references/agency-agents-roster.md` 的分组速查处理。
+- 角色协作、handoff 和门禁仍按 `doc-driven-multi-agent` 执行。
 
 ---
 
@@ -36,10 +59,10 @@ skill_view(name='cursor-agent-orchestration')  # 多 agent 编排
 
 | 场景 | 助理做 |
 |------|--------|
-| 团队开工 / 交给你们团队 | 先开 PM+Arch+Dev session（Pane 模式），注册监控，启 daemon，再问辉哥方向 |
-| 团队汇报 / 团队什么情况 | capture-pane 巡查各角色 → 状态表 |
-| daemon 通知 CURSOR-STOPPED | capture 读窗 → 按 reason 流转 PM/Dev |
-| 转给团队X（角色） | 四步法转发（见 §通信协议） |
+| 团队开工 / 交给你们团队 | 先确定任务目标、角色组合、工作区形式，再路由到具体 Agent 技能启动 |
+| 团队汇报 / 团队什么情况 | 按工作区技能读取各角色状态 → 汇总状态表 |
+| Agent 停止 / 等待输入 / 完成通知 | 读取对应角色输出 → 判断 reason → 流转 PM/Dev/Arch/Analyst |
+| 转给团队X（角色） | 按 handoff 三要素转发（见 §通信与 handoff） |
 | 用户问「知道当下什么任务？」 | 先回答问题本身，不跳转到行动模式 |
 
 ---
@@ -48,7 +71,7 @@ skill_view(name='cursor-agent-orchestration')  # 多 agent 编排
 
 ### 1.1 通知即行动
 
-收到 daemon 通知（CURSOR-STOPPED）→ 立即 capture-pane 读窗口 → 判断 reason → 流转对应角色。**不等待、不请示。**
+收到具体 Agent 的停止、等待输入或任务完成通知 → 立即读取对应角色输出 → 判断 reason → 流转对应角色。**不等待、不请示。**
 
 ### 1.2 纯传话 + 书记官
 
@@ -89,15 +112,9 @@ AI 团队无疲劳概念。永不休息、永不等待、永不说「明天再�
 
 ### 2.3 模型分配
 
-所有角色统一 `auto` 模型：
+如果具体 Agent 支持模型选择，团队角色默认使用自动模型或项目约定模型。不要在本技能里硬编码某个 Agent 的启动命令。
 
-```bash
-# ✅ 正确
-~/.local/bin/cursor-agent --model auto agent
-
-# ❌ 错误（不指定 --model 使用默认模型，可能烧钱）
-~/.local/bin/cursor-agent agent
-```
+Cursor Agent 的模型参数和启动方式见 `tmux-cursor-agent`。
 
 ### 2.4 角色禁止事项（越权处理）
 
@@ -109,59 +126,30 @@ AI 团队无疲劳概念。永不休息、永不等待、永不说「明天再�
 
 ---
 
-## 3. 团队启动（Pane 模式）
+## 3. 团队启动
 
-### 3.1 Pane 模式（推荐）
+### 3.1 启动前决策
 
-所有角色在**同一个 tmux session 的不同 pane** 中启动，便于监控和转发。
+团队开工前，先确认四件事：
 
-```bash
-SESSION="cursor-${TASK_ID}"
-PROJECT="/path/to/project"
-AGENT="/home/user/.local/bin/cursor-agent"
+| 决策 | 说明 | 路由 |
+|------|------|------|
+| 任务目标 | 要解决什么问题，预期交付什么 | 本技能负责澄清 |
+| 角色组合 | PM / PO / Arch / Dev / Analyst / 外部专家 | 本技能 + Agency Agents 参考 |
+| 工作区形式 | 单 Agent、tmux 多 pane、多个工作组 | `tmux-pane-workspace` |
+| Agent 类型 | Cursor、Trae、Codex 或其他 | 对应 `tmux-*-agent` 技能 |
 
-# 1. 创建单 session
-tmux new-session -d -s "$SESSION" -n "$TASK_ID" -c "$PROJECT"
-tmux send-keys -t "$SESSION" "$AGENT --model auto agent" Enter
-sleep 4
-tmux send-keys -t "$SESSION" "你是架构师。" Enter
-sleep 3
-
-# 2. 分 pane 启动其他角色
-tmux split-window -h -t "$SESSION" -c "$PROJECT"
-tmux send-keys -t "$SESSION" "$AGENT --model auto agent" Enter
-sleep 4
-tmux send-keys -t "$SESSION" "你是项目经理。" Enter
-sleep 3
-
-tmux split-window -v -t "$SESSION" -c "$PROJECT"
-tmux send-keys -t "$SESSION" "$AGENT --model auto agent" Enter
-sleep 4
-tmux send-keys -t "$SESSION" "你是开发者。" Enter
-
-# 3. 启用 pane 标题可见
-tmux set -t "$SESSION" pane-border-status top
-tmux set -t "$SESSION" pane-border-format '#{pane_title}'
-
-# 4. 设置 pane 标题（用 /rename 锁定）
-# 每个角色 pane：
-#   send-keys "/rename 架构师" → sleep 2 → Enter
-#   send-keys "/rename 项目经理" → sleep 2 → Enter
-#   send-keys "/rename 开发者" → sleep 2 → Enter
-
-# 5. 验证
-tmux list-panes -t "$SESSION" -F '#{pane_index}: #{pane_title} (cmd=#{pane_current_command})'
-```
+如果使用 Cursor Agent 跑团队，具体启动、登录、信任工作区、状态检测、消息发送和监控都交给 `tmux-cursor-agent`。本技能只规定角色纪律和流转方式。
 
 ### 3.2 启动铁律
 
 | 规则 | 说明 |
 |------|------|
 | session 名必须带 `{task_id}` 后缀 | `cursor-feat-xxx-0625`，不允许无后缀持久化 |
-| 每个角色 session 创建后**立即注册监控** | 见 §5 通知驱动工作流 |
-| pane 标题用 `/rename` 锁定 | 不做则 cursor-agent 覆盖为英文 |
-| 启动后只发一句「你是XX角色」 | 不塞额外提示/项目背景，agent 自己读 AGENTS.md |
-| `/rename` 严格四步法 | `send-keys "/rename 角色名"` → sleep 2 → Enter（不能一次性带 Enter） |
+| 每个角色启动后立即登记角色和状态来源 | 记录 pane、session、任务文档或监控组 |
+| pane 标题或角色名要稳定 | 不依赖肉眼猜测角色身份 |
+| 启动后只声明角色 | 不塞额外提示/项目背景，让 Agent 读取项目规范 |
+| 发送方式按具体 Agent 技能执行 | 本技能不复制运行时命令 |
 
 ### 3.3 轻量模式
 
@@ -177,60 +165,40 @@ tmux list-panes -t "$SESSION" -F '#{pane_index}: #{pane_title} (cmd=#{pane_curre
 |--------|---------|
 | session | 独立 tmux session |
 | monitor group | 独立 group 名 |
-| daemon 进程 | 独立 Hermes background process |
-
-```python
-# 工作组 A
-terminal(
-  background=True,
-  watch_patterns=["CURSOR-STOPPED:"],
-  command="cd $SKILL_DIR && exec python3 -m core.monitor daemon --group team-a"
-)
-
-# 工作组 B（另一个独立 daemon）
-terminal(
-  background=True,
-  watch_patterns=["CURSOR-STOPPED:"],
-  command="cd $SKILL_DIR && exec python3 -m core.monitor daemon --group team-b"
-)
-```
+| 任务文档 | 独立 comm log / spec / plan |
+| 监控来源 | 由具体 Agent 技能定义 |
 
 ### 3.5 清理（task 结束后）
 
-```bash
-$MON group-remove "$TASK_ID"
-$TASKS complete --task-id "$TASK_ID"
-tmux kill-session -t cursor-${TASK_ID} 2>/dev/null
-```
+任务结束后，按具体工作区和 Agent 技能执行清理。最低要求：
+
+- 关闭或归档对应工作区。
+- 移除对应监控登记。
+- 标记任务文档状态。
+- 记录最终结论、遗留风险和下一步。
 
 ---
 
-## 4. 通信协议
+## 4. 通信与 handoff
 
-### 4.1 发送消息四步法
+### 4.1 通信路由
 
-| 步骤 | 操作 |
-|------|------|
-| ① 检查状态 | `capture-pane` 确认目标 idle（`→ Add a follow-up`，无 spinner） |
-| ② zoom 目标 pane | `tmux select-pane -t SESSION:WINDOW.PANE \; resize-pane -Z` |
-| ③ send-keys（不带 Enter） | `tmux send-keys -t SESSION "消息内容"` |
-| ④ sleep + Enter | `sleep 2 && tmux send-keys -t SESSION Enter` |
-| ⑤ 验证 | `sleep 3 + capture-pane` 确认消息在对话区 + Working 状态 |
+| 目标 | 使用规则 |
+|------|----------|
+| tmux pane 可见性 | 按 `tmux-pane-workspace` 聚焦、放大、读取 |
+| Cursor Agent 消息 | 按 `tmux-cursor-agent` 的安全发送协议 |
+| 文档交接 | 按 `doc-driven-multi-agent` 的 comm log 和 handoff 模板 |
+| 非 Cursor Agent | 按对应 `tmux-*-agent` 技能定义的发送和状态规则 |
 
-**关键规则：**
-- 发消息前**必须 zoom** 目标 pane（辉哥要求看到助理在关注谁）
-- 消息体不能含反引号 `` ` ``、`$()`、`<>`、`|` 等 shell 特殊字符
-- 发完**保持 zoom** 等回复，不 unzoom
-- 发后必须 capture-pane 验证送达
+本技能只规定“该找谁、交代什么、何时流转”，不规定底层输入命令。
 
-### 4.2 四步法验证判据
+### 4.2 发送前纪律
 
-| capture 结果 | 含义 | 操作 |
-|-------------|------|------|
-| 消息在对话区 + Working spinner | ✅ 已发送 | 等待完成 |
-| 消息前有 `→` 前缀 | ❌ 卡输入框 | 补一次 Enter |
-| 出现 `┌─ follow-ups ───┐` 框 | ❌ 卡菜单 | 再按一次 Enter 提交 |
-| 底栏 `Auto · XX%` 静止 | ❌ agent 在忙 | 不应发送，等 idle |
+- 先确认目标角色是谁。
+- 先确认目标 Agent 是否可接收消息。
+- 先确认要传递的是目标、地址、事项，而不是助理自己的方案。
+- 如果工作区可见，先聚焦目标 pane，让用户知道你正在关注谁。
+- 发出后必须读取或检查结果，确认消息已被目标角色接收。
 
 ### 4.3 Handoff 三要素
 
@@ -242,27 +210,19 @@ tmux kill-session -t cursor-${TASK_ID} 2>/dev/null
 | **地址** | 文档路径 | `地址: docs/xxx/spec.md` |
 | **事项** | 具体任务 | `事项: 评审设计方案，签发 ARCH_PASS` |
 
-### 4.4 紧急打断（双回车）
+### 4.4 紧急打断
 
-向 Working/Running 状态的 agent 发紧急纠正消息时：
+只有当方向明显错误、会造成大量浪费或用户明确要求立即纠偏时，才打断正在执行的 Agent。具体停止和补发方式交给对应 Agent 技能。
 
-```bash
-send-keys "消息" → sleep 1 → send-keys Enter → sleep 0.5 → send-keys Enter
-```
+### 4.5 停止 Agent
 
-单 Enter 只进 follow-up 队列不提交。常规 handoff 仍等 agent Idle。
+停止前先判断：
 
-### 4.5 停止 agent
+- 是只停止当前执行，还是停止后立刻发新目标。
+- 停止后是否需要记录原因。
+- 是否影响其他角色依赖链。
 
-```bash
-# 只终止不发消息
-tmux send-keys -t SESSION:WINDOW.PANE C-c
-
-# 终止并立刻发新指令
-tmux send-keys -t SESSION:WINDOW.PANE "新消息" Enter
-sleep 0.5
-tmux send-keys -t SESSION:WINDOW.PANE Enter
-```
+Cursor Agent 的停止方式见 `tmux-cursor-agent`；其他 Agent 使用对应技能。
 
 ### 4.6 跨角色 relay 纪律
 
@@ -281,14 +241,12 @@ tmux send-keys -t SESSION:WINDOW.PANE Enter
 
 ## 5. 通知驱动工作流
 
-### 5.1 CURSOR-STOPPED 处理
+### 5.1 Agent 通知处理
 
 ```
-CURSOR-STOPPED 到达
+Agent 停止 / 等待输入 / 完成通知到达
     │
-    ├─→ capture-pane 读窗口内容 + 解析 reason
-    │
-    ├─→ idle → 验证后静默处理（无 spinner 才算真停）
+    ├─→ 读取对应角色输出 + 解析 reason
     │
     ├─→ task_done → 读结果 → 按验收标准检查 → 流转 PM/Dev
     │
@@ -299,47 +257,26 @@ CURSOR-STOPPED 到达
     └─→ exited → 检查进程，必要时重启 → 上报辉哥
 ```
 
-### 5.2 注册监控
+### 5.2 监控登记
 
-```bash
-export MON="cd $CURSOR_SKILL && python3 -m core.monitor"
+每个工作组必须登记：
 
-# Pane 模式（同一 session 不同 pane）
-$MON group-create "$TASK_ID" --label "任务名"
-$MON add --group "$TASK_ID" cursor-${TASK_ID} 0 --pane 0 --label "架构师"
-$MON add --group "$TASK_ID" cursor-${TASK_ID} 0 --pane 1 --label "项目经理"
-$MON add --group "$TASK_ID" cursor-${TASK_ID} 0 --pane 2 --label "开发者"
+| 字段 | 说明 |
+|------|------|
+| 工作组 ID | 与任务文档、tmux session 或 Agent 会话对应 |
+| 角色 | PM / PO / Arch / Dev / Analyst / 外部专家 |
+| 状态来源 | pane、session、日志、monitor group 或任务文档 |
+| 最后更新时间 | 用程序获取时间，不编造 |
+| 当前阻塞 | 无 / 等输入 / 等审批 / 等依赖 / 异常退出 |
 
-# 启 daemon（必须带 watch_patterns）
-terminal(
-  command="cd $CURSOR_SKILL && exec python3 -m core.monitor daemon --group ${TASK_ID}",
-  background=true,
-  watch_patterns=["CURSOR-STOPPED:"]
-)
-```
-
-### 5.3 Daemon 健康监控
+### 5.3 监控健康检查
 
 | 信号 | 行为 |
 |------|------|
-| 超过 3 分钟无通知 + 预期 agent 应完成 | 执行巡检 |
-| 用户说「是不是监控掉了」| 立即检查 |
-| 怀疑 daemon 挂了 | 交叉验证 |
-
-```bash
-# 双重验证
-process(action='list')        # Hermes 进程跟踪
-ps aux | grep cursor_monitor  # OS 级进程
-
-# 如果都空了 → 重启 daemon
-pkill -f "cursor_monitor.py daemon" 2>/dev/null || true
-terminal(
-  command="cd $CURSOR_SKILL && exec python3 -m core.monitor daemon --group ${TASK_ID}",
-  background=true,
-  watch_patterns=["CURSOR-STOPPED:"]
-)
-# 重启后立即 capture-pane 所有窗口巡检
-```
+| 超过预期时间无通知 + 预期 Agent 应完成 | 执行巡检 |
+| 用户说「是不是监控掉了」 | 立即检查 |
+| 怀疑监控挂了 | 用具体 Agent 技能交叉验证 |
+| 监控重启后 | 立即巡检所有角色状态 |
 
 ### 5.4 长任务主动监控
 
@@ -500,7 +437,7 @@ PM 出方案，有不确定的设计问题
 |------|------|------|
 | task_id | `topic-YYMMDD` | `feat-xxx-0625`、`feature-abc-0626` |
 | tmux session | `{business}-{task_id}` | `algo-layer-dev`、`frontend-dev` |
-| daemon group | `task_id` | `feat-xxx-0625` |
+| monitor group | `task_id` | `feat-xxx-0625` |
 
 ### 8.2 并行推进
 
@@ -539,7 +476,7 @@ PM 出方案，有不确定的设计问题
 | 11 | 24 小时不间断 | PM 排时间表时 | 团队实践 |
 | 12 | PM 决定做什么我不定优先级 | 需要知道「做什么」时 | 团队实践 |
 | 13 | 点触发层不能做形态守卫 | L1/L6 重验时 | 团队实践 |
-| 14 | 团队开发用 tmux+cursor-agent 禁止 delegate_task | 启动团队时 | 团队实践 |
+| 14 | 团队开发用可见工作区，不把核心任务丢给不可见后台 | 启动团队时 | 团队实践 |
 | 15 | Dev 修复后 Arch 二次验证才能递 Analyst | Dev 修复后 | 团队实践 |
 | 16 | Analyst 独立验证（不同数据/程序） | Analyst 验证时 | 团队实践 |
 | 17 | 讨论结论同步纪律 | 每次与辉哥讨论后 | 团队实践 |
@@ -556,7 +493,7 @@ PM 出方案，有不确定的设计问题
 | 28 | 方向不对立即停不等 | 中间结果明显更差时 | 团队实践 |
 | 29 | 信任但验证文件落地后检查存在 | agent 声称已产出时 | 团队实践 |
 | 30 | Zoom pane 再发消息 | 每次发消息前 | team-discipline |
-| 31 | Zoom pane 再读取内容 | 每次 capture-pane 时 | team-discipline |
+| 31 | 聚焦目标工作区再读取内容 | 每次读取角色输出时 | 团队实践 |
 | 32 | 发前检查 agent 状态不打断 Working | 每次发消息前 | team-discipline |
 | 33 | DOC_PASS 后才能跑验证 | 文档冻结前 | team-discipline |
 | 34 | PO 已写可复制块时直接使用 | 收到 PO 手写 handoff 时 | team-discipline |
@@ -588,10 +525,10 @@ PM 出方案，有不确定的设计问题
 
 | 陷阱 | 后果 | 修复 |
 |------|------|------|
-| daemon 静默死亡 | 收不到通知，无人知道 | 交叉验证 process(list) + ps aux |
-| `N task` 底栏残留 | daemon 永不发 STOPPED | Ctrl+C 清 task 计数 |
-| watch_patterns 触发速率限制 | 通知停止 | 重启 daemon |
-| 断线重连后 daemon 丢失 | Hermes 进程跟踪空 | 检查重启 |
+| 监控静默死亡 | 收不到通知，无人知道 | 按具体 Agent 技能交叉验证 |
+| 任务计数残留 | 监控一直判断未停止 | 按具体 Agent 技能清理状态 |
+| 事件监听触发速率限制 | 通知停止 | 重启或改用轮询 |
+| 断线重连后监控丢失 | 工作区还在但通知没了 | 检查并重启监控 |
 
 ### 10.3 流转相关
 
@@ -608,8 +545,8 @@ PM 出方案，有不确定的设计问题
 | 陷阱 | 后果 | 修复 |
 |------|------|------|
 | pane 索引 split 后移位 | 发错窗口 | split 后重新 list-panes 验证 |
-| `/rename` 一次性带 Enter | 标题不会更新 | 四步法：内容→sleep→Enter |
-| 启动验证用 capture-pane 文本 | 发重复启动命令 | 用 `pane_current_command` |
+| 角色标题设置过急 | 标题不会更新 | 按具体 Agent 技能的发送协议执行 |
+| 启动验证只看屏幕文本 | 可能误判已启动 | 同时检查进程、pane 标题或 Agent 状态 |
 
 ---
 
@@ -618,7 +555,7 @@ PM 出方案，有不确定的设计问题
 ### 11.1 文件结构
 
 ```
-~/.hermes/teams/
+~/.config/skills/c456-team-work/teams/
 ├── shared/
 │   ├── WORKFLOW.md      ← 团队工作规范
 │   └── TEAM_LOG.md      ← 全局决策和里程碑

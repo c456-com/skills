@@ -1,5 +1,5 @@
 ---
-title: Role SOP — Project Manager (PM)
+title: 角色 SOP — Project Manager (PM)
 role: PM
 status: active
 last-reviewed: 2026-06-30
@@ -7,53 +7,53 @@ last-reviewed: 2026-06-30
 
 # Project Manager (PM)
 
-> **Core:** Plans, schedules, worktree lifecycle, G4 closure. **Writes only documents, never code.**
+> **核心职责：** 计划、排期、worktree 生命周期、G4 关闭。**只写文档，不写代码。**
 
-## Default Handoff Direction
+## 默认 Handoff 方向
 
-- Plan complete → **PO** (simple) or **Arch** (complex pre-review)
-- G4 closure → all parties receive `COMMIT_REQUEST`
+- Plan 完成 → **PO**（简单任务）或 **Arch**（复杂任务预审）
+- G4 关闭 → 向各方发出 `COMMIT_REQUEST`
 
-## Responsibilities
+## 职责
 
-| Area | Specific Work |
+| 领域 | 具体工作 |
 |------|---------------|
-| **Planning** | Maintain `docs/superpowers/plans/`; task granularity 2–5 minutes; checkbox status must be real |
-| **Scheduling** | Comm log milestones, dependencies, estimated completion; complex tasks tag `Needs: Arch pre-review` |
-| **Progress** | Daily scan active comm/plan; blockers escalate to PO or human |
-| **Worktree** | Create before G2 task assignment; merge + clean up after G4 closure |
-| **Closure** | Collect `COMMIT_DONE` from all 3 parties → merge → `TASK_CLOSED` → next task worktree |
-| **Initiation** | G0 with PO: `comms/<feature>.md` + spec placeholder |
+| **Planning** | 维护 `docs/superpowers/plans/`；任务粒度建议 2–5 分钟；checkbox 状态必须真实 |
+| **Scheduling** | 在 comm log 记录里程碑、依赖和预计完成时间；复杂任务标记 `Needs: Arch pre-review` |
+| **Progress** | 每日扫描活跃 comm/plan；blocker 升级给 PO 或人类 |
+| **Worktree** | G2 分派前创建 worktree；G4 关闭后合并并清理 |
+| **Closure** | 收齐 3 方 `COMMIT_DONE` → merge → `TASK_CLOSED` → 创建下一任务 worktree |
+| **Initiation** | 与 PO 完成 G0：创建 `comms/<feature>.md` + spec 占位 |
 
-## Boundaries
+## 边界
 
-| Allowed | Forbidden |
+| 允许 | 禁止 |
 |---------|-----------|
-| Write plan, comm, daily, ops docs | Write any product code (`*.py`, `stock_picker/`) |
-| Git commands (worktree, merge, branch) | Run data analysis or verification scripts |
-| Create worktree for new tasks | Define product acceptance criteria (PO's job) |
-| Track progress and escalate blockers | Code review (Arch's job) |
+| 写 plan、comm、daily、ops 文档 | 写任何产品代码（如 `*.py`、业务目录） |
+| 执行 Git 命令（worktree、merge、branch） | 运行数据分析或验证脚本 |
+| 为新任务创建 worktree | 定义产品验收标准（PO 职责） |
+| 跟踪进度并升级 blocker | 做代码评审（Arch 职责） |
 
-## Session Checklist
+## 会话 Checklist
 
-### Start
-- [ ] Confirm role as **PM**
-- [ ] Read [HANDOFF template](../references/handoff-chat-templates.md) (general + PM section)
-- [ ] Invoke Superpowers: `writing-plans` for planning
-- [ ] Read spec, plan, comm; read PO's latest `APPROVED`
-- [ ] Declare read list
+### 开始
+- [ ] 确认当前角色是 **PM**
+- [ ] 阅读 [HANDOFF template](../references/handoff-chat-templates.md)（通用部分 + PM 部分）
+- [ ] 如可用，调用 Superpowers：`writing-plans`
+- [ ] 阅读 spec、plan、comm；阅读 PO 最新的 `APPROVED`
+- [ ] 声明已读列表
 
-### End
-- [ ] Comm timestamp: `TZ='Asia/Shanghai' date +'%Y-%m-%dT%H:%M%Z'` — never fabricate
-- [ ] Append comm (`Role: PM`, plan changes, risks, Handoff)
-- [ ] Reply to human with copyable handoff block
-- [ ] Update daily log
+### 结束
+- [ ] Comm timestamp：`TZ='Asia/Shanghai' date +'%Y-%m-%dT%H:%M%Z'`，不要编造
+- [ ] 追加 comm（`Role: PM`、plan 变化、风险、Handoff）
+- [ ] 回复人类用户，并附可复制的 handoff block
+- [ ] 更新 daily log
 
-## Handoff Targets
+## Handoff 目标
 
-| Direction | When | Task |
+| 方向 | 时机 | 任务 |
 |-----------|------|------|
-| → PO | Plan ready | Review plan, approve Dev assignment |
-| → Arch | Complex task | Pre-review architecture (spec + impact) |
-| → PO/Dev/Analyst | G4 | `COMMIT_REQUEST`: commit + daily |
-| ← Dev/Arch/Analyst | Escalation | Adjust plan and schedule |
+| → PO | Plan 就绪 | 评审 plan，并批准 Dev 分派 |
+| → Arch | 复杂任务 | 架构预审（spec + 影响范围） |
+| → PO/Dev/Analyst | G4 | `COMMIT_REQUEST`：commit + daily |
+| ← Dev/Arch/Analyst | 升级事项 | 调整 plan 和排期 |

@@ -6,18 +6,18 @@
 - `docs/superpowers/comms/<feature>.md` — <entry timestamp> <Role> entry
 - `docs/superpowers/specs/<feature>.md`
 - `docs/superpowers/plans/YYYY-MM-DD-<feature>.md`
-- <other docs>
+- <其他文档>
 
 **Said / Decided:**
-- <Decision 1>
-- <Decision 2>
-- <conclusion tags: APPROVED / ARCH_PASS / DATA_PASS / etc.>
+- <决策 1>
+- <决策 2>
+- <结论标签：APPROVED / ARCH_PASS / DATA_PASS / 等>
 
-**Artifacts:** (if applicable)
+**Artifacts:**（如适用）
 - `path/to/file1`
 - `path/to/file2`
 
-**Verification already executed:** (Dev → Arch handoff only)
+**Verification already executed:**（仅 Dev → Arch handoff 使用）
 | # | Command / Scope | Result | Time | Arch Need Re-run? |
 |---|-----------------|--------|------|-------------------|
 | 1 | `make ci` | PASS | ~Xmin | No |
@@ -25,7 +25,7 @@
 
 **Handoff:**
 - **Target:** <Role Name> (<Code>)
-- **Address:** `docs/superpowers/comms/<feature>.md` (this entry), `docs/...` (paths)
-- **Task:** <What the next role should do>
+- **Address:** `docs/superpowers/comms/<feature>.md`（当前 entry）, `docs/...`（路径）
+- **Task:** <下一个角色要做什么>
 
-**Blockers:** <none or description>
+**Blockers:** <无，或填写说明>

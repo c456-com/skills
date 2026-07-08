@@ -5,40 +5,40 @@
 
 # Feature: <Name>
 
-## Background
+## 背景
 
-<Why this feature exists, what problem it solves>
+<为什么需要这个 feature，它解决什么问题>
 
-## Scope
+## 范围
 
-### In Scope
+### 范围内
 
 - Item 1
 - Item 2
 
-### Out of Scope
+### 范围外
 
 - Item 1
 
-## Functional Requirements
+## 功能需求
 
 ### Requirement 1
-<Description>
+<说明>
 
 ### Requirement 2
-<Description>
+<说明>
 
-## Acceptance Criteria
+## 验收标准
 
-- [ ] Criterion 1 (testable, measurable)
+- [ ] Criterion 1（可测试、可衡量）
 - [ ] Criterion 2
 - [ ] …
 
-## Data/Strategy Changes (if applicable)
+## 数据 / 策略变化（如适用）
 
-- Rule change: <description>
-- Version bump: <version field name>
+- Rule change：<说明>
+- Version bump：<版本字段名>
 
-## Notes
+## 备注
 
-<Dependencies, risks, open questions>
+<依赖、风险、开放问题>

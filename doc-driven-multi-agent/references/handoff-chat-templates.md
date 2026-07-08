@@ -1,93 +1,93 @@
 ---
-title: Handoff Chat Message Templates (All Roles)
+title: Handoff 聊天消息模板（所有角色）
 type: reference
 status: active
 last-reviewed: 2026-06-30
 ---
 
-# Handoff Chat Message Templates
+# Handoff 聊天消息模板
 
-> **Comm log is the authoritative handoff;** chat blocks are copyable summaries for humans to forward between sessions.
+> **Comm log 才是权威 handoff；** 聊天区块只是方便人类在会话之间转发的可复制摘要。
 
-## General Rules
+## 通用规则
 
-| Rule | Description |
+| 规则 | 说明 |
 |------|-------------|
-| **Comm timestamp** | Run `TZ='Asia/Shanghai' date +'%Y-%m-%dT%H:%M%Z'` before writing entry — never fabricate |
-| **First-person opening** | `Hello, I am <Role Name> (<Code>).` — never use "You are PO/Dev…" as the subject |
-| **Comm always first** | Sender must have already appended comm (with Handoff three elements) before sending chat block |
-| **Receiver procedure** | Confirm role → find comm entry where Target matches → read Address docs → execute Task |
-| **Boundary refusal** | Request outside role → refuse (1st/2nd time); 3rd explicit confirmation → `OVERRIDE_ROLE_BOUNDARY` |
+| **Comm timestamp** | 写 entry 前运行 `TZ='Asia/Shanghai' date +'%Y-%m-%dT%H:%M%Z'`，不要编造 |
+| **第一人称开场** | `我是 <Role Name> (<Code>)。`，不要用“你是 PO/Dev……”作为主体 |
+| **Comm 优先** | 发送聊天区块前，发送方必须已经追加包含 Handoff 三要素的 comm |
+| **接收流程** | 确认角色 → 找到 Target 匹配的 comm entry → 阅读 Address 文档 → 执行 Task |
+| **越界拒绝** | 请求超出角色边界 → 第 1/2 次拒绝；第 3 次明确确认后才可 `OVERRIDE_ROLE_BOUNDARY` |
 
-### Handoff Three Elements (mandatory in every block)
+### Handoff 三要素（每个区块必填）
 
 ```markdown
 **Handoff:**
 - **Target:** <Role Name> (<Code>)
-- **Address:** `docs/...` (at least 1 path, including this comm entry)
-- **Task:** One/two sentences — what the next role should do
+- **Address:** `docs/...`（至少 1 个路径，包含当前 comm entry）
+- **Task:** 一两句话说明下一个角色要做什么
 ```
 
-### Chat Block Required Fields
+### 聊天区块必填字段
 
-| Field | Description |
+| 字段 | 说明 |
 |-------|-------------|
-| Opening | First-person role declaration |
-| Please read first | This comm entry + Address paths (in order) |
-| Background | Optional, 1–2 sentences of context |
-| Please… | Specific task (verb-first) |
-| Expected output | Verdict tags, documents, ci/test evidence |
-| Note | Comm log requirement; forbidden items |
+| 开场 | 第一人称角色声明 |
+| 请先阅读 | 当前 comm entry + Address 路径，按顺序排列 |
+| 背景 | 可选，用 1–2 句话说明上下文 |
+| 请执行 | 具体任务，动词开头 |
+| 预期产出 | verdict 标签、文档、CI/test 证据 |
+| 注意事项 | comm log 要求、禁止事项 |
 
 ---
 
-## Boundary Refusal (All Roles)
+## 越界拒绝（所有角色）
 
-When a human or previous session asks you to do work **clearly outside your role**:
+当人类或上一个会话要求你执行**明显超出当前角色边界**的工作时：
 
-**1st / 2nd refusal (copyable):**
+**第 1 / 第 2 次拒绝（可复制）：**
 
 ```markdown
-Hello, I am <Role Name> (<Code>).
+我是 <Role Name> (<Code>)。
 
-You are asking me to "<task summary>", which belongs to <Correct Role Name> (<Code>).
-This is outside my role authority. **I will not execute this work.**
+你要求我执行“<task summary>”，但这属于 <Correct Role Name> (<Code>) 的职责。
+这超出了我的角色权限。**我不会执行这项工作。**
 
-Correct path:
+正确路径：
 1. comm Handoff → Target: <Correct Role>
 2. Address: <spec/plan/review path>
-3. Task: <what that role should do>
+3. Task: <该角色要做什么>
 
-Please open a session for <Correct Role>, or ask a human to forward the above Handoff.
+请为 <Correct Role> 打开一个会话，或请人类转发上面的 Handoff。
 
-If you still insist I do this as <current role>, please confirm explicitly in writing
-for the 3rd+ time; after confirmation I'll log `OVERRIDE_ROLE_BOUNDARY` and proceed.
+如果你仍坚持让我以 <current role> 身份执行，请在第 3 次或之后明确书面确认；
+确认后我会记录 `OVERRIDE_ROLE_BOUNDARY` 并继续。
 ```
 
-**After exceptional execution (comm must include):**
+**例外执行后（comm 必须包含）：**
 
 ```markdown
 **Said / Decided:**
-- `OVERRIDE_ROLE_BOUNDARY` — Human confirmed 3rd time for <Code> to do "<task summary>"
-- Confirmation text: «…»
+- `OVERRIDE_ROLE_BOUNDARY` — 人类第 3 次确认由 <Code> 执行“<task summary>”
+- 确认原文：«…»
 ```
 
 ---
 
 ## PM → PO
 
-**Scenario:** Plan ready, request G1.5 design alignment or Dev assignment approval
+**场景：** Plan 已就绪，请求 G1.5 设计对齐或 Dev 分派批准
 
 ```markdown
-Hello, I am Project Manager (PM). Please do **G1.5 design alignment** or review plan for feature `<feature-slug>`.
+我是 Project Manager (PM)。请对 feature `<feature-slug>` 做 **G1.5 设计对齐**，或评审 plan。
 
-**Please read first (in order):**
-1. `docs/superpowers/comms/<feature>.md` — latest PM entry
+**请先阅读（按顺序）：**
+1. `docs/superpowers/comms/<feature>.md` — 最新 PM entry
 2. `docs/superpowers/plans/YYYY-MM-DD-<feature>.md`
 
-**Please confirm task scope aligns with product design; if approved, assign Dev (G2).**
+**请确认任务范围是否与产品设计一致；如批准，请分派 Dev（G2）。**
 
-**Expected output:** comm `APPROVED` + Handoff three elements → Developer (Dev)
+**预期产出：** comm `APPROVED` + Handoff 三要素 → Developer (Dev)
 ```
 
 ---
@@ -95,16 +95,16 @@ Hello, I am Project Manager (PM). Please do **G1.5 design alignment** or review 
 ## PM → Arch
 
 ```markdown
-Hello, I am Project Manager (PM). Please do **architecture pre-review** for feature `<feature-slug>` (complex task).
+我是 Project Manager (PM)。请对 feature `<feature-slug>` 做**架构预审**（复杂任务）。
 
-**Please read first:**
-1. `docs/superpowers/comms/<feature>.md` — this entry
+**请先阅读：**
+1. `docs/superpowers/comms/<feature>.md` — 当前 entry
 2. `docs/superpowers/specs/<feature>.md`
 3. `docs/superpowers/plans/YYYY-MM-DD-<feature>.md`
 
-**Please evaluate implementation approach (storage/concurrency/module boundaries).**
+**请评估实现方案（存储 / 并发 / 模块边界）。**
 
-**Expected output:** comm `ARCH_PRE_PASS` or modification list + Handoff → Product Owner (PO)
+**预期产出：** comm `ARCH_PRE_PASS`，或修改清单 + Handoff → Product Owner (PO)
 ```
 
 ---
@@ -112,15 +112,15 @@ Hello, I am Project Manager (PM). Please do **architecture pre-review** for feat
 ## PO → PM
 
 ```markdown
-Hello, I am Product Owner (PO). Feature `<feature-slug>` design is frozen. Please write plan and schedule.
+我是 Product Owner (PO)。Feature `<feature-slug>` 的设计已冻结。请编写 plan 并排期。
 
-**Please read first:**
-1. `docs/superpowers/comms/<feature>.md` — this entry
+**请先阅读：**
+1. `docs/superpowers/comms/<feature>.md` — 当前 entry
 2. `docs/superpowers/specs/<feature>.md` — Status: approved
 
-**Please write plan with tasks, dependencies, and risks; complex tasks mark for Arch pre-review.**
+**请编写包含任务、依赖和风险的 plan；复杂任务标记为需要 Arch pre-review。**
 
-**Expected output:** `docs/superpowers/plans/YYYY-MM-DD-<feature>.md` + comm Handoff
+**预期产出：** `docs/superpowers/plans/YYYY-MM-DD-<feature>.md` + comm Handoff
 ```
 
 ---
@@ -128,19 +128,19 @@ Hello, I am Product Owner (PO). Feature `<feature-slug>` design is frozen. Pleas
 ## PO → Dev
 
 ```markdown
-Hello, I am Product Owner (PO). Please (Dev) implement feature `<feature-slug>` **Task <N>** (G2 implementation go).
+我是 Product Owner (PO)。请 Developer (Dev) 实现 feature `<feature-slug>` 的 **Task <N>**（G2 implementation go）。
 
-**Please read first (in order):**
+**请先阅读（按顺序）：**
 1. `docs/superpowers/comms/<feature>.md` — this PO Handoff
 2. `docs/superpowers/specs/<feature>.md` — acceptance criteria §…
 3. `docs/superpowers/plans/YYYY-MM-DD-<feature>.md` — Task <N>
-4. Worktree path from PM (check plan meta)
+4. PM 提供的 worktree path（检查 plan meta）
 
-**Please TDD per plan Task <N>; work in worktree only; after completion, Handoff Arch.**
+**请按 plan Task <N> 做 TDD；只在 worktree 中工作；完成后 Handoff 给 Arch。**
 
-**Expected output:** code + pytest; `make ci` PASS; comm Handoff → Architect (Arch)
+**预期产出：** code + pytest；`make ci` PASS；comm Handoff → Architect (Arch)
 
-**Note:** Do not expand scope; implementation questions go to Arch (not PO).
+**注意：** 不要扩 scope；实现问题找 Arch，不要直接找 PO。
 ```
 
 ---
@@ -148,15 +148,15 @@ Hello, I am Product Owner (PO). Please (Dev) implement feature `<feature-slug>` 
 ## PO → Arch
 
 ```markdown
-Hello, I am Product Owner (PO). Please do **architecture pre-review** for feature `<feature-slug>` (storage/concurrency/approach).
+我是 Product Owner (PO)。请对 feature `<feature-slug>` 做**架构预审**（存储 / 并发 / 方案）。
 
-**Please read first:**
-1. `docs/superpowers/comms/<feature>.md` — this entry
+**请先阅读：**
+1. `docs/superpowers/comms/<feature>.md` — 当前 entry
 2. `docs/superpowers/specs/<feature>.md`
 
-**Please assess implementation feasibility; product semantics issues → `ESCALATE_PO`.**
+**请评估实现可行性；如果发现产品语义问题 → `ESCALATE_PO`。**
 
-**Expected output:** comm `ARCH_PRE_PASS` or modification suggestions + Handoff
+**预期产出：** comm `ARCH_PRE_PASS`，或修改建议 + Handoff
 ```
 
 ---
@@ -164,17 +164,17 @@ Hello, I am Product Owner (PO). Please do **architecture pre-review** for featur
 ## Arch → Dev
 
 ```markdown
-Hello, I am Architect (Arch). Feature `<feature-slug>` code review verdict: **ARCH_FAIL**. Please (Dev) rework.
+我是 Architect (Arch)。Feature `<feature-slug>` 的代码评审 verdict：**ARCH_FAIL**。请 Developer (Dev) 返工。
 
-**Please read first:**
-1. `docs/superpowers/comms/<feature>.md` — this entry
-2. `docs/superpowers/reviews/arch-review-<feature>-YYYY-MM-DD.md` — rework checklist
+**请先阅读：**
+1. `docs/superpowers/comms/<feature>.md` — 当前 entry
+2. `docs/superpowers/reviews/arch-review-<feature>-YYYY-MM-DD.md` — 返工 checklist
 
-**Please TDD fix per review checklist; `make ci` pass before re-submitting to me.**
+**请按 review checklist 做 TDD 修复；重新提交给我前确保 `make ci` 通过。**
 
-**Expected output:** fixed code + comm Handoff → Architect (Arch)
+**预期产出：** fixed code + comm Handoff → Architect (Arch)
 
-**Note:** If product semantics or ADR changes needed, stop coding and wait for PO/Arch doc updates.
+**注意：** 如果需要改变产品语义或 ADR，请停止编码，等待 PO/Arch 更新文档。
 ```
 
 ---
@@ -182,16 +182,16 @@ Hello, I am Architect (Arch). Feature `<feature-slug>` code review verdict: **AR
 ## Arch → Analyst
 
 ```markdown
-Hello, I am Architect (Arch). Feature `<feature-slug>` code review verdict: **ARCH_PASS**. Please (Analyst) do independent data verification.
+我是 Architect (Arch)。Feature `<feature-slug>` 的代码评审 verdict：**ARCH_PASS**。请 Data Analyst (Analyst) 做独立数据验证。
 
-**Please read first:**
-1. `docs/superpowers/comms/<feature>.md` — this entry
+**请先阅读：**
+1. `docs/superpowers/comms/<feature>.md` — 当前 entry
 2. `docs/superpowers/reviews/arch-review-<feature>-YYYY-MM-DD.md`
 3. `docs/superpowers/specs/<feature>.md` — acceptance criteria
 
-**Please run independent verification per spec (3-phase or as specified); do NOT modify product code.**
+**请按 spec 做独立验证（三阶段或 spec 指定流程）；不要修改产品代码。**
 
-**Expected output:** `reviews/<feature>-analyst-*.md` + comm `DATA_PASS` / `DATA_FAIL`
+**预期产出：** `reviews/<feature>-analyst-*.md` + comm `DATA_PASS` / `DATA_FAIL`
 ```
 
 ---
@@ -199,16 +199,16 @@ Hello, I am Architect (Arch). Feature `<feature-slug>` code review verdict: **AR
 ## Arch → PO
 
 ```markdown
-Hello, I am Architect (Arch). Feature `<feature-slug>` has **product semantics / acceptance criteria** issues. Need you (PO) to decide (ESCALATE_PO).
+我是 Architect (Arch)。Feature `<feature-slug>` 存在**产品语义 / 验收标准**问题，需要 Product Owner (PO) 决策（ESCALATE_PO）。
 
-**Please read first:**
-1. `docs/superpowers/comms/<feature>.md` — this entry
+**请先阅读：**
+1. `docs/superpowers/comms/<feature>.md` — 当前 entry
 2. `docs/superpowers/specs/<feature>.md`
-3. `docs/superpowers/reviews/arch-review-*.md` (if any)
+3. `docs/superpowers/reviews/arch-review-*.md`（如有）
 
-**Please clarify or update spec; comm `APPROVED` before Dev can proceed.**
+**请澄清或更新 spec；Dev 继续前，comm 中必须有 `APPROVED`。**
 
-**Expected output:** Updated spec or decision doc + comm Handoff → Dev / PM
+**预期产出：** 更新后的 spec 或决策文档 + comm Handoff → Dev / PM
 ```
 
 ---
@@ -216,20 +216,20 @@ Hello, I am Architect (Arch). Feature `<feature-slug>` has **product semantics /
 ## Dev → Arch
 
 ```markdown
-Hello, I am Developer (Dev). Feature `<feature-slug>` **Task <N>** is complete. Please (Arch) code review.
+我是 Developer (Dev)。Feature `<feature-slug>` 的 **Task <N>** 已完成。请 Architect (Arch) 做代码评审。
 
-**Please read first:**
-1. `docs/superpowers/comms/<feature>.md` — this entry (with Verification table)
+**请先阅读：**
+1. `docs/superpowers/comms/<feature>.md` — 当前 entry（含 Verification 表）
 2. `docs/superpowers/plans/YYYY-MM-DD-<feature>.md` — Task <N>
-3. Code paths: (list changed files)
+3. Code paths：（列出变更文件）
 
-**Dev has already executed tests (please do NOT re-run full CI):**
-- (Copy from comm Verification table: command, result, duration)
-- Not run: (theory cases, full backtest → Analyst)
+**Dev 已执行测试（请不要重跑完整 CI）：**
+- （从 comm Verification 表复制：command、result、duration）
+- Not run：（理论案例、完整回测 → Analyst）
 
-**Please static review implementation + spec alignment; sign `ARCH_PASS` / `ARCH_FAIL`.**
+**请静态评审实现质量和 spec 对齐情况；签署 `ARCH_PASS` / `ARCH_FAIL`。**
 
-**Expected output:** arch-review doc + comm Handoff → Analyst (PASS) or Dev (FAIL)
+**预期产出：** arch-review doc + comm Handoff → Analyst（PASS）或 Dev（FAIL）
 ```
 
 ---
@@ -237,15 +237,15 @@ Hello, I am Developer (Dev). Feature `<feature-slug>` **Task <N>** is complete. 
 ## Analyst → Dev
 
 ```markdown
-Hello, I am Data Analyst (Analyst). Feature `<feature-slug>` data verification verdict: **DATA_FAIL**. Please (Dev) fix per bug list.
+我是 Data Analyst (Analyst)。Feature `<feature-slug>` 的数据验证 verdict：**DATA_FAIL**。请 Developer (Dev) 按 bug list 修复。
 
-**Please read first:**
-1. `docs/superpowers/comms/<feature>.md` — this entry
-2. `docs/superpowers/reviews/<feature>-analyst-YYYY-MM-DD.md` — bug list + reproduction steps
+**请先阅读：**
+1. `docs/superpowers/comms/<feature>.md` — 当前 entry
+2. `docs/superpowers/reviews/<feature>-analyst-YYYY-MM-DD.md` — bug list + 复现步骤
 
-**Please fix data bugs per review; do NOT modify spec. After fix, Handoff Arch for re-review.**
+**请按 review 修复数据 bug；不要修改 spec。修复后 Handoff 给 Arch 复审。**
 
-**Expected output:** fixed code + pytest/ci + comm Handoff → Architect (Arch)
+**预期产出：** fixed code + pytest/ci + comm Handoff → Architect (Arch)
 ```
 
 ---
@@ -253,40 +253,40 @@ Hello, I am Data Analyst (Analyst). Feature `<feature-slug>` data verification v
 ## Analyst → PO
 
 ```markdown
-Hello, I am Data Analyst (Analyst). Feature `<feature-slug>` data verification verdict: **DATA_PASS**. Please (PO) do product acceptance (G3).
+我是 Data Analyst (Analyst)。Feature `<feature-slug>` 的数据验证 verdict：**DATA_PASS**。请 Product Owner (PO) 做产品验收（G3）。
 
-**Please read first:**
-1. `docs/superpowers/comms/<feature>.md` — this entry
+**请先阅读：**
+1. `docs/superpowers/comms/<feature>.md` — 当前 entry
 2. `docs/superpowers/reviews/<feature>-analyst-YYYY-MM-DD.md`
 3. `docs/superpowers/specs/<feature>.md` — acceptance criteria
 
-**Please review analysis report against spec; sign `PRODUCT_ACCEPTED` for closure.**
+**请对照 spec 评审分析报告；如通过，签署 `PRODUCT_ACCEPTED` 进入关闭流程。**
 
-**Expected output:** comm `PRODUCT_ACCEPTED` + Handoff → Project Manager (PM) for archiving
+**预期产出：** comm `PRODUCT_ACCEPTED` + Handoff → Project Manager (PM) 归档
 ```
 
 ---
 
-## PO → PM (Product Acceptance)
+## PO → PM（产品验收）
 
 ```markdown
-Hello, I am Product Owner (PO). Feature `<feature-slug>` product acceptance: **PRODUCT_ACCEPTED**. Please (PM) archive closure (G4).
+我是 Product Owner (PO)。Feature `<feature-slug>` 产品验收：**PRODUCT_ACCEPTED**。请 Project Manager (PM) 执行归档关闭（G4）。
 
-**Please read first:**
-1. `docs/superpowers/comms/<feature>.md` — this entry
-2. `docs/superpowers/reviews/` (Arch + Analyst chain)
-3. `docs/superpowers/plans/YYYY-MM-DD-<feature>.md` — confirm all `[x]`
+**请先阅读：**
+1. `docs/superpowers/comms/<feature>.md` — 当前 entry
+2. `docs/superpowers/reviews/`（Arch + Analyst 链路）
+3. `docs/superpowers/plans/YYYY-MM-DD-<feature>.md` — 确认全部 `[x]`
 
-**Please confirm plan all green, reviews complete, daily updated. Initiate G4 closure.**
+**请确认 plan 全绿、reviews 完整、daily 已更新。然后启动 G4 closure。**
 
-**Expected output:** comm `COMMIT_REQUEST` → PO, Dev, Analyst
+**预期产出：** comm `COMMIT_REQUEST` → PO, Dev, Analyst
 ```
 
 ---
 
-## Default Handoff Direction Quick Reference
+## 默认 Handoff 方向速查
 
-| From | Default To | Template Section |
+| 来自 | 默认交给 | 模板章节 |
 |------|-----------|-----------------|
 | PM | PO / Arch | PM → PO · PM → Arch |
 | PO | PM / Dev / Arch | PO → PM · PO → Dev · PO → Arch |

@@ -2,241 +2,240 @@
 name: tmux-cursor-agent
 category: autonomous-ai-agents
 tags: [tmux, cursor, agent, monitoring, automation]
-description: "Control and monitor Cursor AI agents through tmux — session lifecycle, state detection (EXECUTING/STOPPED), four-step messaging protocol, cancel operations, and monitoring daemon. Supports pane-level monitoring (--pane flag for session:window.pane)."
-version: 0.4.5
+description: "Cursor Agent over tmux：当用户要控制、监控或给 tmux 中的 Cursor AI Agent 发消息，判断 EXECUTING/STOPPED、取消执行、轮询 daemon、处理 CURSOR-STOPPED 通知或 pane 级监控时触发；用于状态检测和四步消息协议。"
+version: 0.4.7
 author: Hermes Agent
 license: MIT
 metadata:
   hermes:
     tags: [tmux, cursor, agent, monitoring, automation]
-    related_skills: [ai-coding-agents, cursor-agent-orchestration]
+    related_skills: [ai-coding-agents, tmux-pane-workspace, doc-driven-multi-agent]
 ---
 
 # tmux-cursor-agent
 
-> Control and monitor Cursor AI agents through tmux — detect states, send messages, cancel execution.
+> 通过 tmux 控制和监控 Cursor AI agent — 检测状态、发送消息、取消执行。
 
-> **Terminology alias:** This user calls tmux「多窗口终端」(multi-window terminal). When they say「多窗口终端」「终端管理器」or「终端分屏」, treat it as equivalent to tmux. This alias applies throughout: "start a 多窗口终端 session", "capture pane from 多窗口终端", etc.
+> **术语别名：** 此用户将 tmux 称为「多窗口终端」(multi-window terminal)。当用户说「多窗口终端」「终端管理器」或「终端分屏」时，将其视为 tmux 的等效说法。此别名适用于全文："启动一个 多窗口终端 会话"、"从 多窗口终端 捕获面板内容"等。
 
-Published at: `c456-com/skills` — <https://github.com/c456-com/skills/tree/main/tmux-cursor-agent>
-Install via: `npx skills add c456-com/skills --skill tmux-cursor-agent -y`
-Local clone: `git clone git@github.com:c456-com/skills.git /path/to/skills`
+发布于：`c456-com/skills` — <https://github.com/c456-com/skills/tree/main/tmux-cursor-agent>
+安装方式：`npx skills add c456-com/skills --skill tmux-cursor-agent -y`
+本地克隆：`git clone git@github.com:c456-com/skills.git /path/to/skills`
 
-## Quick Reference
+## 快速参考
 
-### Start cursor-agent in tmux
+### 在 tmux 中启动 cursor-agent
 
 ```bash
 tmux new-session -d -s cursor -n agent -c /path/to/project
 tmux send-keys -t cursor:0 "cursor-agent --model auto agent" Enter
 sleep 4
-# Verify it's running (pane_current_command shows "node" not "cursor-agent")
+# 验证是否正在运行（pane_current_command 显示 "node" 而不是 "cursor-agent"）
 tmux list-windows -t cursor -F '#{window_index}: #{window_name} - #{pane_current_command}'
-# Expected: pane shows "node" (the Node.js runtime), NOT "zsh" or "bash"
+# 预期：面板显示 "node"（Node.js 运行时），而不是 "zsh" 或 "bash"
 ```
 
-### First-Time Setup: Login & Workspace Trust
+### 首次设置：登录与工作区信任
 
-On first start (or after clearing auth), cursor-agent prompts for browser-based OAuth login:
+首次启动（或清除认证后），cursor-agent 会提示进行基于浏览器的 OAuth 登录：
 
 ```bash
-# Start agent → it shows a login link
+# 启动 agent → 它会显示一个登录链接
 tmux send-keys -t cursor:0 "cursor-agent --model auto agent" Enter
 sleep 8
 
-# Check if login is needed
+# 检查是否需要登录
 tmux capture-pane -t cursor:0 -p -S -5
-# → Shows: "Press any key to log in..." or a loginDeepControl URL
+# → 显示："Press any key to log in..." 或 loginDeepControl URL
 
-# Press any key to trigger browser login
+# 按任意键触发浏览器登录
 tmux send-keys -t cursor:0 Enter
 
-# On macOS, the browser opens automatically. On headless:
-# Copy the login URL and open it in a browser on another machine.
-sleep 30  # Wait for browser login to complete
+# 在 macOS 上，浏览器会自动打开。在无头环境中：
+# 复制登录 URL 并在另一台机器的浏览器中打开。
+sleep 30  # 等待浏览器登录完成
 
-# After login: "⚠ Workspace Trust Required" prompt appears
-# Press 'a' to trust the workspace, then wait for ready
+# 登录后：出现 "⚠ Workspace Trust Required" 提示
+# 按 'a' 信任工作区，然后等待就绪
 tmux send-keys -t cursor:0 a
 sleep 10
 
-# Verify ready: should show "→ Plan, search, build anything"
+# 验证就绪：应显示 "→ Plan, search, build anything"
 tmux capture-pane -t cursor:0 -p -S -3
 ```
 
-**Multiple instances with same account share credentials** — once one session logs in, others reuse the token automatically. To use a different account, clear the cached token first (location varies by platform; check `~/.local/share/cursor-agent/`).
+**同一账户的多个实例共享凭据** — 一旦一个会话登录，其他会话会自动复用令牌。要使用不同的账户，请先清除缓存的令牌（位置因平台而异；检查 `~/.local/share/cursor-agent/`）。
 
-### Check State
+### 检查状态
 
 ```bash
 git clone https://github.com/c456-com/skills.git /tmp/tmux-cursor-agent
 cd /tmp/tmux-cursor-agent/tmux-cursor-agent
 python3 -m core.watch cursor 0 --debug
-# → state=executing (agent working) or state=stopped (idle)
+# → state=executing（agent 工作中）或 state=stopped（空闲）
 ```
 
-Or from a local clone:
+或从本地克隆运行：
 
 ```bash
 cd /path/to/c456-com/skills/tmux-cursor-agent
 python3 -m core.watch cursor 0 --debug
 ```
 
-### Send Message (Four-Step Protocol)
+### 发送消息（四步协议）
 
-Send messages to cursor-agent using the four-step protocol. **Never** combine text and Enter in one command.
+使用四步协议向 cursor-agent 发送消息。**永远不要**将文本和 Enter 合并在一个命令中。
 
 ```bash
-# Step 0: Focus the target pane — ALWAYS zoom before talking
-#    Makes pane full-screen for readability. Leave zoomed to watch response.
-#    Indices stay unchanged, other panes are temporarily hidden.
-#    CORRECT SYNTAX: select-pane first, then zoom in one command chain.
-#    resize-pane -Z -t (without select-pane first) FAILS silently when
-#    another pane was previously zoomed.
+# 步骤 0：聚焦目标面板 — 发送消息前始终先放大
+#    将面板全屏化以便阅读。保持放大状态以观察响应。
+#    索引保持不变，其他面板暂时隐藏。
+#    正确语法：先 select-pane，然后在同一命令链中放大。
+#    不先 select-pane 直接 resize-pane -Z -t（当另一个面板之前被放大时）会静默失败。
 tmux select-pane -t session:window.pane \; resize-pane -Z
-# Step 1: Pre-send check — ALWAYS verify agent state before ANY message
+# 步骤 1：发送前检查 — 任何消息前始终验证 agent 状态
 tmux capture-pane -t cursor:0 -p -S -15
 
-# Check current state and decide if you can send:
+# 检查当前状态并判断是否可以发送：
 #
-# 1. WORKING (spinner / "Working" / "Running" / "Editing" / "Grepping" / "Reading"):
-#    → DO NOT interrupt. Agent is actively processing. Wait for it to finish.
-#      The message will either pile up or confuse the agent's context.
+# 1. 工作中（spinner / "Working" / "Running" / "Editing" / "Grepping" / "Reading"）：
+#    → 不要打断。Agent 正在活跃处理中。等待它完成。
+#      消息要么会堆积，要么会扰乱 agent 的上下文。
 #
-#      EXCEPTION: If the user explicitly says to send NOW (urgent correction/supplement),
-#      send with double-Enter to force-submit past the follow-ups queue:
+#      例外：如果用户明确要求立即发送（紧急纠正/补充），
+#      使用双 Enter 强制提交跳过后续队列：
 #        send-keys "text" → sleep 1 → send-keys Enter → sleep 0.5 → send-keys Enter
-#      Single Enter during Working lands text in follow-ups not active conversation.
+#      在 Working 状态下单个 Enter 会让文本进入后续队列而非活跃对话。
 #
-# 2. WAITING ("Waiting Nm for shell" / "Monitoring background task"):
-#    → Message goes to follow-ups queue (`┌─ follow-ups ───┐`).
-#      Still sendable, but need one extra Enter to submit from queue.
-#      Agent will process it after current shell completes.
+# 2. 等待中（"Waiting Nm for shell" / "Monitoring background task"）：
+#    → 消息会进入后续队列（`┌─ follow-ups ───┐`）。
+#      仍然可以发送，但需要额外按一次 Enter 才能从队列提交。
+#      Agent 会在当前 shell 命令完成后处理它。
 #
-# 3. IDLE ("→ Add a follow-up" / "Auto" / no spinner):
-#    → Clean to send. Proceed.
+# 3. 空闲（"→ Add a follow-up" / "Auto" / 无 spinner）：
+#    → 干净状态，可以发送。继续。
 #
-# 4. Input residual ("→ YOUR_TEXT" visible):
-#    → Clear first (see cleanup below). Never type on top of stale text.
+# 4. 输入残留（"→ YOUR_TEXT" 可见）：
+#    → 先清除（见下方清理方法）。不要在过期文本上继续输入。
 ```
 
-**Input box states:**
+**输入框状态：**
 
-| Bottom bar shows | Meaning | Action |
-|-----------------|---------|--------|
-| `→ Add a follow-up` (or Plan placeholder) | ✅ Clean, ready to send | Proceed with step 1 |
-| `→ YOUR_TEXT` (your previous text still there) | ❌ Unsubmitted residual | Clear first (see below) |
-| `┌─ follow-ups ───┐` + `○ … enter send now` | ❌ Queue mode | Press Enter once to submit as active message |
-| Multi-line text not in conversation history | ❌ Residual | Clear first |
+| 底栏显示 | 含义 | 操作 |
+|---------|------|------|
+| `→ Add a follow-up`（或 Plan 占位符） | ✅ 干净，可发送 | 继续执行步骤 1 |
+| `→ YOUR_TEXT`（你之前的文本还在） | ❌ 未提交的残留 | 先清除（见下方） |
+| `┌─ follow-ups ───┐` + `○ … enter send now` | ❌ 队列模式 | 按一次 Enter 将其提交为活跃消息 |
+| 多行文本不在对话历史中 | ❌ 残留 | 先清除 |
 
-**Clear residual (before sending):**
+**清除残留（发送前）：**
 
 ```bash
-# Preferred: Escape to clear input
+# 推荐：按 Escape 清除输入
 tmux send-keys -t cursor:0 Escape
 sleep 1
-tmux capture-pane -t cursor:0 -p -S -10   # Verify only placeholder remains
+tmux capture-pane -t cursor:0 -p -S -10   # 验证只剩下占位符
 
-# If Escape fails: submit the stale text by pressing Enter,
-# wait for agent to process it, then send the real message.
-# Do NOT type new text on top of stale text.
+# 如果 Escape 失效：按 Enter 提交过期文本，
+# 等待 agent 处理完毕，然后发送真正的消息。
+# 不要在过期文本上继续输入新文本。
 ```
 
-**Do NOT use Ctrl+C to clear input.** Ctrl+C triggers "Press Ctrl+C again to exit" state where Enter means "don't exit" not "submit".
+**不要使用 Ctrl+C 来清除输入。** Ctrl+C 会触发 "Press Ctrl+C again to exit" 状态，此时 Enter 的含义是"不要退出"而非"提交"。
 
-> For a complete reference of all messaging gotchas (agent states, input box states, follow-up queue, shell characters), see [`references/messaging-pitfalls.md`](references/messaging-pitfalls.md).
+> 有关所有消息传递陷阱的完整参考（agent 状态、输入框状态、后续队列、shell 字符），请参见 [`references/messaging-pitfalls.md`](references/messaging-pitfalls.md)。
 
 ```bash
-# Step 1: Type message content (NO Enter!)
+# 步骤 1：输入消息内容（不要按 Enter！）
 tmux send-keys -t cursor:0 "Your message here"
-# Step 2: Wait
+# 步骤 2：等待
 sleep 2
-# Step 3: Press Enter ONCE
+# 步骤 3：按一次 Enter
 tmux send-keys -t cursor:0 Enter
-# Step 4: Verify delivery
+# 步骤 4：验证投递
 sleep 3
 tmux capture-pane -t cursor:0 -p -S -15
 ```
 
-**Verify delivery (Step 4):**
+**验证投递（步骤 4）：**
 
-| You see | Meaning | Next step |
-|---------|---------|-----------|
-| Text in conversation history + Working/spinner | ✅ Delivered, executing | Done |
-| Text in conversation history, no spinner yet | ✅ Delivered, waiting | Wait a few seconds |
-| `→ YOUR_TEXT` at input bar | ❌ Stuck in input | sleep 2 + press Enter once, re-verify |
-| `○ … enter send now` follow-ups box | ❌ Queued, not active | Press Enter once in empty input to promote |
-| Text not visible in pane at all | ❌ Not delivered | Check session:window, retry four-step |
-| `Press Ctrl+C again to exit` | ❌ Accidental C-c | Press Enter once to recover, then retry |
+| 你看到的 | 含义 | 下一步 |
+|---------|------|--------|
+| 文本出现在对话历史中 + Working/spinner | ✅ 已投递，执行中 | 完成 |
+| 文本出现在对话历史中，尚无 spinner | ✅ 已投递，等待中 | 等待几秒 |
+| 输入栏显示 `→ YOUR_TEXT` | ❌ 卡在输入框中 | sleep 2 + 按一次 Enter，重新验证 |
+| `○ … enter send now` 后续框 | ❌ 在队列中，非活跃 | 在空输入中按一次 Enter 将其提升 |
+| 文本在面板中完全不可见 | ❌ 未投递 | 检查 session:window，重试四步协议 |
+| `Press Ctrl+C again to exit` | ❌ 误按 C-c | 按一次 Enter 恢复，然后重试 |
 
-Do NOT declare "message sent" without Step 4 verification.
+不要在未执行步骤 4 验证的情况下声明"消息已发送"。
 
 ```bash
-# No unzoom needed — stay zoomed to watch the agent's response.
-# Unzoom only when you need to see or talk to another pane.
+# 无需取消放大 — 保持放大状态以观察 agent 的响应。
+# 只有在需要查看或与另一个面板交互时才取消放大。
 ```
 
-**⛔ Most common mistake:** Forgetting Step 0 (zoom). Without zoom you cannot read the agent output clearly. Stay zoomed — the other panes are temporarily hidden but the agent you're talking to is what matters right now. Unzoom only when you need to see or talk to another pane.
+**⛔ 最常见的错误：** 忘记步骤 0（放大）。没有放大你无法清楚地阅读 agent 的输出。保持放大 — 其他面板暂时隐藏，但你现在正在对话的 agent 才是最重要的。只有在需要查看或与另一个面板交互时才取消放大。
 
-#### Common messaging pitfalls
+#### 常见消息传递陷阱
 
-| Pitfall | Symptom | Fix |
-|---------|---------|-----|
-| Text + Enter in one command | Enter swallowed, text stuck in input | Always separate (sleep 2 between) |
-| Sending while agent is **Waiting** for shell | Text enters input buffer, never reaches agent | Ctrl+C to cancel shell → Enter to recover → Escape to clear → re-send |
-| Sending while agent is **Running** a foreground command | Text goes to follow-ups queue, not processed immediately | Press Enter once in empty input to promote to active message |
-| Shell special characters (`<xxx>`, `` ` ``, `$()`, `>`, `\|`) | Shell interprets as redirect/command substitution, agent gets garbage or error | Replace `<xxx>` with `[xxx]`, remove backticks, avoid `$()` |
-| Silent submission (text in history but agent stays idle) | Compass suggestions or sidebar intercept | Press Enter once more (no new text) to trigger execution |
-| Sending multiple messages rapidly | Second+ messages become follow-ups, never seen by agent | Send everything in ONE message, do not split |
-| Sending shell commands (echo/cat) instead of plain text | Executes in shell behind cursor-agent, never reaches conversation | Use plain text only (see `references/messaging.md` Anti-patterns)
+| 陷阱 | 症状 | 修复方法 |
+|------|------|----------|
+| 文本 + Enter 在一个命令中 | Enter 被吞掉，文本卡在输入框中 | 始终分开执行（中间 sleep 2） |
+| 在 agent **等待** shell 时发送 | 文本进入输入缓冲区，永远到不了 agent | Ctrl+C 取消 shell → Enter 恢复 → Escape 清除 → 重新发送 |
+| 在 agent **运行**前台命令时发送 | 文本进入后续队列，不会立即处理 | 在空输入中按一次 Enter 将其提升为活跃消息 |
+| Shell 特殊字符（`<xxx>`、`` ` ``、`$()`、`>`、`\|`） | Shell 解释为重定向/命令替换，agent 收到乱码或错误 | 用 `[xxx]` 替换 `<xxx>`，移除反引号，避免 `$()` |
+| 静默提交（文本在历史中但 agent 保持空闲） | Compass 建议或侧栏拦截 | 再按一次 Enter（不输入新文本）以触发执行 |
+| 快速连续发送多条消息 | 第 2+ 条消息变为后续消息，agent 永远看不到 | 将所有内容合并在一条消息中发送，不要拆分 |
+| 发送 shell 命令（echo/cat）而非纯文本 | 在 cursor-agent 后面的 shell 中执行，永远到不了对话 | 仅使用纯文本（见 `references/messaging.md` 反模式部分） |
 
-### Cancel
+### 取消
 
 ```bash
-tmux send-keys -t cursor:0 C-c      # Cancel execution
-tmux send-keys -t cursor:0 Escape   # Clear unsubmitted input
+tmux send-keys -t cursor:0 C-c      # 取消执行
+tmux send-keys -t cursor:0 Escape   # 清除未提交的输入
 ```
 
-### Graceful Shutdown
+### 优雅关闭
 
-Use `/exit` to gracefully shut down cursor-agent (preserves session state for resume). Do NOT kill the process or use C-c alone.
+使用 `/exit` 优雅地关闭 cursor-agent（保留会话状态以便恢复）。不要终止进程或单独使用 C-c。
 
 ```bash
-# Type /exit and press Enter (watch for autocomplete)
+# 输入 /exit 并按 Enter（注意自动补全菜单）
 tmux send-keys -t cursor:0 "/exit" Enter
 sleep 3
 
-# If /exit showed an autocomplete menu (common), just press Enter again
-# to confirm the selected action
+# 如果 /exit 显示了自动补全菜单（常见），直接再按一次 Enter
+# 确认选择的操作
 tmux send-keys -t cursor:0 Enter
 sleep 2
 
-# Verify back at shell prompt
+# 验证已回到 shell 提示符
 tmux capture-pane -t cursor:0 -p -S -2
-# → Should show shell prompt (zsh/bash), not cursor-agent interface
+# → 应显示 shell 提示符（zsh/bash），而非 cursor-agent 界面
 ```
 
-### Monitor with Daemon
+### 使用守护进程监控
 
-Register sessions and start the monitoring daemon for automatic CURSOR-STOPPED notifications.
+注册会话并启动监控守护进程，以自动接收 CURSOR-STOPPED 通知。
 
-The daemon supports two modes of pane targeting:
+守护进程支持两种面板定位模式：
 
-| Mode | Example | When to Use |
-|------|---------|-------------|
-| **Window-level** (default) | `session 0` → `session:0` | One agent per window (team work mode) |
-| **Pane-level** | `session 0 --pane 3` → `session:0.3` | Multiple agents per window (conference mode) |
+| 模式 | 示例 | 使用场景 |
+|------|------|----------|
+| **窗口级**（默认） | `session 0` → `session:0` | 每个窗口一个 agent（团队工作模式） |
+| **面板级** | `session 0 --pane 3` → `session:0.3` | 每个窗口多个 agent（会议模式） |
 
-> **Pane-level layout script:** For dynamic multi-pane layout management (cols/grid/focus/zoom), see the `cursor-agent-orchestration` skill's `templates/roundtable-layout.sh`.
+> **面板级布局脚本：** 关于动态多面板布局管理（cols/grid/focus/zoom），参见 `tmux-pane-workspace` 技能的 `scripts/layout.sh`。
 
-#### Window-level (default, one agent per window)
+#### 窗口级（默认，每个窗口一个 agent）
 
 ```bash
 cd /path/to/c456-com/skills/tmux-cursor-agent
 python3 -m core.monitor add --group my-group cursor-dev 0 --label "Dev"
 ```
 
-#### Pane-level (multiple agents in one window)
+#### 面板级（一个窗口中多个 agent）
 
 ```bash
 cd /path/to/c456-com/skills/tmux-cursor-agent
@@ -246,47 +245,47 @@ python3 -m core.monitor add --group summit c456-summit 0 --pane 2 --label "Dev"
 python3 -m core.monitor add --group summit c456-summit 0 --pane 3 --label "Analyst"
 ```
 
-> **⚠️ CRITICAL: Verify role labels before registering.** Do NOT trust manually-set pane titles or initial assumptions. Cursor-agent dynamically updates pane titles after initialization, so early labels are often wrong. Before registering, ask EVERY pane to self-identify:
-> 1. Send `你是谁？请用一句话介绍你的角色职责` to each pane (four-step protocol)
-> 2. Wait for responses, read the actual role from each pane's reply
-> 3. Only then register with the verified labels
+> **⚠️ 关键：注册前必须验证角色标签。** 不要信任手动设置的面板标题或初始假设。Cursor-agent 在初始化后会动态更新面板标题，因此早期标签通常是错误的。在注册前，请向每个面板询问其身份：
+> 1. 向每个面板发送 `你是谁？请用一句话介绍你的角色职责`（四步协议）
+> 2. 等待回复，从每个面板的回答中读取实际角色
+> 3. 然后用已验证的标签注册
 >
-> Also scan ALL panes first — don't assume you know the count:
+> 同时先扫描所有面板 — 不要假设你知道数量：
 > ```bash
 > tmux list-panes -t session:0 -F '#{pane_index}: #{pane_title}'
 > ```
-> A window may have more panes than you remember (e.g., 10 instead of 6).
+> 窗口中的面板数量可能比你记忆中的多（例如 10 个而不是 6 个）。
 
-#### Multi-window monitoring (same group)
+#### 多窗口监控（同一组）
 
-One monitor group can track panes across multiple windows. Register panes from different windows under the same group:
+一个监控组可以跟踪跨多个窗口的面板。将来自不同窗口的面板注册到同一组中：
 
 ```bash
-# Window 0 panes
+# 窗口 0 的面板
 python3 -m core.monitor add --group summit c456-summit 0 --pane 0 --label "PM"
 python3 -m core.monitor add --group summit c456-summit 0 --pane 1 --label "ARCH"
 
-# Window 1 panes (same group)
+# 窗口 1 的面板（同一组）
 python3 -m core.monitor add --group summit c456-summit 1 --pane 0 --label "FEASIBILITY-A"
 python3 -m core.monitor add --group summit c456-summit 1 --pane 1 --label "FEASIBILITY-B"
 ```
 
-The daemon emits `CURSOR-STOPPED:group:session:window:pane:reason` for pane-level, identifying which window and pane changed state.
+守护进程针对面板级会发出 `CURSOR-STOPPED:group:session:window:pane:reason`，标识哪个窗口和面板发生了状态变化。
 
-Each pane is tracked independently with its own state file (`cursor-watch-{session}-{window}-{pane}.state`).
-CURSOR-STOPPED notifications include the pane index:
-- Window-level: `CURSOR-STOPPED:group:session:window:reason`
-- Pane-level: `CURSOR-STOPPED:group:session:window:pane:reason`
+每个面板使用自己的状态文件独立跟踪（`cursor-watch-{session}-{window}-{pane}.state`）。
+CURSOR-STOPPED 通知包含面板索引：
+- 窗口级：`CURSOR-STOPPED:group:session:window:reason`
+- 面板级：`CURSOR-STOPPED:group:session:window:pane:reason`
 
-#### Manual pane status check
+#### 手动面板状态检查
 
 ```bash
 cd /path/to/c456-com/skills/tmux-cursor-agent
 python3 -m core.watch c456-summit 0 --pane 0 --debug
-# → state=executing or state=stopped
+# → state=executing 或 state=stopped
 ```
 
-#### Starting the daemon
+#### 启动守护进程
 
 > **⚠️ 强制前置：执行以下任何命令前，必须先加载本技能**
 >
@@ -330,168 +329,173 @@ python3 -m core.watch c456-summit 0 --pane 0 --debug
 > )
 > ```
 
-## Scope Discipline
+## 职责边界
 
-**When using tmux + cursor-agent, stay focused on:**
+**使用 tmux + cursor-agent 时，应专注于：**
 
-| ✅ In Scope | ❌ Out of Scope |
-|------------|----------------|
-| Starting/stopping agent in tmux | Git worktree management |
-| Detecting EXECUTING/STOPPED states per pane | Team role workflows (PM/Arch/Dev) |
-| Window-level and pane-level monitoring | Project-specific code strategies |
-| Sending messages (four-step protocol) | CI/CD pipeline setup |
-| Cancelling execution/input | Multi-agent task orchestration |
-| Monitoring daemon for state changes | Any task the agent itself should do |
-| Capturing pane content | |
-| Multi-pane layout setup (3×2, 2×2, custom) | |
+| ✅ 职责范围内 | ❌ 职责范围外 |
+|--------------|--------------|
+| 在 tmux 中启动/停止 agent | Git worktree 管理 |
+| 检测每个面板的 EXECUTING/STOPPED 状态 | 团队角色工作流（PM/Arch/Dev） |
+| 窗口级和面板级监控 | 项目特定的代码策略 |
+| 发送消息（四步协议） | CI/CD 流水线设置 |
+| 取消执行/清除输入 | 多 agent 任务编排 |
+| 监控守护进程的状态变化 | 任何应由 agent 自身完成的任务 |
+| 捕获面板内容 | |
+| 多面板布局设置（3×2、2×2、自定义） | |
 
-## Pane Title State Detection
+## 面板标题状态检测
 
-cursor-agent automatically updates the tmux pane title with its status as a suffix, providing a lightweight state detection method that doesn't require capturing pane content.
+cursor-agent 会自动将 tmux 面板标题更新为带状态后缀的形式，提供一种无需捕获面板内容的轻量级状态检测方法。
 
-### Setting Custom Pane Titles (via `/rename`)
+### 设置自定义面板标题（通过 `/rename`）
 
-To prevent cursor-agent from overwriting your custom pane title with an English role name:
+为防止 cursor-agent 用英文角色名覆盖你的自定义面板标题：
 
-1. Set the tmux pane title first:
+1. 先设置 tmux 面板标题：
    ```bash
    tmux select-pane -t session:0.0 -T "PM 产品经理"
    ```
 
-2. Ask cursor-agent to claim the name via `/rename` (four-step protocol):
+2. 通过 `/rename` 让 cursor-agent 认领该名称（四步协议）：
    ```bash
    tmux send-keys -t session:0.0 "/rename PM 产品经理"
    sleep 2
    tmux send-keys -t session:0.0 Enter
    ```
 
-After `/rename`, cursor-agent treats the custom name as its own display name and only appends the status suffix (` - ✅ Ready` / ` - ⏳ Working`), preserving your label:
-- Idle: `PM 产品经理 - ✅ Ready`
-- Working: `PM 产品经理 - ⏳ Working`
+`/rename` 之后，cursor-agent 会将自定义名称作为自己的显示名称，只追加状态后缀（` - ✅ Ready` / ` - ⏳ Working`），保留你的标签：
+- 空闲：`PM 产品经理 - ✅ Ready`
+- 工作中：`PM 产品经理 - ⏳ Working`
 
-**Do NOT** rely on `tmux select-pane -T` alone — cursor-agent overrides manually-set titles with default English role names on its next state change.
+**不要**仅依赖 `tmux select-pane -T` — cursor-agent 在下一次状态变化时会用手动设置的标题覆盖为默认英文角色名。
 
-| Title suffix | State | Meaning |
-|-------------|-------|---------|
-| `PM 产品经理` (no suffix, custom label) | Idle | Pane title was manually set — still works normally |
-| `Pricing Analyst - ✅ Ready` | STOPPED | Agent is idle, waiting for input |
-| `Pricing Analyst - ⏳ Working ···` | EXECUTING | Agent is actively processing |
+| 标题后缀 | 状态 | 含义 |
+|---------|------|------|
+| `PM 产品经理`（无后缀，自定义标签） | 空闲 | 面板标题是手动设置的 — 仍然正常工作 |
+| `Pricing Analyst - ✅ Ready` | STOPPED | Agent 空闲，等待输入 |
+| `Pricing Analyst - ⏳ Working ···` | EXECUTING | Agent 正在活跃处理 |
 
-To check state by title suffix (faster than `capture-pane`):
+通过标题后缀检查状态（比 `capture-pane` 更快）：
 
 ```bash
 title=$(tmux display-message -p -t session:0.4 '#{pane_title}')
 echo "$title" | grep -qE "⏳|[⠘⠠⠙⠸⠴⠦]" && echo "EXECUTING" || echo "STOPPED"
 ```
 
-**Note:** Manually-set pane titles (e.g. via `select-pane -T "PM 产品经理"`) may be overridden by cursor-agent when its status changes. Re-apply custom titles after cursor-agent starts, or use the title suffix as a reliable alternative.
+**注意：** 手动设置的面板标题（如通过 `select-pane -T "PM 产品经理"`）可能会在 cursor-agent 状态变化时被覆盖。在 cursor-agent 启动后重新应用自定义标题，或使用标题后缀作为可靠的替代方案。
 
-### Cross-Platform State Detection
+### 跨平台状态检测
 
-Pane title suffixes (` - ✅ Ready` / ` - ⏳ Working`) work reliably on **macOS**. On **Linux**, cursor-agent keeps the title as `Cursor Agent` regardless of state — fall back to content scanning:
+面板标题后缀（` - ✅ Ready` / ` - ⏳ Working`）在 **macOS** 上可靠工作。在 **Linux** 上，cursor-agent 始终将标题保持为 `Cursor Agent`，与状态无关 — 需要回退到内容扫描：
 
 ```bash
 content=$(tmux capture-pane -t session:0.pane -p -S -5)
 echo "$content" | grep -qE "(Working|Reading|Thinking|Editing)" && echo "EXECUTING"
 ```
 
-The `layout.sh auto` command implements dual-mode (title-first, content-fallback).
+`layout.sh auto` 命令实现了双模式（标题优先，内容回退）。
 
-### Tmux Settings for Pane Titles
+### 面板标题的 tmux 设置
 
-For cursor-agent's title updates to stick:
+为使 cursor-agent 的标题更新生效：
 
 ```bash
-tmux set -t session:window automatic-rename off   # Prevent tmux overriding titles
-tmux set -g allow-rename on                        # Allow programs to set titles
-tmux set -t session pane-border-status top         # Show titles in pane borders
-tmux set -t session pane-border-format '#{pane_title}'  # Show pane title in border
+tmux set -t session:window automatic-rename off   # 防止 tmux 覆盖标题
+tmux set -g allow-rename on                        # 允许程序设置标题
+tmux set -t session pane-border-status top         # 在面板边框中显示标题
+tmux set -t session pane-border-format '#{pane_title}'  # 在边框中显示面板标题
 ```
 
-## Pitfalls
+## 陷阱
 
-1. **Wrong pane**: Always check `pane_current_command` is a Node process (shows `node`) before sending. Window names lie.
-2. **Enter swallowed**: Always separate text from Enter (sleep 2 between). Never `send-keys "text" Enter` as one shot.
-3. **No verify**: Always `capture-pane` after sending to confirm message is in conversation history, not stuck in input bar.
-4. **Sending during execution**: Check state first. If agent is EXECUTING, wait.
-5. **Placeholder ≠ idle**: `→ Add a follow-up` is an empty input box, not a task-complete signal.
-6. **Percentage ≠ progress**: `Auto · 84.8%` is context window usage, not task progress.
-7. **Selection menu**: Use arrow keys + Space, never send numbers directly.
-8. **Daemon without panes**: Verify `total > 0` after starting daemon, or it monitors nothing.
-9. **`/exit` autocomplete**: Typing `/exit` often shows an autocomplete menu. Always send Enter TWICE: once to select `/exit` from the menu, once to confirm. Check the pane afterwards — if still in cursor-agent UI, send another Enter.
-10. **`pane_current_command` shows `node` not `cursor-agent`**: cursor-agent runs on Node.js, so `pane_current_command` will be `node`, not `cursor-agent`. Use `capture-pane` content to verify agent is actually running.
-11. **Workspace trust blocks startup**: After OAuth login, cursor-agent shows a trust dialog requiring `a` key. Without it, the agent stays blocked and won't accept any input.
-12. **Multi-session auth sharing**: Starting a second cursor-agent in another tmux window reuses the first session's auth token automatically. To force a different account, clear cached credentials first.
-13. **Daemon rate limiting**: CURSOR-STOPPED notifications for the same window can be suppressed if multiple events fire within the 15-second watch interval (Hermes drops duplicates). Don't rely on catching every notification — use `process(action='poll')` or manual `capture-pane` for confirmation.
-14. **Register before daemon**: Always register windows (via `monitor add`) BEFORE starting the daemon. The daemon only monitors windows that are already registered when it starts.
-15. **"Exited" false positive for cursor-agent**: The daemon may report `state=exited` for cursor-agent sessions that are actually still running. This happens because cursor-agent runs on Node.js (process name `node`), and a temporary shell command can switch `pane_current_command` briefly. Verify with `capture-pane` before assuming the agent crashed.
-16. **Multi-pane monitoring**: When monitoring multiple panes within the same window (conference layout), use `--pane` flag: `monitor add --group g session window --pane N --label "Role"`. The watch script accesses panes as `session:window.pane` (e.g. `c456-summit:0.0`).
-17. **`--auto-layout` daemon flag**: Pass `--auto-layout` to `daemon` to auto-switch tmux layout based on which panes are working. Requires `layout.sh` in the project. See the `c456-ai-summit` skill for setup.
-18. **`automatic-rename off` required**: Without this, tmux overrides cursor-agent's pane title with the running command name. Set `tmux set -t window automatic-rename off` after creating each window.
-19. **Shell commands vs agent messages**: `tmux send-keys` with shell commands (echo/cat/heredoc) executes in the SHELL behind cursor-agent, never reaching the agent's conversation. Always use the four-step protocol with **plain text only** — no shell syntax, no file redirections. See `references/messaging.md` → Anti-pattern section for examples and recovery.
-20. **Don't trust initial pane labels**: When setting up pane-level monitoring for multi-agent windows, cursor-agent dynamically overrides manually-set pane titles after initialization. The title you see before agents start may differ from their actual role after they load. Always verify by asking each pane `你是谁？请用一句话介绍你的角色职责` (via four-step protocol), reading their self-identified role from the response, then registering with the verified label. Example: a pane initially labeled "PM" may actually be "Trend Researcher" after cursor-agent initializes.
-22. **Scan ALL panes first**: A window may have more panes than your initial setup script created (e.g., 10 instead of 6). Always run `tmux list-panes -t session:window -F '#{pane_index}: #{pane_title}'` before registration to discover every pane. Don't assume 0..N covers everything.
-23. **Daemon process accumulation**: Each `terminal(background=true)` start of the daemon creates a new process. Old daemons persist as orphan processes even after the background session is killed via Hermes. Accumulation of 5+ daemon processes is common after repeated restarts. Before restarting: (a) kill all daemon processes: `pkill -f "python3 -m core.monitor daemon"` (b) verify clean with `ps aux | grep core.monitor | grep -v grep` (c) only then start the new daemon. Using `execute_code` with explicit `kill -9 PID` for each old process is more reliable than shell-level `pkill` when running through Hermes background process manager.
-24. **Dirty input buffer blocks Four-Step Protocol**: After a failed broadcast (sending shell commands like `cat`/`echo` instead of agent messages), the pane's input buffer may contain stale shell text that prevents new messages from reaching the agent. The `→ Add a follow-up` idle indicator is visible, but `send-keys` keystrokes are consumed by the stale shell state rather than the agent's stdin. Recovery sequence: `tmux send-keys -t session:0.pane Escape` (cancel autocomplete), `sleep 1`, `tmux send-keys -t session:0.pane C-c` (interrupt stale process), `sleep 2`, `tmux send-keys -t session:0.pane C-u` (clear line), `tmux send-keys -t session:0.pane C-k` (clear to end), `sleep 1`, then verify with `capture-pane`. Only after `→ Add a follow-up` shows no stale content should you attempt the Four-Step Protocol again.
+1. **错误的面板**：发送前始终检查 `pane_current_command` 是否为 Node 进程（显示 `node`）。窗口名称不可靠。
+2. **Enter 被吞**：始终将文本与 Enter 分开（中间 sleep 2）。永远不要 `send-keys "text" Enter` 一次性执行。
+3. **未验证**：发送后始终 `capture-pane` 确认消息在对话历史中，而非卡在输入栏。
+4. **执行期间发送**：先检查状态。如果 agent 正在 EXECUTING，请等待。
+5. **占位符 ≠ 空闲**：`→ Add a follow-up` 是一个空的输入框，不是任务完成信号。
+6. **百分比 ≠ 进度**：`Auto · 84.8%` 是上下文窗口使用率，不是任务进度。
+7. **选择菜单**：使用方向键 + 空格，永远不要直接发送数字。
+8. **守护进程无面板**：启动守护进程后验证 `total > 0`，否则它什么都不会监控。
+9. **`/exit` 自动补全**：输入 `/exit` 通常会显示自动补全菜单。始终发送两次 Enter：一次从菜单选择 `/exit`，一次确认。之后检查面板 — 如果仍在 cursor-agent UI 中，再发送一次 Enter。
+10. **`pane_current_command` 显示 `node` 而非 `cursor-agent`**：cursor-agent 运行在 Node.js 上，所以 `pane_current_command` 会是 `node`，而非 `cursor-agent`。使用 `capture-pane` 内容验证 agent 实际正在运行。
+11. **工作区信任阻止启动**：OAuth 登录后，cursor-agent 会显示一个需要按 `a` 键的信任对话框。没有它，agent 保持阻塞状态，不会接受任何输入。
+12. **多会话认证共享**：在另一个 tmux 窗口中启动第二个 cursor-agent 会自动复用第一个会话的认证令牌。要强制使用不同账户，请先清除缓存的凭据。
+13. **守护进程速率限制**：如果在 15 秒的监控间隔内触发多个事件，同一窗口的 CURSOR-STOPPED 通知可能会被抑制（Hermes 会丢弃重复项）。不要依赖捕获每个通知 — 使用 `process(action='poll')` 或手动 `capture-pane` 进行确认。
+14. **先注册再启动守护进程**：始终在启动守护进程之前注册窗口（通过 `monitor add`）。守护进程只监控启动时已注册的窗口。
+15. **cursor-agent 的 "Exited" 误报**：守护进程可能会报告仍在运行的 cursor-agent 会话的 `state=exited`。这是因为 cursor-agent 运行在 Node.js 上（进程名 `node`），临时 shell 命令可以短暂切换 `pane_current_command`。在假设 agent 崩溃之前，请用 `capture-pane` 进行验证。
+16. **多面板监控**：在监控同一窗口内的多个面板时（会议布局），使用 `--pane` 参数：`monitor add --group g session window --pane N --label "Role"`。监控脚本通过 `session:window.pane`（如 `c456-summit:0.0`）访问面板。
+17. **`--auto-layout` 守护进程参数**：向 `daemon` 传递 `--auto-layout` 以根据哪些面板在工作中自动切换 tmux 布局。需要项目中有 `layout.sh`。参见 `tmux-pane-workspace` 技能了解布局脚本设置。
+18. **需要 `automatic-rename off`**：没有此设置，tmux 会用运行中的命令名覆盖 cursor-agent 的面板标题。在创建每个窗口后设置 `tmux set -t window automatic-rename off`。
+19. **Shell 命令 vs agent 消息**：使用 shell 命令（echo/cat/heredoc）的 `tmux send-keys` 会在 cursor-agent 后面的 shell 中执行，永远到不了 agent 的对话。始终使用四步协议且**仅使用纯文本** — 不使用 shell 语法，不使用文件重定向。参见 `references/messaging.md` → 反模式部分了解示例和恢复方法。
+20. **不要信任初始面板标签**：在为多 agent 窗口设置面板级监控时，cursor-agent 在初始化后会动态覆盖手动设置的面板标题。agent 启动前你看到的标题可能与它们加载后的实际角色不同。始终通过向每个面板询问 `你是谁？请用一句话介绍你的角色职责`（通过四步协议）来验证，从回复中读取其自识别的角色，然后使用已验证的标签注册。例如：最初标记为 "PM" 的面板在 cursor-agent 初始化后实际可能是 "Trend Researcher"。
+22. **先扫描所有面板**：窗口中的面板数量可能比你最初的设置脚本创建的更多（例如 10 个而不是 6 个）。注册前始终运行 `tmux list-panes -t session:window -F '#{pane_index}: #{pane_title}'` 来发现每个面板。不要假设 0..N 覆盖了所有面板。
+23. **守护进程进程堆积**：每次通过 `terminal(background=true)` 启动守护进程都会创建一个新进程。旧守护进程在后台会话通过 Hermes 终止后仍作为孤儿进程持续存在。反复重启后堆积 5+ 个守护进程是常见情况。重启前：(a) 杀死所有守护进程：`pkill -f "python3 -m core.monitor daemon"` (b) 验证清理：`ps aux | grep core.monitor | grep -v grep` (c) 然后才启动新守护进程。当通过 Hermes 后台进程管理器运行时，使用 `execute_code` 为每个旧进程显式 `kill -9 PID` 比使用 shell 级 `pkill` 更可靠。
+24. **脏输入缓冲区阻塞四步协议**：失败的广播后（发送 shell 命令如 `cat`/`echo` 而非 agent 消息），面板的输入缓冲区可能包含过期的 shell 文本，阻止新消息到达 agent。`→ Add a follow-up` 空闲指示器可见，但 `send-keys` 按键被过期的 shell 状态消费而非 agent 的 stdin。恢复序列：`tmux send-keys -t session:0.pane Escape`（取消自动补全），`sleep 1`，`tmux send-keys -t session:0.pane C-c`（中断过期进程），`sleep 2`，`tmux send-keys -t session:0.pane C-u`（清除行），`tmux send-keys -t session:0.pane C-k`（清除到行尾），`sleep 1`，然后用 `capture-pane` 验证。只有当 `→ Add a follow-up` 不再显示过期内容时，才应重新尝试四步协议。
 
-25. **Daemon without `watch_patterns` = no CURSOR-STOPPED notifications**: If the daemon is started via `terminal(background=true)` WITHOUT `watch_patterns=["CURSOR-STOPPED:"]`, the state-change output goes to the daemon's stdout which Hermes captures as plain process output — it is NEVER forwarded to the conversation. You can `process(action='poll')` to see current states, but you will never learn WHEN a pane transitioned from executing→stopped. Always pair `background=true` with `watch_patterns=["CURSOR-STOPPED:"]`. Note: `notify_on_complete=true` fires once when the daemon exits (not useful for a long-lived daemon); `watch_patterns` fires on every matching line. They serve different purposes and cannot substitute for each other.
+25. **没有 `watch_patterns` 的守护进程 = 无 CURSOR-STOPPED 通知**：如果守护进程通过 `terminal(background=true)` 启动但没有 `watch_patterns=["CURSOR-STOPPED:"]`，状态变化的输出会进入守护进程的 stdout，Hermes 会将其捕获为普通进程输出 — 它**永远不会**转发到对话中。你可以 `process(action='poll')` 查看当前状态，但永远无法知道面板何时从 executing→stopped 转变。始终将 `background=true` 与 `watch_patterns=["CURSOR-STOPPED:"]` 搭配使用。注意：`notify_on_complete=true` 在守护进程退出时触发一次（对长时间运行的守护进程无用）；`watch_patterns` 在每行匹配时触发。它们用途不同，不能互相替代。
 
-26. **Agent stuck Waiting for shell due to pipe buffer deadlock**: A cursor-agent may show Waiting Ns for shell indefinitely (0% CPU, no progress) when its shell command uses a pipe with tee and tail (e.g. make ci-quick 2>&1 | tee log | tail -25). The OS pipe buffer (4KB-64KB) blocks tee from writing until tail reads, and tail does not read until enough input arrives or the pipe closes, creating a circular deadlock. Recovery: (a) find the stuck PID with ps aux, (b) kill it, (c) the agent resumes. Retry without the pipe pipeline (just make ci-quick 2>&1) or use stdbuf -oL.
+26. **Agent 因管道缓冲区死锁卡在等待 shell**：当 cursor-agent 的 shell 命令使用 tee 和 tail 的管道时（如 `make ci-quick 2>&1 | tee log | tail -25`），可能会无限期显示 Waiting Ns for shell（0% CPU，无进展）。操作系统管道缓冲区（4KB-64KB）阻塞 tee 写入直到 tail 读取，而 tail 不读取直到有足够输入或管道关闭，形成循环死锁。恢复方法：(a) 用 ps aux 找到卡住的 PID，(b) 杀死它，(c) agent 恢复。重试时不使用管道（仅 `make ci-quick 2>&1`）或使用 stdbuf -oL。
 
-27. **Daemon lost after Hermes session restart**: When the Hermes session restarts (connection lost, /new, or process restart), daemon processes stop. tmux sessions and cursor-agents persist, but no CURSOR-STOPPED notifications fire until the daemon is restarted. Recovery: (a) verify group exists with python3 -m core.monitor list --group YOUR_GROUP, (b) restart daemon via terminal(background=true, watch_patterns=[CURSOR-STOPPED:]). The group state file (~/.hermes/logs/cursor-monitors/) survives across Hermes restarts.
+27. **Hermes 会话重启后守护进程丢失**：当 Hermes 会话重启（连接丢失、/new 或进程重启）时，守护进程停止。tmux 会话和 cursor-agent 持续存在，但不会触发 CURSOR-STOPPED 通知，直到守护进程重新启动。恢复方法：(a) 验证组存在：`python3 -m core.monitor list --group YOUR_GROUP`，(b) 重新启动守护进程：`terminal(background=true, watch_patterns=[CURSOR-STOPPED:])`。组状态文件（`~/.hermes/logs/cursor-monitors/`）在 Hermes 重启后持续存在。
 
-28. **TASK_COUNT footer bug history — fixed in v0.4.2**: See pitfall #32 below for the actual watch.py fix applied 2026-07-04. Two failure modes existed: (A) TASK_COUNT_RE was added to fix under-reporting; (B) it caused over-reporting where stale "N task" forever blocked CURSOR-STOPPED. Both resolved by removing TASK_COUNT from is_executing() — real activity signals are already caught earlier. Full details in [`references/task-count-bug-20260704.md`](references/task-count-bug-20260704.md).
+28. **TASK_COUNT 页脚 bug 历史 — 已在 v0.4.2 修复**：参见下方的陷阱 #32 了解 2026-07-04 应用的实际 watch.py 修复。曾存在两种失败模式：(A) 添加 TASK_COUNT_RE 以修复报告不足；(B) 它导致过度报告，过期的 "N task" 永远阻止 CURSOR-STOPPED 触发。两者都通过从 `is_executing()` 中移除 TASK_COUNT 解决 — 真实的活动信号已经在前面被捕获。完整细节见 [`references/task-count-bug-20260704.md`](references/task-count-bug-20260704.md)。
 
-29. **Confusable Unicode characters trigger security scan blocks**: When sending messages via `tmux send-keys`, avoid Unicode characters that visually resemble ASCII but have different code points (mathematical alphanumerics, Cyrillic lookalikes, Greek letters). The Hermes security scanner flags these as potential homoglyph attacks and blocks the command or prompts for approval. Use plain ASCII only — no Unicode dashes, no smart quotes, no mathematical symbols. This is especially important in multi-line messages containing code paths or technical terms.
+29. **易混淆的 Unicode 字符触发安全扫描阻止**：通过 `tmux send-keys` 发送消息时，避免使用视觉上类似 ASCII 但代码点不同的 Unicode 字符（数学字母数字、西里尔字母仿冒、希腊字母）。Hermes 安全扫描器会将这些标记为潜在的同形字攻击并阻止命令或提示批准。仅使用纯 ASCII — 不要使用 Unicode 破折号、智能引号或数学符号。这在包含代码路径或技术术语的多行消息中尤为重要。
 
-30. **Worker count must not exceed 80% of CPU cores**: When running parallel data tasks (minute-1m, rollup, board-daily), setting worker count above `cores * 0.8` wastes resources. Workers beyond CPU capacity all wait on I/O (API rate limits, disk) instead of computing. On a 32-core machine, max effective workers = 25. More workers = more API throttling, not faster completion.
+30. **Worker 数量不得超过 CPU 核心的 80%**：运行并行数据任务（minute-1m、rollup、board-daily）时，将 worker 数量设置为 `cores * 0.8` 以上会浪费资源。超出 CPU 容量的 worker 全部在等待 I/O（API 速率限制、磁盘）而非计算。在 32 核机器上，最大有效 worker 数 = 25。更多 worker = 更多 API 节流，而非更快完成。
 
-31. **Daemon restart after Hermes session loss**: When Hermes restarts (connection lost, /new), daemon processes stop but tmux sessions and cursor-agents persist. Recovery: (a) verify group exists: `python3 -m core.monitor list --group GROUP`, (b) DO NOT re-register panes (state persists in `~/.hermes/logs/cursor-monitors/`), (c) start daemon: `terminal(background=true, watch_patterns=["CURSOR-STOPPED:"], command="exec python3 -m core.monitor daemon --group GROUP")`.
+31. **Hermes 会话丢失后守护进程重启**：当 Hermes 重启时（连接丢失、/new），守护进程停止但 tmux 会话和 cursor-agent 持续存在。恢复方法：(a) 验证组存在：`python3 -m core.monitor list --group GROUP`，(b) 不要重新注册面板（状态在 `~/.hermes/logs/cursor-monitors/` 中持续存在），(c) 启动守护进程：`terminal(background=true, watch_patterns=["CURSOR-STOPPED:"], command="exec python3 -m core.monitor daemon --group GROUP")`。
 
-32. **TASK_COUNT in footer suppresses CURSOR-STOPPED (fixed 2026-07-04)**: When an agent's status footer shows "1 task" / "N tasks" (stale background shell process), the old `is_executing()` code returned True based on `TASK_COUNT_RE` matching the footer line, preventing the daemon from ever firing CURSOR-STOPPED. The agent could be fully idle (`→ Add a follow-up`) but the daemon would never notify because it thought execution was ongoing.  
+32. **页脚 TASK_COUNT 抑制 CURSOR-STOPPED（已于 2026-07-04 修复）**：当 agent 的状态页脚显示 "1 task" / "N tasks"（过期的后台 shell 进程）时，旧的 `is_executing()` 代码基于 `TASK_COUNT_RE` 匹配页脚行返回 True，导致守护进程永远无法触发 CURSOR-STOPPED。Agent 可能完全空闲（`→ Add a follow-up`）但守护进程永远不会通知，因为它认为执行仍在进行。
 
-**Fix (watch.py `is_executing()`):** Removed the TASK_COUNT check from `is_executing()`. Bottom-footer task counts are residual indicators — they don't mean the agent is actively processing. The real activity signals (spinner/BRAILLE, Working/ACTIVITY, background tasks/BACKGROUND_RE, monitoring/MONITORING_RE) are already caught earlier in the function. If none of those match, activity_text above the footer is clean and the agent is idle, regardless of stale "N task" in the footer.  
+**修复（watch.py `is_executing()`）：** 从 `is_executing()` 中移除了 TASK_COUNT 检查。底部页脚的任务计数是残留指标 — 它们不代表 agent 正在活跃处理。真实的活动信号（spinner/BRAILLE、Working/ACTIVITY、background tasks/BACKGROUND_RE、monitoring/MONITORING_RE）已经在函数前面被捕获。如果这些都不匹配，页脚上方的 activity_text 是干净的，agent 就是空闲的，无论页脚中是否有过期的 "N task"。
 
-**Verification:** After the fix, an agent showing `→ Add a follow-up` with `1 task` in the footer will correctly report `state=stopped reason=idle` instead of perpetually showing `state=executing`. This allows the daemon to fire CURSOR-STOPPED notifications for idle agents with stale background processes.
+**验证：** 修复后，显示 `→ Add a follow-up` 且页脚中有 `1 task` 的 agent 将正确报告 `state=stopped reason=idle` 而不是永远显示 `state=executing`。这使得守护进程可以为有过期后台进程的空闲 agent 触发 CURSOR-STOPPED 通知。
 
-33. **Daemon poll interval tuning (`CURSOR_MONITOR_INTERVAL`)**: The daemon checks pane states every N seconds, controlled by the environment variable `CURSOR_MONITOR_INTERVAL` (default: `15`). To change, kill old daemon and restart with the new value:
+33. **守护进程轮询间隔调优（`CURSOR_MONITOR_INTERVAL`）**：守护进程每 N 秒检查一次面板状态，由环境变量 `CURSOR_MONITOR_INTERVAL` 控制（默认：`15`）。更改时，先杀死旧守护进程并使用新值重启：
 
 ```bash
-# Default 15s (no env var needed)
+# 默认 15s（无需环境变量）
 cd ~/.hermes/skills/autonomous-ai-agents/tmux-cursor-agent
 exec python3 -m core.monitor daemon --group YOUR_GROUP
 
-# 10s — more responsive, user preferred in 2026-07-04 session
+# 10s — 响应更快，2026-07-04 会话中用户偏好
 CURSOR_MONITOR_INTERVAL=10 exec python3 -m core.monitor daemon --group YOUR_GROUP
 
-# 5s — aggressive, use only when responsiveness critical
+# 5s — 激进模式，仅在响应速度至关重要时使用
 CURSOR_MONITOR_INTERVAL=5 exec python3 -m core.monitor daemon --group YOUR_GROUP
 ```
 
-Other tunable env vars: `CURSOR_MONITOR_STATUS_INTERVAL` (heartbeat log, default 600s), `CURSOR_MONITOR_LINES` (pane capture lines, default 15). Lowering below 10s increases CPU for marginal gain — most workflows are fine at 10s or 15s.
+其他可调环境变量：`CURSOR_MONITOR_STATUS_INTERVAL`（心跳日志，默认 600s）、`CURSOR_MONITOR_LINES`（面板捕获行数，默认 15）。低于 10s 会增加 CPU 占用但收益有限 — 大多数工作流在 10s 或 15s 下即可正常工作。
 
-**Note on early notifications after fix:** After the TASK_COUNT fix (pitfall #32), agents submitting background shell commands (e.g., `make ci-quick`) show idle while the shell runs — this is CORRECT behavior. The agent is not actively processing; it's waiting. Frequent `CURSOR-STOPPED:idle` during a long shell command are expected, not a regression. The daemon now accurately reports agent activity rather than conflating background process count with agent state.
+**修复后早期通知的说明：** TASK_COUNT 修复（陷阱 #32）后，提交后台 shell 命令（如 `make ci-quick`）的 agent 在 shell 运行时显示空闲 — 这是**正确行为**。Agent 没有在活跃处理；它在等待。在长时间 shell 命令期间频繁的 `CURSOR-STOPPED:idle` 是预期行为，不是回归。守护进程现在准确报告 agent 活动而非将后台进程计数与 agent 状态混淆。
 
-## Documentation
+## 文档
 
-Full docs in the repository `tmux-cursor-agent/docs/`:
+仓库 `tmux-cursor-agent/docs/` 中的完整文档：
 
 ```
-01-quickstart.md         Quick start guide
-02-session-lifecycle.md  Create/verify/destroy sessions
-03-state-detection.md    How EXECUTING/STOPPED detection works
-04-messaging-protocol.md Four-step protocol detail
-05-monitoring-daemon.md  Daemon configuration
-06-pitfalls.md           Full pitfall catalog
+01-quickstart.md         快速入门指南
+02-session-lifecycle.md  创建/验证/销毁会话
+03-state-detection.md    EXECUTING/STOPPED 检测原理
+04-messaging-protocol.md 四步协议详解
+05-monitoring-daemon.md  守护进程配置
+06-pitfalls.md           完整陷阱目录
 ```
 
-### Skill References
+### 技能参考文档
 
-| File | About |
-|------|-------|
-| [`references/calibration.md`](references/calibration.md) | Fixture test framework & how to add/modify state detection tests |
-| [`references/state-detection.md`](references/state-detection.md) | State detection patterns & edge cases |
-|| [`references/messaging.md`](references/messaging.md) | Messaging protocol deep dive |\n|| [`references/messaging-pitfalls.md`](references/messaging-pitfalls.md) | Complete messaging gotchas (states, input, queue) |
-|| [`references/daemon-poll-behavior.md`](references/daemon-poll-behavior.md) | Daemon poll behavior & premature idle detection |\n| [`references/task-count-bug-20260704.md`](references/task-count-bug-20260704.md) | TASK_COUNT footer bug (fix, reproduction, verification) |\n| [`references/publishing-pattern.md`](references/publishing-pattern.md) | How to add/rename/remove a skill in c456-com/skills repo |
-| [`references/daemon-poll-interval.md`](references/daemon-poll-interval.md) | Daemon poll interval config (CURSOR_MONITOR_INTERVAL env var) |
-| [`scripts/team_tasks.py`](scripts/team_tasks.py) | Persistent team task ledger — create/update/list/complete tasks |
+| 文件 | 内容 |
+|------|------|
+| [`references/calibration.md`](references/calibration.md) | Fixture 测试框架及如何添加/修改状态检测测试 |
+| [`references/state-detection.md`](references/state-detection.md) | 状态检测模式与边缘情况 |
+| [`references/messaging.md`](references/messaging.md) | 消息协议深入解析 |
+| [`references/messaging-pitfalls.md`](references/messaging-pitfalls.md) | 完整的消息传递陷阱（状态、输入、队列） |
+| [`references/daemon-poll-behavior.md`](references/daemon-poll-behavior.md) | 守护进程轮询行为与过早空闲检测 |
+| [`references/task-count-bug-20260704.md`](references/task-count-bug-20260704.md) | TASK_COUNT 页脚 bug（修复、复现、验证） |
+| [`references/publishing-pattern.md`](references/publishing-pattern.md) | 如何在 c456-com/skills 仓库中添加/重命名/移除技能 |
+| [`references/daemon-poll-interval.md`](references/daemon-poll-interval.md) | 守护进程轮询间隔配置（CURSOR_MONITOR_INTERVAL 环境变量） |
+| [`scripts/team_tasks.py`](scripts/team_tasks.py) | 持久化团队任务台账 — 创建/更新/列表/完成任务 |
+END
+__tr_native_ec=$?; pwd -P >| '/var/folders/kr/_pxypyrx0xvcqfqdwy1h83q80000gn/T/trae-agent-toolhost-501/jobs/job-38144be5058a452cbdbff7359c12a8ef/cwd.txt'; exit "$__tr_native_ec"

@@ -1,196 +1,196 @@
 ---
-title: Onboarding Interview Protocol
+title: Onboarding 访谈协议
 type: reference
 status: active
 last-reviewed: 2026-07-03
 ---
 
-# Onboarding Interview Protocol
+# Onboarding 访谈协议
 
-> How the AI agent conducts the team config interview — triggers, questions, answer processing, and save flow.
+> AI Agent 如何执行团队配置访谈：触发条件、问题、答案处理和保存流程。
 
-## When to Interview
+## 什么时候访谈
 
-The interview starts when **one or more of these conditions** are true:
+满足以下一个或多个条件时，启动访谈：
 
-| Condition | Trigger | Action |
+| 条件 | 触发 | 动作 |
 |-----------|---------|--------|
-| **First use** | `~/.config/skills/doc-driven-multi-agent/team-config.yaml` does not exist | Auto-start interview after announcing "I notice this is your first time. Let me ask a few questions about your team." |
-| **Force reconfigure** | User says "reconfigure team", "setup team", "change team config" | Re-run full interview; overwrite existing config |
-| **Config stale** | Config file exists but `last_used` is >30 days old | Prompt "Your team config is 30+ days old. Does it still reflect your current team? (y/N)" — if No, start interview |
-| **Mid-session stability** | See [Stability Detection](#stability-detection) below | Prompt "Team looks stable. Save as config?" |
+| **首次使用** | `~/.config/skills/doc-driven-multi-agent/team-config.yaml` 不存在 | 提示“看起来这是你第一次使用，我问几个关于团队的问题。”然后自动启动访谈 |
+| **强制重新配置** | 用户说 “reconfigure team”、“setup team”、“change team config” | 重新运行完整访谈；覆盖已有配置 |
+| **配置过期** | 配置文件存在，但 `last_used` 超过 30 天 | 提示“你的团队配置已经 30+ 天没有更新，它仍然准确吗？(y/N)”；如果否，启动访谈 |
+| **会话中检测到稳定团队** | 见下方 [稳定性检测](#稳定性检测) | 提示“团队结构看起来稳定，要保存为配置吗？” |
 
-### Config Detection Flow (Decision Tree)
+### 配置检测流程（决策树）
 
 ```
-1. Check: ~/.config/skills/doc-driven-multi-agent/team-config.yaml exists?
-   ├─ YES → Load it → check `last_used` age
-   │         ├─ >30 days → prompt for refresh
-   │         └─ ≤30 days → announce "Loaded team: {team_name}"; skip interview
+1. 检查：~/.config/skills/doc-driven-multi-agent/team-config.yaml 是否存在？
+   ├─ 是 → 加载 → 检查 `last_used` 年龄
+   │         ├─ >30 天 → 提示是否刷新
+   │         └─ ≤30 天 → 提示 "Loaded team: {team_name}"；跳过访谈
    │
-   └─ NO → Check: <project-root>/.skills/team-config.local.yaml exists?
-            ├─ YES → Load + announce per-project override found
-            └─ NO → Start onboarding interview
+   └─ 否 → 检查：<project-root>/.skills/team-config.local.yaml 是否存在？
+            ├─ 是 → 加载，并提示发现项目级覆盖
+            └─ 否 → 启动 onboarding interview
 ```
 
-## Interview Phases
+## 访谈阶段
 
-The interview is a **conversational sequence** — ask one question at a time, wait for the user's answer, then proceed. Do NOT dump all questions at once.
+访谈是一个**对话序列**：一次只问一个问题，等待用户回答后再继续。不要一次性抛出所有问题。
 
-### Phase 1: Team Identity
+### 阶段 1：团队身份
 
-**Question:** "What's your team or project name? (I'll use this to label your config)"
+**问题：** “你的团队或项目叫什么名字？我会用它标记这份配置。”
 
-**Processing:** Set `team_name` to the answer. Default: `"My AI Team"`.
-
----
-
-### Phase 2: Active Roles
-
-**Question:** "Which of the 5 protocol roles does your team use? I'll list them — just tell me which ones you need:
-
-1. **Project Manager (PM)** — planning, worktrees, closure
-2. **Product Owner (PO)** — specs, product decisions, acceptance
-3. **Architect (Arch)** — architecture decisions, code review
-4. **Developer (Dev)** — implementation, tests
-5. **Data Analyst (Analyst)** — data verification
-
-Which roles do you use? (e.g. 'all 5', 'PM PO Arch Dev', 'just Dev and PO')"
-
-**Processing:**
-- If user says "all" or "all 5" → all `enabled: true`
-- If user lists specific roles → set those to `enabled: true`, others to `false`
-- Validate: at minimum `po` + `dev` must be enabled (protocol can't function without design and implementation)
+**处理：** 将答案写入 `team_name`。默认值：`"我的 AI 团队"`。
 
 ---
 
-### Phase 3: Role Assignments (one sub-question per enabled role)
+### 阶段 2：启用哪些角色
 
-For each enabled role, ask:
+**问题：** “这 5 个协议角色里，你的团队会用哪些？我列一下，你告诉我需要哪些即可：
 
-**Question:** "Who plays the **{Role Name} ({Code})** role? Options: Hermes Agent, Cursor Agent, Claude Code, GitHub Copilot, or a human."
+1. **Project Manager (PM)**：计划、worktree、关闭
+2. **Product Owner (PO)**：spec、产品决策、验收
+3. **Architect (Arch)**：架构决策、代码评审
+4. **Developer (Dev)**：实现、测试
+5. **Data Analyst (Analyst)**：数据验证
 
-**Examples:**
-- For PM: "Who plays Project Manager (PM)?"
-- For Dev: "Who plays Developer (Dev)?"
+你会用哪些角色？例如：‘all 5’、‘PM PO Arch Dev’、‘只有 Dev 和 PO’。”
 
-**Processing:** Set `played_by` to the user's answer, `agent_type` to the mapped value:
+**处理：**
+- 如果用户说 “all” 或 “all 5” → 全部 `enabled: true`
+- 如果用户列出具体角色 → 这些角色设为 `enabled: true`，其他设为 `false`
+- 校验：至少必须启用 `po` + `dev`，否则协议无法完成设计与实现闭环
 
-| User Says | agent_type |
+---
+
+### 阶段 3：角色分配（每个启用角色一个子问题）
+
+对每个启用角色询问：
+
+**问题：** “谁扮演 **{Role Name} ({Code})**？可选：Hermes Agent、Cursor Agent、Claude Code、GitHub Copilot 或人类。”
+
+**示例：**
+- PM：“谁扮演 Project Manager (PM)？”
+- Dev：“谁扮演 Developer (Dev)？”
+
+**处理：** 将 `played_by` 设为用户答案，并把 `agent_type` 映射为：
+
+| 用户说法 | agent_type |
 |-----------|------------|
 | "Hermes", "Hermes Agent", "myself" | `hermes` |
 | "Cursor", "Cursor Agent" | `cursor-agent` |
 | "Claude", "Claude Code" | `claude-code` |
 | "Copilot", "GitHub Copilot" | `copilot` |
-| "Human", "a person", "my boss" | `human` |
+| "Human", "a person", "my boss", "人类" | `human` |
 
-If `agent_type` is `cursor-agent`, also ask: "Do you use a tmux session template for this role? (e.g. `cursor-arch-{task}`)" → set `session_template`.
+如果 `agent_type` 是 `cursor-agent`，继续问：“这个角色有 tmux session 模板吗？例如 `cursor-arch-{task}`。” → 设置 `session_template`。
 
-**Optional follow-up:** "Any notes for this role? (e.g., who specifically, or special instructions)" → set `notes`.
+**可选追问：** “这个角色还有备注吗？例如具体是谁，或特殊指令。” → 设置 `notes`。
 
 ---
 
-### Phase 4: Worktree Preference
+### 阶段 4：Worktree 偏好
 
-**Question:** "Do you use git worktrees for parallel task isolation? (Recommended for multi-agent setups.) (Y/n)"
+**问题：** “你是否使用 git worktree 做并行任务隔离？多 Agent 场景推荐使用。(Y/n)”
 
-**Processing:**
-- Y or empty → `use_worktrees: true`
+**处理：**
+- Y 或空输入 → `use_worktrees: true`
 - N → `use_worktrees: false`
 
 ---
 
-### Phase 5: CI Command
+### 阶段 5：CI 命令
 
-**Question:** "What command do you use to run tests/CI before handoff? (default: `make ci`)"
+**问题：** “handoff 前你用什么命令跑测试 / CI？默认是 `make ci`。”
 
-**Processing:** Set `preferred_ci` to the answer. Keep default if user says "default" or leaves empty.
-
----
-
-### Phase 6: Timezone
-
-**Question:** "What timezone do you want for comm log timestamps? (default: Asia/Shanghai, or press Enter for default)"
-
-**Processing:** Set `timestamp_tz` to the answer. Validate against IANA timezone list if possible; otherwise accept as-is.
+**处理：** 将答案写入 `preferred_ci`。如果用户说 “default” 或留空，则保留默认值。
 
 ---
 
-### Phase 7: Document Paths (optional deep-dive)
+### 阶段 6：时区
 
-**Question:** "The protocol uses default document paths like `docs/superpowers/specs/` and `docs/superpowers/comms/`. Do these work for your project, or do you use different directories? (defaults work / customize)"
+**问题：** “comm log 时间戳使用哪个时区？默认 `Asia/Shanghai`，直接回车则使用默认。”
 
-- If "defaults work" → keep defaults, skip sub-questions
-- If "customize" → ask one at a time:
-  1. "Spec documents directory?" (default: `docs/superpowers/specs/`)
-  2. "Comm log directory?" (default: `docs/superpowers/comms/`)
-  3. "Plan directory?" (default: `docs/superpowers/plans/`)
-  4. "Review directory?" (default: `docs/superpowers/reviews/`)
-  5. "Daily log directory?" (default: `docs/ops/daily/`)
-  6. "Worktree directory?" (default: `.worktrees/`)
+**处理：** 将答案写入 `timestamp_tz`。如可行，按 IANA timezone 列表校验；否则原样接受。
 
 ---
 
-## Save Flow
+### 阶段 7：文档路径（可选深入）
 
-After all phases complete:
+**问题：** “协议默认使用 `docs/superpowers/specs/`、`docs/superpowers/comms/` 等路径。这些路径适合你的项目吗，还是你使用不同目录？（默认即可 / 自定义）”
 
-1. **Construct YAML** — assemble all answers into the schema
-2. **Set timestamps** — `created` and `last_used` to current time (`TZ='Asia/Shanghai' date +'%Y-%m-%dT%H:%M%Z'`)
-3. **Ensure directory exists** — `mkdir -p ~/.config/skills/doc-driven-multi-agent/`
-4. **Write file** — to `~/.config/skills/doc-driven-multi-agent/team-config.yaml`
-5. **Announce success:**
+- 如果用户说“默认即可” → 保留默认值，跳过子问题
+- 如果用户说“自定义” → 一次问一个：
+  1. “Spec 文档目录？”（默认：`docs/superpowers/specs/`）
+  2. “Comm log 目录？”（默认：`docs/superpowers/comms/`）
+  3. “Plan 目录？”（默认：`docs/superpowers/plans/`）
+  4. “Review 目录？”（默认：`docs/superpowers/reviews/`）
+  5. “Daily log 目录？”（默认：`docs/ops/daily/`）
+  6. “Worktree 目录？”（默认：`.worktrees/`）
+
+---
+
+## 保存流程
+
+所有阶段完成后：
+
+1. **构造 YAML**：把所有答案组装成 schema
+2. **设置时间戳**：`created` 和 `last_used` 使用当前时间（`TZ='Asia/Shanghai' date +'%Y-%m-%dT%H:%M%Z'`）
+3. **确保目录存在**：`mkdir -p ~/.config/skills/doc-driven-multi-agent/`
+4. **写入文件**：`~/.config/skills/doc-driven-multi-agent/team-config.yaml`
+5. **提示成功：**
 
 ```
-✅ Team config saved to ~/.config/skills/doc-driven-multi-agent/team-config.yaml
+团队配置已保存到 ~/.config/skills/doc-driven-multi-agent/team-config.yaml
 
-Next time you load this skill, I'll remember your team and skip the interview.
+下次加载此技能时，我会记住你的团队并跳过访谈。
 
-To make changes later:
-  • Say "reconfigure team" to re-run the interview
-  • Or edit the file directly with any text editor
-  • For project-specific overrides, create .skills/team-config.local.yaml
+之后如需修改：
+  - 说 “reconfigure team” 重新运行访谈
+  - 或用任意文本编辑器直接编辑该文件
+  - 如需项目级覆盖，创建 .skills/team-config.local.yaml
 ```
 
-## Error Handling
+## 错误处理
 
-| Situation | Response |
+| 情况 | 响应 |
 |-----------|----------|
-| User gives unclear answer | Ask a clarifying follow-up (e.g., "I heard 'Dev and PO' — do you also need a PM or Architect?") |
-| User says "skip" or "I don't know" | Use the default value for that field; note it in the config as `# auto-default` comment |
-| User interrupts or changes topic | After returning to the conversation, recap: "We were setting up your team config. Last question was about {phase}. Shall I continue from there?" |
-| YAML write fails (permission) | Explain the issue: "Could not write to ~/.config/skills/... — permission denied. Please create the directory manually with: mkdir -p ~/.config/skills/doc-driven-multi-agent" |
+| 用户回答不清楚 | 追问澄清，例如：“我听到你说 Dev 和 PO，你还需要 PM 或 Architect 吗？” |
+| 用户说 “skip” 或 “I don't know” | 对该字段使用默认值，并在配置中用 `# auto-default` 注明 |
+| 用户中断或切换话题 | 回到话题后复述：“我们刚才在设置团队配置，上一个问题是 {phase}。要继续吗？” |
+| YAML 写入失败（权限） | 说明问题：“无法写入 ~/.config/skills/...，权限不足。请手动创建目录：mkdir -p ~/.config/skills/doc-driven-multi-agent” |
 
-## Reconfiguration
+## 重新配置
 
-When user says "reconfigure team":
+当用户说 “reconfigure team”：
 
-1. Ask: "Do you want to start fresh (overwrite everything) or update specific fields?"
-2. Full reconfig → run all 7 phases
-3. Partial update → ask which field to change, update only that field in the YAML
+1. 询问：“你想从头开始覆盖全部配置，还是只更新特定字段？”
+2. 完整重配 → 运行全部 7 个阶段
+3. 部分更新 → 询问要改哪个字段，只更新 YAML 中该字段
 
-## Stability Detection
+## 稳定性检测
 
-Detected during the Session Protocol End checklist (see SKILL.md):
+在会话协议的结束 checklist 中检测（见 SKILL.md）：
 
 ```
-After 3+ feature cycles with the same role assignments AND no team-config.yaml exists yet:
-  → Ask: "Your team structure looks stable. Save it as the default team config?
-          (This means next session I won't need to ask about your team.)"
+同一套角色分配跑完 3+ 个 feature cycle，且尚未存在 team-config.yaml：
+  → 询问：“你的团队结构看起来已经稳定。要保存为默认团队配置吗？
+          这样下次会话我就不用再询问团队结构了。”
 ```
 
-If the user agrees → run a mini-interview (Phase 1 + Phase 2 only → save) or if you already have full info from the session, construct the config directly.
+如果用户同意 → 运行 mini-interview（只问阶段 1 + 阶段 2 → 保存），或如果当前会话已有完整信息，则直接构造配置。
 
-## Per-Project Override Detection
+## 项目级覆盖检测
 
-When loading config:
+加载配置时：
 
-1. Load global config from `~/.config/skills/doc-driven-multi-agent/team-config.yaml`
-2. Check for `<project-root>/.skills/team-config.local.yaml`
-3. If local override exists:
-   - Announce: "Found project-specific overrides in .skills/team-config.local.yaml"
-   - Deep-merge fields (nested objects merge, not replace)
-   - For `roles.*`: individual role settings merge
-   - For `document_paths`: individual path overrides merge
-   - For `engineering`: individual fields merge
-   - `team_name`, `created` remain from global config
+1. 从 `~/.config/skills/doc-driven-multi-agent/team-config.yaml` 加载全局配置
+2. 检查 `<project-root>/.skills/team-config.local.yaml`
+3. 如果本地覆盖存在：
+   - 提示：“Found project-specific overrides in .skills/team-config.local.yaml”
+   - 深度合并字段（嵌套对象合并，不整体替换）
+   - `roles.*`：逐角色设置合并
+   - `document_paths`：逐路径覆盖合并
+   - `engineering`：逐字段合并
+   - `team_name`、`created` 保持全局配置值

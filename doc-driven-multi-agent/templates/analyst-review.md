@@ -1,44 +1,44 @@
-# Analyst Verification: <Feature>
+# Analyst 验证：<Feature>
 
 > **Verdict:** DATA_PASS | DATA_FAIL
 > **Spec:** docs/superpowers/specs/<feature>.md
 > **Arch review:** docs/superpowers/reviews/arch-review-<feature>.md
-> **Version:** <version from config if applicable>
+> **Version:** <如适用，填写配置中的版本>
 
-## Independent Verification Method
+## 独立验证方法
 
-- Command/script used: <how you ran it>
-- Difference from Dev's path: <how your run differs>
+- 使用的命令 / 脚本：<如何运行>
+- 与 Dev 路径的差异：<你的运行方式与 Dev 有何不同>
 
-## Phase ①: Reference Cases
+## 阶段 ①：Reference Cases
 
 | Case ID | Expected | Actual | Notes |
 |---------|----------|--------|-------|
 | case-1 | <value> | <value> | <match/mismatch> |
 | case-2 | <value> | <value> | <match/mismatch> |
 
-## Phase ②: Sample Set (e.g. 500 stocks)
+## 阶段 ②：Sample Set（例如 500 支股票）
 
-- Hit rate: <value>
-- False positive samples: <examples with dates/codes>
-- Distribution notes: <anything unusual>
+- 命中率：<value>
+- 误报样本：<带日期 / 代码的示例>
+- 分布备注：<异常情况>
 
-## Phase ③: Full Universe (if executed)
+## 阶段 ③：Full Universe（如已执行）
 
-- Total samples: <N>
-- Stability: <OK / issues>
+- 总样本数：<N>
+- 稳定性：<OK / issues>
 
-## Conclusion & DATA BUG List (Dev)
+## 结论与 DATA BUG List（Dev）
 
-- BUG-1: ts_code=xxx date=yyy expected=a actual=b — reproduction: `command`
+- BUG-1: ts_code=xxx date=yyy expected=a actual=b — 复现：`command`
 - BUG-2: …
 
-## Threshold/Semantics Suggestions (PO)
+## 阈值 / 语义建议（PO）
 
-- <optional: recommendations for PO to consider>
+- <可选：给 PO 考虑的建议>
 
 ## Handoff
 
 - **Target:** <Developer (Dev) | Product Owner (PO)>
-- **Address:** `docs/superpowers/reviews/<feature>-analyst-*.md` (this), `docs/superpowers/comms/<feature>.md`
-- **Task:** <DATA_FAIL: fix bugs → Arch | DATA_PASS: product acceptance>
+- **Address:** `docs/superpowers/reviews/<feature>-analyst-*.md`（当前文档）, `docs/superpowers/comms/<feature>.md`
+- **Task:** <DATA_FAIL：修 bug → Arch | DATA_PASS：产品验收>
