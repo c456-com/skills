@@ -1,7 +1,7 @@
 ---
 name: wiki-book-ingest
 description: "书籍知识摄取 / book ingest：当用户要把 raw/books/ 编译进 llm-wiki、逐章提取概念/来源/线索、处理图表文字化或做章节 lint 时触发；用于书籍知识库写入和质量检查。"
-version: 1.3.0
+version: 1.3.1
 ---
 
 # Wiki Book Ingest（书籍知识编译）
@@ -58,6 +58,20 @@ version: 1.3.0
 
 对每个章节 / 策略 / 概念：
 
+### 所有衍生页通用出处规则
+
+> 从书籍编译的概念/线索/实体/来源页，**每页都必须记录出处**，格式统一：
+
+```markdown
+## 来源
+
+- **书籍**: [[source-page-name]] — 第X章：章节名
+- **页码范围**: 第XX-YY页（PDF页码约第XX-YY页）
+- **PDF**: `{{PDF_FILENAME}}`（完整路径在 `.extract-meta.yml`）
+```
+
+出处信息来自 raw/books/ 的 `.extract-meta.yml`（PDF路径）和各 page-*.md 的内容分析（章节标题、页码）。
+
 ### 来源摘要 `wiki/sources/`
 
 - 模板：[`references/source-page-template.md`](references/source-page-template.md)
@@ -73,23 +87,18 @@ version: 1.3.0
   1. 读取 raw 页面的内容 + frontmatter（含 `page-indices` → PDF 页码）
   2. 提取该页的核心论据，写入概念页后立即追加 `^[page-NNN.md]`
   3. 若同一段知识跨多页，用 `^[page-NNN.md][page-MMM.md]`
-- **页尾必须包含「来源」章节**，记录完整出处：
-  ```markdown
-  ## 来源
-  
-  - **书籍**: [[source-page-name]] — 第X章：章节名
-  - **页码范围**: 第XX-YY页（PDF页码约第XX-YY页）
-  - **PDF**: `{{PDF_FILENAME}}`（完整路径在 `.extract-meta.yml`）
-  ```
-  出处信息来自 raw/books/ 的 `.extract-meta.yml`（PDF路径）和各 page-*.md 的内容分析（章节标题、页码）。
+- **页尾出处章节**：按照上方「通用出处规则」格式
 
 ### 线索页 `wiki/threads/`
 
 - 多章串联的方法论、全书脉络
+- **页尾出处章节**：按照「通用出处规则」格式，标注覆盖的章/页码范围
+- 关键节点也可用 `^[page-NNN.md]` 标记
 
 ### 实体页 `wiki/entities/`
 
 - 人物、机构、工具
+- **页尾出处章节**：按照「通用出处规则」格式，标注首次出现/主要描述的章节和页码
 
 ### 图片 / K 线图（必做）
 
@@ -117,7 +126,7 @@ version: 1.3.0
 2. 孤立 wikilink
 3. 矛盾表述
 4. 图表未转文字
-5. **行级出处缺失** — 抽查概念页，确认每个事实段末尾有 `^[page-NNN.md]` 标记；缺失率 > 20% 则退回补充
+5. **出处缺失** — 抽查所有衍生页（概念/线索/实体），确认每页有「来源」章节；概念页还需抽查 `^[page-NNN.md]` 行级标记；缺失率 > 20% 则退回补充
 
 有遗漏 → 列补录计划，用户确认后继续。
 
