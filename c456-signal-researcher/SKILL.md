@@ -1,8 +1,7 @@
 ---
 name: c456-signal-researcher
-description: >-
-  Drafts C456 signals in a news-researcher voice: verified facts, independent value judgment, links to existing intakes, end-of-article source block; routes to product-vs or channel article skills when the piece is a deep compare or long intro.
-  Use when writing signals, news intakes, or industry updates in this wiki repo (c456-sync / C456).
+description: "C456 signal 研究写作：当用户要撰写新闻收录、行业动态、研究信号、事实核验短文或关联站内已有内容时触发；用于新闻研究员风格、价值判断、来源块和 signal 路由。"
+version: 1.0.1
 disable-model-invocation: true
 ---
 

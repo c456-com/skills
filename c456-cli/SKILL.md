@@ -1,12 +1,7 @@
 ---
 name: c456-cli
-description: >-
-  Operates C456 via the c456 Node CLI (HTTP API v1): intakes, playbooks,
-  assets (media library), search, fetch, and config. Includes headed Chrome via CDP (browser start /
-  screenshot, system Chrome + playwright-core, no bundled Chromium required) for tool/channel intro
-  screenshots, then asset upload. Use when the user mentions C456, c456-cli, 收录, 打法, intake,
-  playbook, c456.com, or syncing content with a self-hosted C456. Skill install delegates to npx skills add
-  from GitHub only (no local package fallback) plus optional daily npm version notify on next launch.
+description: "C456 CLI / c456.com 操作：当用户要收录 intake、发布 playbook、管理 assets 媒体库、搜索/获取 C456 内容、截图上传或同步 self-hosted C456 数据时触发；用于 CLI 命令、CDP 截图和 API v1 工作流。"
+version: 1.0.1
 ---
 
 # C456 CLI（c456-cli）
@@ -187,4 +182,3 @@ CLI `--help` 中会用 `type: <type_name>` 标注字段类型；Agent 在生成/
 - **软件 / 产品 / 仓库 / 包页**：一般用 `c456 tool new`（或用户明确要当「工具资料」收录时）。**仅当** **`-u` 或资料中的「产品链接」** 为 **RubyGems / npm 等包注册表页**，且需要**基于该包页**为正文配产品截图时，**`c456 screenshot` 优先**对 **`c456 fetch profile -p package_registry -u "<该包页>"`** 解析出的 **GitHub 仓库根页**截图；包站主要作解析入口。**产品链接非包页**（已是 GitHub、独立官网等）或用户指定其它截图目标时，**按实际 URL**，勿套用本条。详见 [references/product-screenshots-for-intake.md](references/product-screenshots-for-intake.md)「包管理器」节。
 - **产品界面进介绍**：优先 **`c456 browser` + `c456 screenshot`**（见 [references/product-screenshots-for-intake.md](references/product-screenshots-for-intake.md)）→ `asset upload` → `body`（`--body-file`）；**不用** IDE MCP。**官网 / 落地页截图仅视窗**，勿 `-f`。
 - **讲解 Walkthrough**：`walkthrough update` 的 `--body-file` 勿含本页 `:::walkthrough{id=…}`；录屏由 Walkthrough 记录本身绑定，页头自动播放。
-

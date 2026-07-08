@@ -1,51 +1,51 @@
-# Knowledge Base Market Research — Sources & Findings (2026-07-03)
+# 知识库市场调研 —— 数据源与发现（2026-07-03）
 
-## Sources Scraped (12/12 COMPLETE)
+## 已抓取数据源（12/12 全部完成）
 
-### Pricing Pages (🟢)
-| Source | URL | Key Finding |
-|--------|-----|-------------|
-| Outline | getoutline.com/pricing | Cloud $10/79/249/mo, BSL self-host free |
-| AFFiNE | affine.pro/pricing | Free/Pro $6.75/mo/Team $10/seat/mo, Believer $499.99 lifetime, self-host free |
-| Siyuan | b3log.org/siyuan/pricing | Free / Lifetime ¥96 / Annual ¥148 / Team ¥148/yr, 8GB cloud storage |
-
-### Comparison Articles (🟢)
-| Source | URL | Content |
+### 定价页面（🟢）
+| 数据源 | URL | 关键发现 |
 |--------|-----|---------|
-| selfhosting.sh | selfhosting.sh/best/wiki/ | 7 Wiki comparison (Wiki.js, BookStack, DokuWiki, MediaWiki, XWiki, Outline, Docmost) |
-| Docsio | docsio.co/blog/free-knowledge-base-software | 9 free KB comparison, SaaS/open-source split |
-| Geekflare | geekflare.com/software/self-hosted-wiki-software/ | 7 Wiki comparison (Wiki.js, DokuWiki, MediaWiki, XWiki, BookStack, Gollum, Outline) |
-| Contabo | contabo.com/blog/how-to-set-up-a-self-hosted-wiki-complete-guide/ | Deployment guide + software selection |
+| Outline | getoutline.com/pricing | 云端 $10/79/249/月，BSL 自托管免费 |
+| AFFiNE | affine.pro/pricing | Free/Pro $6.75/月/Team $10/座/月，Believer $499.99 终身，自托管免费 |
+| 思源 | b3log.org/siyuan/pricing | 免费 / 终身 ¥96 / 年付 ¥148 / 团队 ¥148/年，8GB 云存储 |
 
-### Community Discussions (🟢)
-| Source | URL | Engagement | Key Points |
-|--------|-----|------------|------------|
-| HN | news.mcan.sh/item/48053163 | 16 pts, 21 comments | Obsidian/Outline/BookStack/Trilium/Joplin; mobile app important |
-| Zhihu #1 | zhihu.com/question/645107504 | 17 answers, 31K views | Feishu+Obsidian dual-chain; 10-year tool comparison table |
-| Zhihu #2 | zhihu.com/question/15133096760 | 24 answers, 8.5K views | AnythingLLM+Ollama+Qwen3 RAG; knowledge structure methodology |
+### 对比文章（🟢）
+| 数据源 | URL | 内容 |
+|--------|-----|------|
+| selfhosting.sh | selfhosting.sh/best/wiki/ | 7 款 Wiki 对比（Wiki.js、BookStack、DokuWiki、MediaWiki、XWiki、Outline、Docmost） |
+| Docsio | docsio.co/blog/free-knowledge-base-software | 9 款免费知识库对比，SaaS/开源分类 |
+| Geekflare | geekflare.com/software/self-hosted-wiki-software/ | 7 款 Wiki 对比（Wiki.js、DokuWiki、MediaWiki、XWiki、BookStack、Gollum、Outline） |
+| Contabo | contabo.com/blog/how-to-set-up-a-self-hosted-wiki-complete-guide/ | 部署指南 + 软件选择 |
 
-### Login-Gated Sources (🔴→🟢 via Camofox headful login)
-| Source | Method | Key Findings |
-|--------|--------|-------------|
-| Xiaohongshu 个人知识库 | Camofox headful login + persistence | 30+ posts about AI knowledge base building (Codex+Obsidian, DeepSeek+Notion, LLM Wiki), monetization trends (变现), "second brain" concept popular |
+### 社区讨论（🟢）
+| 数据源 | URL | 互动数据 | 关键信息 |
+|--------|-----|---------|---------|
+| HN | news.mcan.sh/item/48053163 | 16 赞，21 条评论 | Obsidian/Outline/BookStack/Trilium/Joplin；移动端应用很重要 |
+| 知乎 #1 | zhihu.com/question/645107504 | 17 个回答，3.1 万浏览 | 飞书+Obsidian 双链；10 年工具对比表 |
+| 知乎 #2 | zhihu.com/question/15133096760 | 24 个回答，8500 浏览 | AnythingLLM+Ollama+Qwen3 RAG；知识结构方法论 |
 
-### Blocked (❌)
-| Source | Reason |
-|--------|--------|
-| Reddit (3 posts) | Cloudflare bot detection — CamoFox identified as bot; needs proxy or cookie import |
+### 需要登录的数据源（🔴→🟢 通过 Camofox 有头模式登录）
+| 数据源 | 方式 | 关键发现 |
+|--------|------|---------|
+| 小红书 个人知识库 | Camofox 有头模式登录 + 持久化 | 30+ 条关于 AI 知识库搭建的帖子（Codex+Obsidian、DeepSeek+Notion、LLM Wiki），变现趋势，"第二大脑"概念流行 |
 
-## Persistence Verification (2026-07-03)
+### 已屏蔽（❌）
+| 数据源 | 原因 |
+|--------|------|
+| Reddit（3 篇帖子） | Cloudflare 机器人检测 —— CamoFox 被识别为机器人；需要代理或 Cookie 导入 |
 
-- **Verified**: DELETE /sessions/:userId BEFORE pkill triggers storageState checkpoint
-- **Profile**: kb-researcher → ~/.camofox/profiles/ea62cc266effacda9e8324513feab0dc/storage-state.json (35KB)
-- **Zhihu login survives restart**: ✅ Confirmed
-- **Xiaohongshu login survives restart**: ✅ Confirmed (same session lifecycle)
+## 持久化验证（2026-07-03）
 
-## Key Market Insights
+- **已验证**：在 pkill 之前执行 DELETE /sessions/:userId 会触发 storageState 检查点保存
+- **Profile**：kb-researcher → ~/.camofox/profiles/ea62cc266effacda9e8324513feab0dc/storage-state.json（35KB）
+- **知乎登录在重启后保留**：✅ 已确认
+- **小红书登录在重启后保留**：✅ 已确认（同一会话生命周期）
 
-1. **Self-hosted KB market**: Outline and AFFiNE offer BSL/free self-host but paid cloud. Siyuan charges lifetime ¥96 — very low price point.
-2. **AI integration trend**: Zhihu answers show strong interest in local RAG (AnythingLLM+Ollama+Qwen3). AI-augmented personal KB is emerging.
-3. **Mobile-first requirement**: HN and Zhihu users consistently mention mobile app as critical for personal wiki usage.
-4. **Markdown as standard**: Obsidian's markdown-first approach is the dominant preference across all communities.
-5. **Knowledge structure methodology**: Chinese users (Zhihu) emphasize systematic knowledge organization — mind maps, matrix frameworks, knowledge trees.
-6. **Xiaohongshu monetization focus**: Chinese creators actively building "knowledge base + monetization" systems; AI tools (Codex, DeepSeek) for KB building are trending content.
+## 关键市场洞察
+
+1. **自托管知识库市场**：Outline 和 AFFiNE 提供 BSL/免费自托管但付费云服务。思源终身定价 ¥96 —— 价格点非常低。
+2. **AI 集成趋势**：知乎回答显示对本地 RAG（AnythingLLM+Ollama+Qwen3）的强烈兴趣。AI 增强的个人知识库正在兴起。
+3. **移动端优先需求**：HN 和知乎用户一致认为移动端应用是个人 Wiki 使用的必备条件。
+4. **Markdown 作为标准**：Obsidian 的 Markdown 优先方案在所有社区中占据主导偏好。
+5. **知识结构方法论**：中国用户（知乎）强调系统化知识组织 —— 思维导图、矩阵框架、知识树。
+6. **小红书变现焦点**：中国创作者积极构建"知识库 + 变现"系统；AI 工具（Codex、DeepSeek）用于知识库搭建是热门内容。

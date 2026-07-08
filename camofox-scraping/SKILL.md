@@ -1,7 +1,7 @@
 ---
 name: camofox-scraping
-description: "Scrape Cloudflare-protected pages using CamoFox anti-detection browser via npx. No local clone needed. If a site blocks CamoFox, fall back to web_search."
-version: 1.2.0
+description: "CamoFox scraping / Cloudflare bypass：当用户要抓取受 Cloudflare/反爬保护的网页、做浏览器自动化采集、登录态页面研究或 CamoFox 失败回退 web_search 时触发；用于 npx 运行的反检测浏览器抓取。"
+version: 1.2.1
 author: Hermes Agent
 license: MIT
 platforms: [macos, linux, windows]
@@ -10,38 +10,38 @@ metadata:
     tags: [scraping, camofox, browser-automation, research, cloudflare]
 ---
 
-# CamoFox Web Scraping
+# CamoFox 网页抓取
 
-Scrape sites using CamoFox anti-detection browser — when it works. **Don't fight it when it doesn't.** Use the fallback.
+使用 CamoFox 反检测浏览器抓取网站 —— 在它能用的时候。**用不了就别硬上。** 使用回退方案。
 
-## Setup (no clone needed)
+## 安装启动（无需克隆）
 
 ```bash
-# Start — no git clone, no local repo
+# 启动 — 无需 git clone，无需本地仓库
 npx @askjo/camofox-browser
 
-# Headful mode (visible browser for login)
+# 有头模式（可见浏览器窗口，用于登录）
 CAMOFOX_HEADLESS=false npx @askjo/camofox-browser
 
-# Port 9377, verify: curl -s http://localhost:9377/
+# 端口 9377，验证：curl -s http://localhost:9377/
 ```
 
-That's it. No `~/Codes/camofox-browser`, no local modifications.
+就这样。不需要 `~/Codes/camofox-browser`，不需要本地修改。
 
-## Philosophy: Accept what works, skip what doesn't
+## 理念：能用就用，不能用就跳过
 
-Camofox is a tool, not a project. If it can't access a site, don't patch it — use web_search instead.
+Camofox 是工具，不是项目。如果它访问不了某个站点，不要修补它 —— 改用 web_search。
 
-| Situation | Response |
-|-----------|----------|
-| Camofox works | Use it |
-| Camofox blocked (Reddit) | web_search for summaries; note the gap |
-| Camofox crashes | Restart with same userId — persistence restores logins |
-| Viewport/isMobile bug | Known upstream Camoufox issue. Don't patch Playwright. Wait or use fallback. |
+| 情况 | 应对 |
+|------|------|
+| Camofox 能用 | 直接使用 |
+| Camofox 被屏蔽（Reddit） | 用 web_search 获取摘要；报告中注明缺口 |
+| Camofox 崩溃 | 用相同 userId 重启 —— 持久化会恢复登录状态 |
+| Viewport/isMobile bug | 已知上游 Camoufox 问题。不要修补 Playwright。等待或使用回退方案。 |
 
-## API Workflow
+## API 工作流
 
-### Create a tab
+### 创建标签页
 
 ```bash
 curl -s -X POST http://localhost:9377/tabs \
@@ -49,34 +49,34 @@ curl -s -X POST http://localhost:9377/tabs \
   -d '{"userId":"researcher","sessionKey":"<session-key>"}'
 ```
 
-### Navigate + extract — standard steps
+### 导航 + 提取 — 标准步骤
 
-See `references/camofox-web-scraping.md` for full reference. Key parameter: `expression` (NOT `script`).
+完整参考见 `references/camofox-web-scraping.md`。关键参数：`expression`（不是 `script`）。
 
-## Persistence (skip login troubles)
+## 持久化（跳过登录烦恼）
 
 ```bash
-# Close session gracefully before restart
+# 重启前优雅关闭会话
 curl -s -X DELETE "http://localhost:9377/sessions/<userId>"
 
-# Then pkill is safe
+# 然后 pkill 是安全的
 pkill -f "node server.js"
 ```
 
-## Fallback pattern
+## 回退方案
 
-When Camofox fails (Reddit, broken binary, etc.):
+当 Camofox 失败时（Reddit、二进制文件损坏等）：
 
 ```python
 from hermes_tools import web_search
 results = web_search(query="site:reddit.com keyword")
 ```
 
-Log the gap in the research report so it's transparent to the user.
+在调研报告中记录缺口，让用户知情。
 
-## Pitfalls
+## 注意事项
 
-- **npx only** — never clone the repo. `npx @askjo/camofox-browser` is the only supported method.
-- **Don't patch Playwright** — if the Camoufox binary doesn't support a feature, accept it as a limitation.
-- **Reddit blocks Camofox** — use web_search fallback.
-- **Persistence needs DELETE /sessions/:userId before pkill** — without this, login state is lost.
+- **只用 npx** —— 永远不要克隆仓库。`npx @askjo/camofox-browser` 是唯一支持的方式。
+- **不要修补 Playwright** —— 如果 Camoufox 二进制文件不支持某功能，接受这个限制。
+- **Reddit 会屏蔽 Camofox** —— 使用 web_search 回退方案。
+- **持久化需要在 pkill 之前执行 DELETE /sessions/:userId** —— 没有这一步，登录状态会丢失。

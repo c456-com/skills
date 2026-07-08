@@ -1,8 +1,7 @@
 ---
 name: book-extract
-description: >-
-  书籍素材提取：PDF 或拍照书页 → raw/books/（MinerU 或视觉大模型）。
-  用户提到 PDF 录入、拍照录入、书籍转 raw、book-extract、MinerU、千问识图时使用。
+description: "书籍素材提取 / book extract：当用户要把 PDF、扫描件、拍照书页、OCR 书页或 MinerU 输出转成 raw/books/ Markdown + 图片时触发；用于书籍入库前的素材提取和来源整理。"
+version: 1.1.3
 ---
 
 # Book Extract（书籍素材提取）

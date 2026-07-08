@@ -1,9 +1,7 @@
 ---
 name: c456-sync-public-markdown
-description: >-
-  撰写或修订 c456-sync/ 下将上行 C456 的 Markdown：正文为媒体级对外稿，不写正文一级标题、不写制作备忘与仓库内部路径；总括与结论写在首节正文段中，不用「## 一句话结论」等标签式二级标题。
-  在编写 tool/signal/channel/walkthrough 的 c456-sync 镜像、c456 正文格式规范、markdown 对外正文写作要求、或执行 c456 intake / walkthrough update 的 --body-file 前使用。
-  Agent 首次执行 c456 发布前应加载本技能。
+description: "C456 public Markdown / c456-sync 正文规范：当用户要编写或发布 tool/signal/channel/walkthrough 镜像正文、处理 --body-file、剥离 frontmatter 或检查对外稿格式时触发；用于无一级标题、无制作备忘、媒体级正文。"
+version: 1.0.1
 ---
 
 # c456-sync 对外正文（C456 镜像层）

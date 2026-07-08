@@ -1,33 +1,31 @@
 ---
 name: c456-rails-startup
-description: >-
-  Bootstrap a Rails app with Inertia.js, React, TypeScript, Vite, shadcn/ui, and Tailwind CSS v4
-  from scratch. Use when setting up a new Rails full-stack project, installing Ruby via asdf,
-  integrating Inertia or shadcn/ui, or scaffolding a hello-world page.
+description: "Rails startup / Rails + Inertia + React：当用户要从零创建 Rails 全栈应用、安装 Ruby/asdf、集成 Inertia.js、React、TypeScript、Vite、shadcn/ui、Tailwind CSS v4 或验证 hello-world 时触发；用于脚手架和环境搭建。"
+version: 1.0.1
 ---
 
-# Rails + Inertia + React + shadcn Startup
+# Rails + Inertia + React + shadcn 从零搭建
 
-Step-by-step guide to go from zero to a running hello-world app.
+从零到运行 hello-world 应用的分步指南。
 
-## Checklist
+## 检查清单
 
 ```text
-- [ ] 0. Install system deps, asdf, Ruby, Node
-- [ ] 1. Create project directory
+- [ ] 0. 安装系统依赖、asdf、Ruby、Node
+- [ ] 1. 创建项目目录
 - [ ] 2. rails new
-- [ ] 3. Install Inertia + Vite + React + TypeScript + Tailwind
-- [ ] 4. Configure @ path aliases (required before shadcn)
-- [ ] 5. Initialize shadcn/ui
-- [ ] 6. Start dev server and verify
-- [ ] 7. Hello world page
+- [ ] 3. 安装 Inertia + Vite + React + TypeScript + Tailwind
+- [ ] 4. 配置 @ 路径别名（shadcn 之前必须完成）
+- [ ] 5. 初始化 shadcn/ui
+- [ ] 6. 启动开发服务器并验证
+- [ ] 7. Hello world 页面
 ```
 
 ---
 
-## 0. Environment setup
+## 0. 环境搭建
 
-### 0.1 System packages (Ubuntu/Debian)
+### 0.1 系统包（Ubuntu/Debian）
 
 ```bash
 sudo apt update
@@ -35,7 +33,7 @@ sudo apt install -y git curl build-essential libssl-dev libreadline-dev \
   zlib1g-dev libyaml-dev libffi-dev libgdbm-dev libncurses5-dev
 ```
 
-### 0.2 Install asdf
+### 0.2 安装 asdf
 
 ```bash
 git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.14.1
@@ -46,7 +44,7 @@ echo '. "$HOME/.asdf/completions/asdf.bash"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
-### 0.3 Install Ruby with asdf
+### 0.3 通过 asdf 安装 Ruby
 
 ```bash
 asdf plugin add ruby https://github.com/asdf-vm/asdf-ruby.git
@@ -58,29 +56,29 @@ gem install rails bundler
 rails -v
 ```
 
-Project `.tool-versions`:
+项目 `.tool-versions`：
 
 ```text
 ruby 4.0.5
 ```
 
-### 0.4 Node.js (required for Vite and shadcn)
+### 0.4 Node.js（Vite 和 shadcn 需要）
 
-Use Node 20 or newer:
+使用 Node 20 或更新版本：
 
 ```bash
-# Option A: asdf
+# 方式 A：asdf
 asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
 asdf install nodejs 22.14.0
 asdf local nodejs 22.14.0
 
-# Option B: system Node or nvm
+# 方式 B：系统 Node 或 nvm
 node -v && npm -v
 ```
 
-### 0.5 Process manager for bin/dev
+### 0.5 bin/dev 所需的进程管理器
 
-`bin/dev` needs **foreman**, **overmind**, or **hivemind**:
+`bin/dev` 需要 **foreman**、**overmind** 或 **hivemind**：
 
 ```bash
 gem install foreman
@@ -89,7 +87,7 @@ gem install foreman
 
 ---
 
-## 1. Create project directory
+## 1. 创建项目目录
 
 ```bash
 mkdir -p ~/projects/my-rails-app
@@ -99,9 +97,9 @@ git init
 
 ---
 
-## 2. Initialize Rails
+## 2. 初始化 Rails
 
-Run in an empty directory (or one with only README / `.git`):
+在空目录（或只有 README / `.git` 的目录）中运行：
 
 ```bash
 cd ~/projects/my-rails-app
@@ -115,17 +113,17 @@ rails new . \
 bundle install
 ```
 
-| Flag | Purpose |
-|------|---------|
-| `--database=sqlite3` | Simple local dev default |
-| `--css=tailwind` | Rails Tailwind entry (Inertia takes over frontend CSS later) |
-| `.` | Initialize in the current directory |
+| 参数 | 用途 |
+|------|------|
+| `--database=sqlite3` | 简单的本地开发默认值 |
+| `--css=tailwind` | Rails Tailwind 入口（Inertia 后续接管前端 CSS） |
+| `.` | 在当前目录初始化 |
 
-Do **not** install Inertia manually here — use the official generator in the next step.
+**不要**在此手动安装 Inertia——使用下一步的官方生成器。
 
 ---
 
-## 3. Integrate Inertia + Vite + React + TypeScript + Tailwind
+## 3. 集成 Inertia + Vite + React + TypeScript + Tailwind
 
 ```bash
 bundle add inertia_rails
@@ -139,15 +137,15 @@ bin/rails generate inertia:install \
   --no-interactive
 ```
 
-The generator will:
+生成器将会：
 
-- Install `vite_rails`, `@inertiajs/react`, `@inertiajs/vite`, `react`, `@vitejs/plugin-react`, etc.
-- Create `app/frontend/entrypoints/inertia.tsx`
-- Configure `Procfile.dev` (`web` + `vite`)
-- Add `config/initializers/inertia_rails.rb`
-- Provide an `inertia_example` demo page
+- 安装 `vite_rails`、`@inertiajs/react`、`@inertiajs/vite`、`react`、`@vitejs/plugin-react` 等。
+- 创建 `app/frontend/entrypoints/inertia.tsx`
+- 配置 `Procfile.dev`（`web` + `vite`）
+- 添加 `config/initializers/inertia_rails.rb`
+- 提供 `inertia_example` 演示页面
 
-Confirm `app/views/layouts/application.html.erb` includes:
+确认 `app/views/layouts/application.html.erb` 包含：
 
 ```erb
 <%= vite_react_refresh_tag %>
@@ -156,7 +154,7 @@ Confirm `app/views/layouts/application.html.erb` includes:
 <%= inertia_ssr_head %>
 ```
 
-Controllers for Inertia pages inherit `InertiaController`:
+Inertia 页面的控制器继承 `InertiaController`：
 
 ```ruby
 class PagesController < InertiaController
@@ -168,11 +166,11 @@ end
 
 ---
 
-## 4. Path aliases (required before shadcn)
+## 4. 路径别名（shadcn 之前必须完成）
 
-shadcn needs **two** tsconfig entries. See [Inertia Rails Cookbook](https://inertia-rails.dev/cookbook/integrating-shadcn-ui).
+shadcn 需要**两个** tsconfig 条目。参见 [Inertia Rails Cookbook](https://inertia-rails.dev/cookbook/integrating-shadcn-ui)。
 
-**`tsconfig.app.json`** (Vite build):
+**`tsconfig.app.json`**（Vite 构建）：
 
 ```json
 {
@@ -186,7 +184,7 @@ shadcn needs **two** tsconfig entries. See [Inertia Rails Cookbook](https://iner
 }
 ```
 
-**`tsconfig.json`** (shadcn CLI):
+**`tsconfig.json`**（shadcn CLI）：
 
 ```json
 {
@@ -200,7 +198,7 @@ shadcn needs **two** tsconfig entries. See [Inertia Rails Cookbook](https://iner
 }
 ```
 
-**`vite.config.ts`** (runtime resolution):
+**`vite.config.ts`**（运行时解析）：
 
 ```typescript
 import path from "path"
@@ -222,75 +220,75 @@ export default defineConfig({
 
 ---
 
-## 5. Integrate shadcn/ui
+## 5. 集成 shadcn/ui
 
-### 5.1 Initialize
+### 5.1 初始化
 
 ```bash
 npx shadcn@latest init
 ```
 
-Suggested prompts:
+建议选项：
 
-| Prompt | Choice |
-|--------|--------|
-| Style | New York or base-nova |
-| Base color | neutral |
-| CSS variables | yes |
-| Tailwind CSS file | `app/frontend/entrypoints/application.css` |
+| 提示 | 选择 |
+|------|------|
+| 风格 | New York 或 base-nova |
+| 基础色 | neutral |
+| CSS 变量 | yes |
+| Tailwind CSS 文件 | `app/frontend/entrypoints/application.css` |
 
-Success: `components.json`, `app/frontend/lib/utils.ts`, and `@import "shadcn/tailwind.css"` in `application.css`.
+成功标志：出现 `components.json`、`app/frontend/lib/utils.ts`，以及 `application.css` 中的 `@import "shadcn/tailwind.css"`。
 
-### 5.2 Add components
+### 5.2 添加组件
 
 ```bash
 npx shadcn@latest add button card
 ```
 
-Components land in `app/frontend/components/ui/`.
+组件存放在 `app/frontend/components/ui/`。
 
 ---
 
-## 6. Start and verify
+## 6. 启动并验证
 
-### 6.1 Install dependencies
+### 6.1 安装依赖
 
 ```bash
 bin/setup
-# or manually:
+# 或手动：
 bundle install
 npm install
 bin/rails db:prepare
 ```
 
-### 6.2 Run dev server
+### 6.2 运行开发服务器
 
 ```bash
 bin/dev
 ```
 
-`Procfile.dev`:
+`Procfile.dev`：
 
 ```text
 vite: bin/vite dev
 web: bin/rails s
 ```
 
-### 6.3 Smoke checks
+### 6.3 冒烟测试
 
-| # | Check | Expected |
-|---|-------|----------|
-| S1 | Open `http://localhost:3000/inertia-example` | Inertia demo page renders |
-| S2 | Browser console | No fatal Vite / React errors |
+| # | 检查项 | 预期结果 |
+|---|--------|----------|
+| S1 | 打开 `http://localhost:3000/inertia-example` | Inertia 演示页面正常渲染 |
+| S2 | 浏览器控制台 | 无致命的 Vite / React 错误 |
 | S3 | `GET /up` | 200 |
 
-**localhost vs 127.0.0.1:** Vite HMR needs a consistent host. Prefer `localhost`. Optionally redirect `127.0.0.1` to `localhost` in `config/routes.rb`.
+**localhost vs 127.0.0.1**：Vite HMR 需要一致的主机名。优先使用 `localhost`。可在 `config/routes.rb` 中将 `127.0.0.1` 重定向到 `localhost`。
 
 ---
 
 ## 7. Hello world
 
-**Route and controller:**
+**路由和控制器：**
 
 ```ruby
 # config/routes.rb
@@ -304,7 +302,7 @@ class PagesController < InertiaController
 end
 ```
 
-**Inertia page:**
+**Inertia 页面：**
 
 ```tsx
 // app/frontend/pages/Home.tsx
@@ -320,48 +318,48 @@ export default function Home({ message }: { message: string }) {
 }
 ```
 
-Restart `bin/dev`, open `http://localhost:3000/` — you should see the heading and styled button.
+重启 `bin/dev`，打开 `http://localhost:3000/`——你应该能看到标题和带样式的按钮。
 
 ---
 
-## 8. Recommended frontend layout
+## 8. 推荐的前端目录结构
 
 ```text
 app/frontend/
 ├── entrypoints/
 │   ├── application.css
 │   └── inertia.tsx
-├── pages/              # Inertia pages
+├── pages/              # Inertia 页面
 ├── components/
-│   └── ui/             # shadcn components
+│   └── ui/             # shadcn 组件
 ├── layouts/
 └── lib/
-    └── utils.ts        # cn() helper
+    └── utils.ts        # cn() 辅助函数
 ```
 
 ---
 
-## 9. Troubleshooting
+## 9. 故障排除
 
-| Symptom | Fix |
-|---------|-----|
-| `No Tailwind CSS configuration found` | Ensure `application.css` has `@import 'tailwindcss'` (v4) or shadcn init completed |
-| `@/` imports fail | Verify §4 aliases in both tsconfigs and `vite.config.ts`; restart Vite |
-| Blank page | Check layout has `vite_javascript_tag "inertia.tsx"` and `yield` |
-| HMR broken | Use `localhost`, not `127.0.0.1` |
-| `foreman: command not found` | `gem install foreman` or install overmind |
-| shadcn init fails | Complete §3 (Inertia + Vite) first |
+| 症状 | 修复方法 |
+|------|----------|
+| `No Tailwind CSS configuration found` | 确保 `application.css` 中有 `@import 'tailwindcss'`（v4）或 shadcn init 已完成 |
+| `@/` 导入失败 | 检查 §4 中两个 tsconfig 和 `vite.config.ts` 的别名配置；重启 Vite |
+| 空白页面 | 检查布局中是否有 `vite_javascript_tag "inertia.tsx"` 和 `yield` |
+| HMR 失效 | 使用 `localhost`，不要用 `127.0.0.1` |
+| `foreman: command not found` | 执行 `gem install foreman` 或安装 overmind |
+| shadcn init 失败 | 先完成 §3（Inertia + Vite） |
 
 ---
 
-## 10. Quick reference (all steps)
+## 10. 快速参考（全部步骤）
 
 ```bash
 mkdir -p ~/projects/my-app && cd ~/projects/my-app
 rails new . --database=sqlite3 --css=tailwind --skip-jbuilder
 bundle add inertia_rails vite_rails
 bin/rails generate inertia:install --framework=react --typescript --vite --tailwind --no-interactive
-# configure §4 path aliases + vite.config.ts
+# 配置 §4 路径别名 + vite.config.ts
 npx shadcn@latest init
 npx shadcn@latest add button
 bin/setup
@@ -370,10 +368,10 @@ bin/dev
 
 ---
 
-## References
+## 参考资料
 
-- [Inertia Rails · Server-Side Setup](https://inertia-rails.dev/guide/server-side-setup)
-- [Inertia Rails · Integrating shadcn/ui](https://inertia-rails.dev/cookbook/integrating-shadcn-ui)
+- [Inertia Rails · 服务端设置](https://inertia-rails.dev/guide/server-side-setup)
+- [Inertia Rails · 集成 shadcn/ui](https://inertia-rails.dev/cookbook/integrating-shadcn-ui)
 - [Inertia Rails Starter Kits](https://inertia-rails.dev/guide/starter-kits)
 - [shadcn/ui](https://ui.shadcn.com)
 - [Vite Ruby](https://vite-ruby.netlify.app/guide/rails)

@@ -2,8 +2,8 @@
 name: c456-playbook-publishing
 category: c456-cli
 tags: [c456, playbook, publishing, content, wiki-sync, article]
-description: "Write and publish long-form articles (playbooks) to c456.com — frontmatter conventions, image sourcing via c456 asset upload (no external CDN), word-count validation, CLI publishing, and local wiki metadata sync. Use when the user asks to write a 软文, article, blog post, technical sharing, or long-form content for c456.com."
-version: 1.0.0
+description: "C456 playbook publishing / 长文发布：当用户要为 c456.com 写软文、blog、技术分享、playbook、长文内容，或需要 frontmatter、配图上传、字数校验、CLI 发布和本地 wiki 元数据同步时触发。"
+version: 1.0.1
 author: c456-com
 license: MIT
 platforms: [macos, linux]

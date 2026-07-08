@@ -2,7 +2,7 @@
   "skills": [
     {
       "name": "c456-team-work",
-      "description": "辉常团队多角色 AI Agent 协作工作流 — 团队启动、角色边界、四步法通信协议、通知驱动工作流、handoff 三要素、开发闭环、多工作组管理、助理铁律",
+      "description": "辉常团队 / multi-agent team workflow：当用户要启动或重启多角色 AI Agent 团队、创建工作组、从 Agency Agents 等职业技能库选择专家角色、处理 handoff/relay/通知、做团队汇报或推进开发闭环时触发；用于团队入口路由、角色边界、助理纪律和多工作组协作。",
       "tags": [
         "team",
         "workflow",
@@ -12,11 +12,11 @@
         "relay",
         "monitoring"
       ],
-      "version": "1.0.0"
+      "version": "1.3.0"
     },
     {
       "name": "c456-software-dev-sop",
-      "description": "\u901a\u7528\u8f6f\u4ef6\u5f00\u53d1 SOP \u2014 \u9700\u6c42\u5206\u6790 \u2192 \u7406\u8bba\u8c03\u7814 \u2192 \u517c\u5bb9\u6027\u8bc4\u4f30 \u2192 \u7f16\u7801 \u2192 \u6587\u6863\u540c\u6b65 \u2192 \u9a8c\u6536\u3002\u96c6\u6210 llm-wiki \u77e5\u8bc6\u5e93\u5de5\u4f5c\u6d41\u3002",
+      "description": "软件开发 SOP / development workflow：当用户要从需求到实现推进功能、修 bug、做兼容性评估、同步文档或验收交付时触发；用于需求分析、理论调研、编码、测试和 llm-wiki 记录。",
       "tags": [
         "development",
         "sop",
@@ -24,63 +24,68 @@
         "documentation",
         "knowledge-base"
       ],
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "name": "c456-cli",
-      "description": "c456-cli",
+      "description": "C456 CLI / c456.com 操作：当用户要收录 intake、发布 playbook、管理 assets 媒体库、搜索/获取 C456 内容、截图上传或同步 self-hosted C456 数据时触发；用于 CLI 命令、CDP 截图和 API v1 工作流。",
       "tags": [
         "c456"
       ],
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "name": "c456-llm-wiki",
-      "description": "\u5728 llm-wiki-domains \u591a\u9886\u57df\u77e5\u8bc6\u5e93\u57fa\u7840\u4e0a\u96c6\u6210 C456.com \u53cc\u5411\u540c\u6b65 \u2014 c456-sync/ \u955c\u50cf\u5c42\u3001signal/tool/channel/playbook/walkthrough \u7c7b\u578b\u6620\u5c04\u3001CLI \u53d1\u5e03\u5de5\u4f5c\u6d41",
+      "description": "C456 LLM Wiki / c456-sync：当用户要把 llm-wiki 页面发布到 C456、用引用型镜像或 versioned snapshot 绑定线上版本、后接 C456 同步、从 C456 拉回内容、维护 c456-sync/meta.yml 或处理 orphan_local 时触发；用于可插拔 C456 扩展层和 CLI 同步流程。",
       "tags": [
         "c456",
         "wiki",
         "sync",
         "knowledge-base",
-        "llm-wiki-domains"
+        "llm-wiki",
+        "c456-sync",
+        "c456-cli",
+        "pull",
+        "reference-mirror",
+        "versioned"
       ],
-      "version": "1.0.0"
+      "version": "1.4.0"
     },
     {
       "name": "c456-product-channel-article",
-      "description": "c456-product-channel-article",
+      "description": "C456 产品/渠道长文写作：当用户要写 tool/channel 产品介绍、公众号渠道稿、图文脚本、SaaS/开源工具介绍或按五段式产品叙事漏斗成稿时触发；用于概述钩子、产品基因、功能、差异化和 CTA。",
       "tags": [
         "c456"
       ],
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "name": "c456-signal-product-vs",
-      "description": "c456-signal-product-vs",
+      "description": "C456 产品对比 signal / tool vs tool：当用户要写 Auth/IdP、SaaS、开源工具等产品深度对比、选型建议或竞品差异分析时触发；用于信息源分层、核心判断、对比结构和对外正文约束。",
       "tags": [
         "c456"
       ],
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "name": "c456-signal-researcher",
-      "description": "c456-signal-researcher",
+      "description": "C456 signal 研究写作：当用户要撰写新闻收录、行业动态、研究信号、事实核验短文或关联站内已有内容时触发；用于新闻研究员风格、价值判断、来源块和 signal 路由。",
       "tags": [
         "c456"
       ],
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "name": "c456-sync-public-markdown",
-      "description": "c456-sync-public-markdown",
+      "description": "C456 public Markdown / c456-sync 正文规范：当用户要编写或发布 tool/signal/channel/walkthrough 镜像正文、处理 --body-file、剥离 frontmatter 或检查对外稿格式时触发；用于无一级标题、无制作备忘、媒体级正文。",
       "tags": [
         "c456"
       ],
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "name": "book-extract",
-      "description": "\u4e66\u7c4d\u7d20\u6750\u63d0\u53d6\uff1aPDF/\u62cd\u7167 \u2192 raw/books\uff08MinerU \u6216\u89c6\u89c9\uff09",
+      "description": "书籍素材提取 / book extract：当用户要把 PDF、扫描件、拍照书页、OCR 书页或 MinerU 输出转成 raw/books/ Markdown + 图片时触发；用于书籍入库前的素材提取和来源整理。",
       "tags": [
         "knowledge-base",
         "book",
@@ -88,34 +93,55 @@
         "vision",
         "mineru"
       ],
-      "version": "1.1.2"
+      "version": "1.1.3"
     },
     {
       "name": "wiki-book-ingest",
-      "description": "raw/books \u2192 wiki \u4e66\u7c4d\u7f16\u8bd1\uff1a\u9010\u7ae0 Ingest\u3001K \u7ebf\u56fe\u8f6c\u6587\u5b57\u3001\u7ae0\u8282 Lint",
+      "description": "书籍知识摄取 / book ingest：当用户要把 raw/books/ 编译进 llm-wiki、逐章提取概念/来源/线索、处理图表文字化或做章节 lint 时触发；用于书籍知识库写入和质量检查。",
       "tags": [
         "knowledge-base",
         "book",
         "ingest",
         "llm-wiki-domains"
       ],
-      "version": "1.0.0"
+      "version": "1.0.1"
+    },
+    {
+      "name": "llm-wiki",
+      "description": "卡帕西 LLM Wiki / knowledge base / wiki notes：当用户要建知识库、摄取资料 ingest、写入 Markdown wiki、搜索 search、查询 query、整理笔记、总结研究或做 health-check 时触发；用于互联 Markdown 知识库读写维护。",
+      "tags": [
+        "wiki",
+        "knowledge-base",
+        "research",
+        "notes",
+        "markdown",
+        "llm-wiki",
+        "ingest",
+        "search",
+        "query",
+        "rag-alternative"
+      ],
+      "version": "1.1.1"
     },
     {
       "name": "llm-wiki-domains",
-      "description": "Multi-domain knowledge base navigator on top of Karpathy's LLM Wiki. Each domain is an independent llm-wiki instance connected by a root index + domain registry.",
+      "description": "LLM Wiki Domains / multi-domain knowledge base：当用户要为多个主题建立隔离知识库、跨领域搜索/query、路由资料、维护根层 purpose/overview 或做多领域 health-check 时触发；用于每域独立 llm-wiki 与 meta-wiki 导航。",
       "tags": [
         "wiki",
         "knowledge-base",
         "domains",
         "multi-domain",
-        "llm-wiki"
+        "llm-wiki",
+        "ingest",
+        "search",
+        "query",
+        "meta-wiki"
       ],
-      "version": "0.1.0"
+      "version": "0.3.1"
     },
     {
       "name": "tmux-cursor-agent",
-      "description": "\u901a\u8fc7 tmux \u63a7\u5236\u4e0e\u76d1\u63a7 Cursor AI Agent \u2014 \u72b6\u6001\u68c0\u6d4b (EXECUTING/STOPPED)\u3001\u56db\u6b65\u6cd5\u6d88\u606f\u534f\u8bae\u3001\u53d6\u6d88\u64cd\u4f5c\u3001\u76d1\u63a7 daemon\u3002\u652f\u6301 pane \u7ea7\u522b\u76d1\u63a7\u3002",
+      "description": "Cursor Agent over tmux：当用户要控制、监控或给 tmux 中的 Cursor AI Agent 发消息，判断 EXECUTING/STOPPED、取消执行、轮询 daemon、处理 CURSOR-STOPPED 通知或 pane 级监控时触发；用于状态检测和四步消息协议。",
       "tags": [
         "tmux",
         "cursor",
@@ -123,37 +149,25 @@
         "automation",
         "monitoring"
       ],
-      "version": "0.4.2"
+      "version": "0.4.7"
     },
     {
-      "name": "tmux-pane-workflow",
-      "description": "Tmux pane \u64cd\u4f5c\u89c4\u8303\uff1azoom \u524d\u540e\u3001\u53d1\u524d\u68c0\u67e5 agent \u72b6\u6001\u3001\u53d1\u540e\u9a8c\u8bc1\u9001\u8fbe\u3002\u72ec\u7acb\u4e8e\u4efb\u4f55\u9879\u76ee\uff0c\u9002\u7528\u4e8e\u6240\u6709 tmux + cursor-agent \u534f\u4f5c\u573a\u666f\u3002",
+      "name": "tmux-pane-workspace",
+      "description": "Tmux pane workspace / zoom / layout / meeting：当用户要在 tmux 中聚焦或放大 pane、读取/输入/发送消息、管理多 pane 工作区、创建圆桌会议/多窗口讨论、维护会议日志、从 Agency Agents 等职业角色库选择专家 pane，或为 tmux-cursor-agent、tmux-trae-agent、tmux-codex-agent 等具体 Agent 技能提供 workspace 边界时触发；用于通用 pane 可见性、布局与会议协作。",
       "tags": [
         "tmux",
-        "cursor",
         "pane",
-        "workflow",
-        "messaging"
+        "workspace",
+        "zoom",
+        "layout",
+        "meeting",
+        "multi-agent"
       ],
-      "version": "1.0.0"
-    },
-    {
-      "name": "c456-ai-summit",
-      "description": "Host AI \u5706\u684c\u5cf0\u4f1a \u2014 \u591a\u89d2\u8272 cursor-agent \u5728 tmux \u4e2d\u534f\u540c\u8ba8\u8bba\uff0c\u52a8\u6001\u5e03\u5c40\u5207\u6362\u3001pane \u7ea7\u76d1\u63a7\u3001\u5171\u4eab\u4f1a\u8bae\u65e5\u5fd7\u3001agency-agents \u89d2\u8272\u96c6\u6210\u3002",
-      "tags": [
-        "tmux",
-        "cursor",
-        "summit",
-        "conference",
-        "multi-agent",
-        "dynamic-layout",
-        "meeting-log"
-      ],
-      "version": "0.1.0"
+      "version": "2.1.0"
     },
     {
       "name": "doc-driven-multi-agent",
-      "description": "\u6587\u6863\u9a71\u52a8\u591a\u4ee3\u7406\u534f\u4f5c\u534f\u8bae \u2014 \u89d2\u8272 SOP\u3001handoff \u4e09\u8981\u7d20\u3001\u95e8\u7981 G0\u2013G4\u3001\u8d8a\u754c\u62d2\u7edd\u3001\u56e2\u961f\u914d\u7f6e\u6301\u4e45\u5316\u3002\u5e73\u53f0\u65e0\u5173\uff0c\u9002\u7528\u4e8e Cursor/Claude Code/Copilot/Hermes \u7b49\u4efb\u610f AI Agent",
+      "description": "文档驱动多代理协作 / document-driven multi-agent：当用户要定义 AI Agent 角色 SOP、handoff 三要素、G0-G4 门禁、越界拒绝、团队配置持久化或跨平台协作协议时触发；适用于 Cursor/Claude Code/Copilot/Gemini/Hermes 等。",
       "tags": [
         "multi-agent",
         "coordination",
@@ -162,25 +176,11 @@
         "sop",
         "workflow"
       ],
-      "version": "1.1.0"
-    },
-    {
-      "name": "cursor-agent-orchestration",
-      "description": "\u7f16\u6392\u591a\u4e2a Cursor Agent \u5728 tmux \u4e2d\u7684\u56e2\u961f\u534f\u4f5c \u2014 \u591a session \u5de5\u4f5c\u6a21\u5f0f\u3001\u542f\u52a8\u5e8f\u5217\u3001\u9884\u68c0\u6e05\u5355\u3001\u72b6\u6001\u6062\u590d\u3002\u4e0e tmux-cursor-agent / c456-ai-summit / doc-driven-multi-agent \u914d\u5957\u4f7f\u7528",
-      "tags": [
-        "cursor",
-        "agent",
-        "orchestration",
-        "tmux",
-        "multi-agent",
-        "team-work",
-        "coordination"
-      ],
-      "version": "1.0.0"
+      "version": "1.2.0"
     },
     {
       "name": "camofox-scraping",
-      "description": "Scrape Cloudflare-protected pages using CamoFox anti-detection browser via npx. No local clone needed. If a site blocks CamoFox, fall back to web_search.",
+      "description": "CamoFox scraping / Cloudflare bypass：当用户要抓取受 Cloudflare/反爬保护的网页、做浏览器自动化采集、登录态页面研究或 CamoFox 失败回退 web_search 时触发；用于 npx 运行的反检测浏览器抓取。",
       "tags": [
         "scraping",
         "camofox",
@@ -188,11 +188,11 @@
         "research",
         "cloudflare"
       ],
-      "version": "1.2.0"
+      "version": "1.2.1"
     },
     {
       "name": "product-niche-discovery",
-      "description": "\u627e\u8d5b\u9053\u3001\u6316\u75db\u70b9 \u2014 52\u6e20\u9053\u7684\u7ed3\u6784\u5316\u4ea7\u54c1\u8c03\u7814\u6280\u80fd\u3002\u65b9\u5411\u5c42\u4ea4 phuryn/pm-skills \u65b9\u6cd5\u8bba\uff0c\u672c\u6280\u80fd\u8d1f\u8d23\u6267\u884c\u5c42\uff1a\u6e20\u9053\u904d\u5386\u3001\u5173\u952e\u8bcd\u751f\u6210\u3001\u5dee\u8bc4\u6316\u6398\u3001\u5b9a\u4ef7\u6293\u53d6\u3002",
+      "description": "产品赛道发现 / product niche discovery：当用户要找赛道、挖痛点、做 market research、竞品/差评/定价抓取、生成关键词或准备 PMF/JTBD 分析原始材料时触发；用于 52 渠道执行层调研。",
       "tags": [
         "product-discovery",
         "pain-points",
@@ -200,11 +200,11 @@
         "niche-finding",
         "competitive-analysis"
       ],
-      "version": "1.2.1"
+      "version": "1.2.2"
     },
     {
       "name": "short-viral-content",
-      "description": "\u77ed\u89c6\u9891\u7206\u6b3e\u5185\u5bb9\u5f15\u64ce \u2014 \u6839\u636e\u4e2d\u5fc3\u601d\u60f3+\u53d7\u4f17\u4eba\u7fa4+\u4eba\u7fa4\u504f\u597d\uff0c\u53d1\u6398\u9ad8\u70ed\u5173\u952e\u8bcd\uff0c\u751f\u6210\u5e73\u53f0\u7279\u5316\u6807\u9898\u3001\u63cf\u8ff0\u548c\u8bdd\u9898\u6807\u7b7e",
+      "description": "短视频爆款内容 / short viral content：当用户要为小红书、抖音、视频号等生成标题、关键词、描述、话题标签，或基于中心思想/受众偏好做高热长尾词调研时触发；用于平台化内容包装。",
       "tags": [
         "short-video",
         "marketing",
@@ -214,19 +214,35 @@
         "douyin",
         "wechat"
       ],
-      "version": "1.1.0"
+      "version": "1.1.1"
     },
     {
       "name": "c456-playbook-publishing",
-      "description": "向 c456.com 发布长文（playbook）— frontmatter 规范、配图规则、CLI 发布、本地元数据同步",
+      "description": "C456 playbook publishing / 长文发布：当用户要为 c456.com 写软文、blog、技术分享、playbook、长文内容，或需要 frontmatter、配图上传、字数校验、CLI 发布和本地 wiki 元数据同步时触发。",
       "tags": ["c456", "playbook", "publishing", "content", "wiki-sync"],
-      "version": "1.0.0"
+      "version": "1.0.1"
+    },
+    {
+      "name": "llm-wiki-versioned",
+      "description": "LLM Wiki versioned / history / provenance：当用户要更新知识页但保留旧结论、查历史版本、做 version diff、恢复页面、追踪事实漂移或检查 snapshot/search history 时触发；用于 .versioned/ 快照和历史搜索规则。",
+      "tags": [
+        "wiki",
+        "versioning",
+        "knowledge-base",
+        "llm-wiki",
+        "history",
+        "provenance",
+        "snapshot",
+        "search",
+        "search-rules"
+      ],
+      "version": "3.0.1"
     },
     {
       "name": "c456-rails-startup",
-      "description": "Bootstrap Rails + Inertia.js + React + TypeScript + Vite + shadcn/ui + Tailwind CSS v4 from scratch. Environment setup, project init, integration, and hello-world verification.",
+      "description": "Rails startup / Rails + Inertia + React：当用户要从零创建 Rails 全栈应用、安装 Ruby/asdf、集成 Inertia.js、React、TypeScript、Vite、shadcn/ui、Tailwind CSS v4 或验证 hello-world 时触发；用于脚手架和环境搭建。",
       "tags": ["rails", "inertia", "react", "shadcn", "vite", "startup", "scaffold", "full-stack"],
-      "version": "1.0.0"
+      "version": "1.0.1"
     }
   ]
 }

@@ -2,8 +2,8 @@
 name: short-viral-content
 category: social-media
 tags: [short-video, marketing, content-strategy, keywords, xiaohongshu, douyin, wechat]
-description: "短视频爆款内容引擎 — 根据中心思想+受众人群，通过百度搜索联想词获取真实长尾关键词，生成平台特化的标题+标签。每个关键词都有数据源。"
-version: 1.1.0
+description: "短视频爆款内容 / short viral content：当用户要为小红书、抖音、视频号等生成标题、关键词、描述、话题标签，或基于中心思想/受众偏好做高热长尾词调研时触发；用于平台化内容包装。"
+version: 1.1.1
 author: c456-com
 license: MIT
 platforms: [macos, linux]

@@ -1,7 +1,7 @@
 ---
 name: c456-software-dev-sop
-description: "通用软件开发 SOP — 需求分析 → 理论调研 → 兼容性评估 → 编码 → 文档同步 → 验收。集成 llm-wiki 知识库工作流。"
-version: 1.0.0
+description: "软件开发 SOP / development workflow：当用户要从需求到实现推进功能、修 bug、做兼容性评估、同步文档或验收交付时触发；用于需求分析、理论调研、编码、测试和 llm-wiki 记录。"
+version: 1.0.1
 tags: [development, sop, workflow, documentation, knowledge-base]
 ---
 

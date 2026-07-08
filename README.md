@@ -10,19 +10,19 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 
 | 名称 | 说明 |
 |------|------|
-| [llm-wiki-domains](llm-wiki-domains/SKILL.md) | 多领域知识库导航 — 每个领域独立 llm-wiki 实例，根索引 + 领域注册表 |
-| [book-extract](book-extract/SKILL.md) | PDF/拍照 → raw/books（MinerU 或视觉；[README](book-extract/README.md)） |
-| [wiki-book-ingest](wiki-book-ingest/SKILL.md) | raw/books → wiki 书籍编译（[README](wiki-book-ingest/README.md)） |
-| [tmux-cursor-agent](tmux-cursor-agent/SKILL.md) | 通过 tmux 控制与监控 Cursor AI Agent — 状态检测、消息协议、监控 daemon，支持 pane 级别监控 |
-| [tmux-pane-workflow](tmux-pane-workflow/SKILL.md) | Tmux pane 基本操作规范：zoom 前后、发前检查 agent 状态、发后验证送达。独立于任何项目 |
-| [cursor-agent-orchestration](cursor-agent-orchestration/SKILL.md) | 编排多个 Cursor Agent 在 tmux 中的团队协作 — 多 session 工作模式、启动序列、预检清单、状态恢复 |
-| [doc-driven-multi-agent](doc-driven-multi-agent/SKILL.md) | 文档驱动多代理协作协议 — 角色 SOP、handoff 三要素、门禁 G0–G4、越界拒绝、团队配置持久化 |
-| [camofox-scraping](camofox-scraping/SKILL.md) | 用 CamoFox 反检测浏览器爬取受 Cloudflare 保护的页面。npx 运行，不 clone。通不过就用 web_search 兜底 |
-| [product-niche-discovery](product-niche-discovery/SKILL.md) | 找赛道、挖痛点 — 52 渠道的结构化产品调研。关键词生成 → 差评挖掘 → 定价抓取 → 输出原始数据喂给分析框架 |
-| [short-viral-content](short-viral-content/SKILL.md) | 短视频爆款内容引擎 — 中心思想+受众→平台特化标题/关键词/标签 |
-| [c456-team-work](c456-team-work/SKILL.md) | 辉常团队多角色 AI Agent 协作工作流 — 团队启动、角色边界、四步法通信、handoff 三要素、开发闭环、助理铁律 |
-| [c456-software-dev-sop](c456-software-dev-sop/SKILL.md) | 通用软件开发 SOP — 需求→理论调研→兼容性评估→编码→文档同步→验收 |
-| [c456-ai-summit](c456-ai-summit/SKILL.md) | 主持 AI 圆桌峰会 — 多角色 cursor-agent 在 tmux 中协同讨论，动态布局切换、日志体系、agency-agents 集成 |
+| [llm-wiki](llm-wiki/SKILL.md) | 卡帕西 LLM Wiki / knowledge base — 互联 Markdown 知识摄取、搜索、查询与维护 |
+| [llm-wiki-domains](llm-wiki-domains/SKILL.md) | 多领域 LLM Wiki / meta-wiki — 多主题隔离知识库、跨领域路由与根层导航 |
+| [book-extract](book-extract/SKILL.md) | 书籍素材提取 — PDF、扫描件、拍照书页、OCR → `raw/books/`（MinerU 或视觉） |
+| [wiki-book-ingest](wiki-book-ingest/SKILL.md) | 书籍知识摄取 — `raw/books/` → llm-wiki 概念、来源、线索与章节检查 |
+| [tmux-cursor-agent](tmux-cursor-agent/SKILL.md) | Cursor Agent over tmux — 状态检测、四步消息协议、取消执行、监控 daemon |
+| [tmux-pane-workspace](tmux-pane-workspace/SKILL.md) | Tmux pane workspace — pane 聚焦缩放、多 pane 布局、圆桌会议、职业角色来源与会议日志 |
+| [doc-driven-multi-agent](doc-driven-multi-agent/SKILL.md) | 文档驱动多代理协作 — 角色 SOP、handoff 三要素、G0-G4 门禁、越界拒绝 |
+| [camofox-scraping](camofox-scraping/SKILL.md) | CamoFox scraping — 抓取 Cloudflare / 反爬页面，失败时回退 web_search |
+| [product-niche-discovery](product-niche-discovery/SKILL.md) | 产品赛道发现 — 52 渠道找赛道、挖痛点、抓竞品/差评/定价原始材料 |
+| [short-viral-content](short-viral-content/SKILL.md) | 短视频爆款内容 — 小红书、抖音、视频号标题、关键词、描述与话题标签 |
+| [c456-team-work](c456-team-work/SKILL.md) | 辉常团队工作流 — 多角色 AI Agent 团队入口、职业角色选择、handoff/relay、通知与开发闭环 |
+| [llm-wiki-versioned](llm-wiki-versioned/SKILL.md) | LLM Wiki 版本化 — `.versioned/` 快照、旧结论回溯、版本对比、provenance |
+| [c456-software-dev-sop](c456-software-dev-sop/SKILL.md) | 软件开发 SOP — 需求、调研、兼容性评估、编码、测试、文档同步与验收 |
 
 ### 🏢 C456 通用技能
 
@@ -30,18 +30,20 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 
 | 名称 | 说明 |
 |------|------|
-| [c456-cli](c456-cli/SKILL.md) | C456 CLI 操作命令 |
-| [c456-llm-wiki](c456-llm-wiki/SKILL.md) | 在 llm-wiki-domains 基础上集成 C456 双向同步 |
-| [c456-product-channel-article](c456-product-channel-article/SKILL.md) | 产品渠道长文撰写 |
-| [c456-signal-product-vs](c456-signal-product-vs/SKILL.md) | 产品对比类 signal 写作 |
-| [c456-signal-researcher](c456-signal-researcher/SKILL.md) | 新闻研究员风格 signal 写作 |
-| [c456-sync-public-markdown](c456-sync-public-markdown/SKILL.md) | C456 公开 Markdown 同步规范 |
-| [c456-playbook-publishing](c456-playbook-publishing/SKILL.md) | 向 c456.com 发布长文（playbook）— frontmatter 规范、配图规则（c456 asset upload）、CLI 发布、本地元数据同步 |
-| [c456-rails-startup](c456-rails-startup/SKILL.md) | Rails + Inertia + React + shadcn/ui 从零脚手架 — 环境搭建、项目初始化、集成功能、Hello World 验证 |
+| [c456-cli](c456-cli/SKILL.md) | C456 CLI / c456.com 操作 — intake、playbook、assets、搜索、截图上传与 API 工作流 |
+| [c456-llm-wiki](c456-llm-wiki/SKILL.md) | C456 LLM Wiki 扩展 — 给 `llm-wiki` 后接 `c456-sync/`，支持引用型镜像、版本绑定、发布与拉取 |
+| [c456-product-channel-article](c456-product-channel-article/SKILL.md) | C456 产品/渠道长文 — tool/channel 介绍、公众号渠道稿、五段式产品叙事 |
+| [c456-signal-product-vs](c456-signal-product-vs/SKILL.md) | C456 产品对比 signal — tool vs tool、选型建议、竞品差异与信息源分层 |
+| [c456-signal-researcher](c456-signal-researcher/SKILL.md) | C456 signal 研究写作 — 新闻收录、行业动态、事实核验、来源块与站内关联 |
+| [c456-sync-public-markdown](c456-sync-public-markdown/SKILL.md) | C456 public Markdown — `c456-sync/` 对外正文、frontmatter 剥离与发布格式检查 |
+| [c456-playbook-publishing](c456-playbook-publishing/SKILL.md) | C456 playbook 发布 — 长文写作、配图上传、字数校验、CLI 发布与本地元数据同步 |
+| [c456-rails-startup](c456-rails-startup/SKILL.md) | Rails startup — Rails + Inertia + React + shadcn/ui 从零脚手架与 hello-world 验证 |
 
 ### 📦 第三方技能
 
-来自 [phuryn/pm-skills](https://github.com/phuryn/pm-skills) 的产品管理技能包，共 68 个技能。下表路径便于在本仓库浏览；安装见上方「第三方技能」。
+第三方技能从上游仓库安装。下表路径便于在本仓库浏览；安装见上方「第三方技能」。
+
+来自 [phuryn/pm-skills](https://github.com/phuryn/pm-skills) 的产品管理技能包，共 68 个技能。
 
 #### pm-ai-shipping（AI 交付）
 
@@ -165,6 +167,7 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 npx skills add c456-com/skills -l
 
 # 安装单个（CLI 会询问或自动识别当前 Agent，勿手写 -a）
+npx skills add c456-com/skills --skill llm-wiki -y
 npx skills add c456-com/skills --skill llm-wiki-domains -y
 
 # 一次装全部
@@ -173,7 +176,7 @@ npx skills add c456-com/skills --all -y
 
 ### 第三方技能
 
-第三方技能（如 PM 技能包）从上游仓库安装。安装时使用**技能短名**（如 `create-prd`），而非仓库内路径（如 `pm-skills/pm-execution/create-prd`）：
+第三方技能从上游仓库安装。安装时使用**技能短名**（如 `create-prd`），而非仓库内路径（如 `pm-skills/pm-execution/create-prd`）：
 
 ```bash
 # 列出 PM 技能包内全部 68 个技能

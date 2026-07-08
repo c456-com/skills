@@ -2,8 +2,8 @@
 name: product-niche-discovery
 category: research
 tags: [product-discovery, pain-points, market-research, niche-finding, competitive-analysis]
-description: "找赛道、挖痛点 — 52渠道的结构化产品调研技能。配合 phuryn/pm-skills 做方法论分析，本技能负责执行层：渠道遍历、关键词生成、差评挖掘、定价抓取。方向层（JTBD/蓝海/PMF验证）交给 phuryn/pm-skills。"
-version: 1.2.1
+description: "产品赛道发现 / product niche discovery：当用户要找赛道、挖痛点、做 market research、竞品/差评/定价抓取、生成关键词或准备 PMF/JTBD 分析原始材料时触发；用于 52 渠道执行层调研。"
+version: 1.2.2
 author: c456-com
 license: MIT
 platforms: [macos, linux]

@@ -1,8 +1,7 @@
 ---
 name: c456-signal-product-vs
-description: >-
-  撰写「产品 vs 产品」类 C456 signal（深度对比）：信息源分层（P0/P1）、篇幅区间、章节骨架（首节正文承载核心判断，禁止「## 一句话结论」式标题）、调研笔记落盘；并约束对外稿语气（具体场景、诚实边界、少套话）以减少模版感。
-  与 c456-sync 对外规则（无正文一级标题、无仓库工序）一致。在扩写 Auth/IdP、SaaS 对等对比、或任意 tool vs tool 信号前使用。
+description: "C456 产品对比 signal / tool vs tool：当用户要写 Auth/IdP、SaaS、开源工具等产品深度对比、选型建议或竞品差异分析时触发；用于信息源分层、核心判断、对比结构和对外正文约束。"
+version: 1.0.1
 ---
 
 # 产品 vs 类 Signal（深度对比）

@@ -1,8 +1,7 @@
 ---
 name: wiki-book-ingest
-description: >-
-  将 raw/books/ 书籍 Markdown 编译为 wiki 概念页、来源摘要与线索（逐章 Ingest、Lint）。
-  用户提到书籍 ingest、raw 编译进知识库、逐章提取、书籍补录、wiki-book-ingest 时使用。
+description: "书籍知识摄取 / book ingest：当用户要把 raw/books/ 编译进 llm-wiki、逐章提取概念/来源/线索、处理图表文字化或做章节 lint 时触发；用于书籍知识库写入和质量检查。"
+version: 1.0.1
 ---
 
 # Wiki Book Ingest（书籍知识编译）
