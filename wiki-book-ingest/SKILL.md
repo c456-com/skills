@@ -1,7 +1,7 @@
 ---
 name: wiki-book-ingest
 description: "书籍知识摄取 / book ingest：当用户要把 raw/books/ 编译进 llm-wiki、逐章提取概念/来源/线索、处理图表文字化或做章节 lint 时触发；用于书籍知识库写入和质量检查。"
-version: 1.1.0
+version: 1.2.0
 ---
 
 # Wiki Book Ingest（书籍知识编译）
@@ -67,6 +67,10 @@ version: 1.1.0
 
 - 定义与原理、分类、适用场景、与其他概念 Wikilink
 - **每个独立战法/方法单独成页**
+- **行级出处标注**：每个关键事实/结论后面用 `^[page-NNN.md]` 标注来源的 raw 页面，实现「事实→raw页面→PDF页码」的双向追溯。编译时：
+  1. 读取 raw 页面的内容 + frontmatter（含 `page-indices` → PDF 页码）
+  2. 提取该页的核心论据，写入概念页后立即追加 `^[page-NNN.md]`
+  3. 若同一段知识跨多页，用 `^[page-NNN.md][page-MMM.md]`
 - **页尾必须包含「来源」章节**，记录完整出处：
   ```markdown
   ## 来源
@@ -109,6 +113,7 @@ version: 1.1.0
 2. 孤立 wikilink
 3. 矛盾表述
 4. 图表未转文字
+5. **行级出处缺失** — 抽查概念页，确认每个事实段末尾有 `^[page-NNN.md]` 标记；缺失率 > 20% 则退回补充
 
 有遗漏 → 列补录计划，用户确认后继续。
 
