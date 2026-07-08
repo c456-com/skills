@@ -1,7 +1,7 @@
 ---
 name: wiki-book-ingest
 description: "书籍知识摄取 / book ingest：当用户要把 raw/books/ 编译进 llm-wiki、逐章提取概念/来源/线索、处理图表文字化或做章节 lint 时触发；用于书籍知识库写入和质量检查。"
-version: 1.3.1
+version: 1.4.0
 ---
 
 # Wiki Book Ingest（书籍知识编译）
@@ -71,6 +71,17 @@ version: 1.3.1
 ```
 
 出处信息来自 raw/books/ 的 `.extract-meta.yml`（PDF路径）和各 page-*.md 的内容分析（章节标题、页码）。
+
+### 页面类型选用规则
+
+知识库默认 4 种页面类型：`concepts/`、`entities/`、`threads/`、`sources/`。
+
+当内容明显不适合以上类型时（例如工厂型号、化学物质、法律案卷等），**不允许强行塞入现有类型**，流程如下：
+
+1. 识别到「新类型内容」时，先判断现有没有可容纳的目录
+2. **停下来问用户**：建议新建什么类型目录（如 `products/`、`substances/`、`cases/`），用户确认后才创建
+3. 新目录首次创建后，在领域 `AGENTS.md` 的「页面类型」章节登记，后续同类内容不再重复询问
+4. **不需要预先创建空目录**，有内容时才创建
 
 ### 来源摘要 `wiki/sources/`
 
