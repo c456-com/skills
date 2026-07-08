@@ -1,9 +1,9 @@
-# .config/ — per-skill config files (API keys, settings)
+# .config/ — 技能专用配置文件（API key、设置）
 .config/
 
-# Temporary files
+# 临时文件
 .tmp/
 
-# Optionally ignore raw material when too large
-# domains/*/raw/images/
+# raw 材料过大时可选择忽略
+# domains/*/raw/assets/
 # raw/

@@ -1,10 +1,7 @@
 ---
 name: llm-wiki-domains
-description: >-
-  Multi-domain knowledge base navigator on top of Karpathy's LLM Wiki.
-  Each domain is an independent llm-wiki instance; a root index provides
-  cross-domain navigation. Use when building multi-topic knowledge bases
-  with isolated domains under a common index.
+description: "LLM Wiki Domains / multi-domain knowledge base：当用户要为多个主题建立隔离知识库、跨领域搜索/query、路由资料、维护根层 purpose/overview 或做多领域 health-check 时触发；用于每域独立 llm-wiki 与 meta-wiki 导航。"
+version: 0.3.1
 tags:
   - wiki
   - knowledge-base
@@ -12,210 +9,207 @@ tags:
   - multi-domain
   - meta-wiki
   - llm-wiki
+  - ingest
+  - search
+  - query
 related_skills:
   - llm-wiki
 ---
 
-# LLM Wiki Domains — Multi-Domain Knowledge Base Navigator
+# LLM Wiki Domains — 多领域知识库导航
 
-> **Build a cross-domain knowledge base where each domain is an independent [llm-wiki](https://hermes-agent.nousresearch.com/docs/skills/research/llm-wiki) instance, connected by a root index.**
+> **构建跨领域知识库：每个领域都是独立的 [llm-wiki](../llm-wiki/SKILL.md) 实例，并通过根索引互相连接。**
 
-This skill adds a **multi-domain container layer** on top of the standard llm-wiki pattern. Instead of a single flat knowledge base, you get:
+本技能在标准 llm-wiki 模式之上增加一个**多领域容器层**。它不是单一扁平知识库，而是以下结构：
 
 ```
 my-brain/
-├── AGENTS.md                    ← Root schema
-├── wiki/index.md                ← Global index + domain registry
-├── wiki/log.md                  ← Global action log
-├── raw/                         ← Cross-domain fragments
+├── AGENTS.md                    ← 根级 schema
+├── raw/                         ← 跨领域或待路由源材料
+├── wiki/                        ← 根层 meta-wiki
+│   ├── purpose.md               ← 全局目标、领域边界、关键问题
+│   ├── overview.md              ← 跨领域概要、共享主题、知识空白
+│   ├── index.md                 ← 全局索引 + 领域注册表
+│   └── log.md                   ← 全局操作日志
 ├── domains/
-│   ├── stock-trading/           ← Independent llm-wiki instance
+│   ├── stock-trading/           ← 独立 llm-wiki 实例
 │   │   ├── AGENTS.md
-│   │   ├── raw/  wiki/  output/
-│   ├── ai-research/             ← Independent llm-wiki instance
+│   │   ├── raw/
+│   │   └── wiki/
+│   ├── ai-research/             ← 独立 llm-wiki 实例
 │   │   ├── AGENTS.md
-│   │   ├── raw/  wiki/  output/
-└── shared/wiki/                 ← Optional cross-domain summaries
+│   │   ├── raw/
+│   │   └── wiki/
 ```
 
-## Prerequisites
+## 前置条件
 
-- **`llm-wiki`** Hermes skill must be installed. This skill handles the multi-domain
-  navigation layer; the actual ingest/query/lint operations delegate to llm-wiki
-  within each domain.
-- **Obsidian** (optional) — the wiki directory works as an Obsidian vault out of the box.
-  `[[wikilinks]]` render as clickable links, Graph View works, YAML frontmatter
-  powers Dataview queries.
+- 必须安装本仓库的 **`llm-wiki`** 技能。本技能负责多领域导航层；实际的摄取、查询、检查操作委托给各领域内的 llm-wiki 方法论。
+- **Obsidian**（可选）— wiki 目录可直接作为 Obsidian vault 使用。`[[wikilinks]]` 会渲染为可点击链接，Graph View 可用，YAML frontmatter 可供 Dataview 查询。
 
-## Architecture
+## 架构
 
-### Two-Layer Structure
+### 双层结构
 
-| Layer | Path | Responsibility |
+| 层级 | 路径 | 职责 |
 |-------|------|----------------|
-| **Root** | `./` | Cross-domain fragments, tools research, domain registry |
-| **Domain** | `domains/<name>/` | Self-contained llm-wiki instance (raw + wiki + output) |
+| **根层** | `./` | 跨领域目标、领域注册表、共享概念、待路由材料、全局 health-check |
+| **领域层** | `domains/<name>/` | 自包含的 llm-wiki 实例（raw + wiki + schema/purpose） |
 
-The root layer holds a **domain registry** in `wiki/index.md` that maps domain
-names to their paths. Each domain is a fully independent knowledge base that
-follows the standard llm-wiki three-layer architecture (raw → wiki → schema).
+根层在 `wiki/index.md` 中维护**领域注册表**，用于把领域名称映射到路径。每个领域都是完全独立的知识库，遵循标准 llm-wiki 三层架构（raw → wiki → schema/purpose）。根层自身也是一个轻量 meta-wiki，负责跨领域导航、共享概念和知识空白。
 
-### Directory Layout
+### 目录布局
 
 ```
 {{PROJECT_NAME}}/
-├── AGENTS.md                    ← Root schema (this navigation layer)
-├── .gitignore                   ← With .config/ entries
-├── .config/                     ← Skill-specific config (gitignored)
-├── raw/                         ← Cross-domain source material
-│   ├── articles/  books/  papers/  courses/
-│   ├── resources/  quotes/  tools/  work/
-├── wiki/                        ← Global knowledge (root level)
-│   ├── index.md                 ← Global index + domain registry
-│   ├── log.md                   ← Append-only action log
-│   ├── entities/  concepts/  threads/  sources/  agents/
-├── shared/wiki/                 ← Cross-domain compilations (optional)
-│   ├── index.md
-│   └── log.md
-├── domains/                     ← Domain containers
+├── AGENTS.md                    ← 根级 schema（本导航层）
+├── .gitignore                   ← 包含 .config/ 规则
+├── .config/                     ← 技能专用配置（不提交 Git）
+├── raw/                         ← 跨领域源材料
+│   ├── articles/  books/  papers/  transcripts/
+│   ├── assets/  work/
+├── wiki/                        ← 全局知识层（根层）
+│   ├── purpose.md               ← 全局目标、领域边界、关键问题
+│   ├── overview.md              ← 跨领域概要、共享主题、知识空白
+│   ├── index.md                 ← 全局索引 + 领域注册表
+│   ├── log.md                   ← 仅追加操作日志
+│   ├── sources/  entities/  concepts/  comparisons/
+│   ├── threads/  queries/  _meta/
+├── domains/                     ← 领域容器
 │   └── <domain-name>/
-│       ├── AGENTS.md            ← Domain-specific schema
-│       ├── raw/                 ← Domain source material
-│       │   ├── articles/  books/  papers/  courses/
-│       │   ├── resources/  quotes/  tools/  work/
-│       ├── wiki/                ← Domain wiki (llm-wiki standard)
-│       │   ├── index.md  log.md
-│       │   ├── entities/  concepts/  threads/  sources/
-│       └── output/              ← Domain output artifacts
-├── output/                      ← Global output artifacts (optional)
-└── .tmp/                        ← Temporary files
+│       ├── AGENTS.md            ← 领域专用 schema
+│       ├── raw/                 ← 领域源材料
+│       │   ├── articles/  books/  papers/  transcripts/
+│       │   ├── assets/  work/
+│       ├── wiki/                ← 领域 wiki（llm-wiki 标准）
+│       │   ├── purpose.md  overview.md  index.md  log.md
+│       │   ├── sources/  entities/  concepts/  comparisons/
+│       │   ├── threads/  queries/  _meta/
+└── .tmp/                        ← 临时文件
 ```
 
-### Cross-Domain Retrieval Protocol
+### 跨领域检索协议
 
-1. **Root first**: Read `wiki/index.md` for the domain registry
-2. **Locate domain**: Find the relevant `domains/<name>/` path from the registry
-3. **Domain search**: Read that domain's `wiki/index.md` for its content catalog
-4. **Cross-domain search**: `rg -l "keyword" domains/` across all domains
-5. **Scope isolation**: Ingest/Query/Lint default to the current domain
+1. **先读根层**：读取 `wiki/purpose.md`、`wiki/overview.md`、`wiki/index.md`
+2. **判断领域**：从领域注册表和全局目的判断问题属于单领域、跨领域，还是待路由
+3. **领域内定位**：进入相关 `domains/<name>/`，读取该领域 `wiki/purpose.md`、`wiki/overview.md`、`wiki/index.md`、近期 `wiki/log.md`
+4. **跨领域查询**：分别查询相关领域，再把可复用综合写回根层 `wiki/queries/`、`wiki/comparisons/` 或 `wiki/overview.md`
+5. **范围隔离**：摄取默认只作用于一个明确领域；跨领域材料先放根层 `raw/work/` 并记录待路由
 
-## Initialization (Init)
+## 初始化（Init）
 
-### Step 1 — Confirm Requirements
+### 步骤 1 — 确认需求
 
-- Ask the user for the project path (default: current working directory)
-- Ask for the project name (kebab-case, e.g., `my-brain`)
-- Ask for the initial list of domains: each needs a name (kebab-case),
-  display name (Chinese or English), and one-line description
+- 询问项目路径（默认：当前工作目录）
+- 询问项目名（kebab-case，例如 `my-brain`）
+- 询问全局知识库目标：这个多领域 wiki 要长期回答哪些问题
+- 询问初始领域列表：每个领域需要名称（kebab-case）、显示名称、范围边界和一句话描述
 
-### Step 2 — Scan Existing State
+### 步骤 2 — 扫描现有状态
 
 ```bash
-ls -la <path>                    # Check if directory exists
-git rev-parse --is-inside-work-tree  # Check if inside a repo
+ls -la <path>                    # 检查目录是否存在
+git rev-parse --is-inside-work-tree  # 检查是否位于 Git 仓库内
 ```
 
-- Empty directory → `fresh` mode (create everything)
-- Partially existing → `merge` mode (create missing, skip existing content)
+- 空目录 → `fresh` 模式（创建全部内容）
+- 部分存在 → `merge` 模式（补齐缺失内容，跳过已有内容）
 
-### Step 3 — Show Preview Table
+### 步骤 3 — 展示预览表
 
-| Category | Path | Action |
+| 类别 | 路径 | 操作 |
 |----------|------|--------|
-| New dir | `raw/articles/` etc. | create |
-| New file | `AGENTS.md` | create from template |
-| New file | `wiki/index.md` | create from template |
-| Skip | `wiki/log.md` | skip if exists |
-| New dir | `domains/<name>/` | create |
-| New file | `domains/<name>/AGENTS.md` | create from template |
+| 新目录 | `raw/articles/` 等 | 创建 |
+| 新文件 | `AGENTS.md` | 从模板创建 |
+| 新文件 | `wiki/purpose.md` | 从模板创建 |
+| 新文件 | `wiki/overview.md` | 从模板创建 |
+| 新文件 | `wiki/index.md` | 从模板创建 |
+| 跳过 | `wiki/log.md` | 若已存在则跳过 |
+| 新目录 | `domains/<name>/` | 创建 |
+| 新文件 | `domains/<name>/AGENTS.md` | 从模板创建 |
 
-End with: *"Please confirm above changes. Reply 'confirm' to proceed,
-'cancel' to abort, or modify domain names/paths."*
+最后提示：*“请确认以上变更。回复 ‘confirm’ 继续，回复 ‘cancel’ 取消，或直接修改领域名称/路径。”*
 
-### Step 4 — Create Scaffolding
+### 步骤 4 — 创建脚手架
 
-Create files from the templates in `references/`. Replace placeholders:
-- `{{PROJECT_NAME}}` — project directory name
-- `{{DATE}}` — today's date (YYYY-MM-DD)
-- `{{DOMAIN_NAME}}` — kebab-case domain name
-- `{{DOMAIN_DISPLAY_NAME}}` — human-readable domain name
-- `{{DOMAIN_DESCRIPTION}}` — one-line domain description
-- `{{DOMAIN_ROWS}}` — registry table rows (`| name | path | description |`)
+从 `references/` 模板创建文件，并替换占位符：
+- `{{PROJECT_NAME}}` — 项目目录名
+- `{{DATE}}` — 今天日期（YYYY-MM-DD）
+- `{{DOMAIN_NAME}}` — kebab-case 领域名
+- `{{DOMAIN_DISPLAY_NAME}}` — 人类可读的领域名
+- `{{DOMAIN_DESCRIPTION}}` — 一句话领域描述
+- `{{DOMAIN_ROWS}}` — 注册表行（`| name | path | description |`）
 
-Create directories first, then files. For each domain, create the full
-domain scaffolding including AGENTS.md + raw/ + wiki/ + output/.
+先创建目录，再创建文件。对每个领域创建完整领域脚手架，包括 AGENTS.md + raw/ + wiki/。默认不创建 `output/`；若用户需要产出物目录，再单独添加。
 
-### Step 5 — Git Detection
+### 步骤 5 — Git 检测
 
-If the project is in a git repo, ask if the user wants to commit the initial scaffold.
-If not a git repo, offer to `git init` (don't auto-execute).
+如果项目位于 Git 仓库内，询问用户是否要提交初始脚手架。如果不是 Git 仓库，建议执行 `git init`，但不要自动执行。
 
-See [Git Workflow](#git-workflow) below for commit message conventions.
+提交信息规范见下方[Git 工作流](#git-工作流)。
 
-### Add a New Domain (add-domain)
+### 添加新领域（add-domain）
 
-Same flow as init but scoped:
-1. Ask domain name, display name, description
-2. Scan for existing (skip if already exists)
-3. Show preview (single domain scaffold)
-4. Confirm → create → update root `wiki/index.md` registry → append to `wiki/log.md`
+流程与初始化相同，但范围更小：
+1. 询问领域名、显示名称和描述
+2. 扫描是否已存在（已存在则跳过）
+3. 展示预览（单个领域脚手架）
+4. 确认 → 创建 → 更新根层 `wiki/index.md` 注册表和 `wiki/overview.md` → 追加 `wiki/log.md`
 
-## Operations Within a Domain
+## 领域内操作
 
-This skill delegates to **`llm-wiki`** for per-domain operations.
-Within any domain directory, the standard llm-wiki operations apply:
+本技能将单个领域内的操作委托给 **`llm-wiki`**。在任一领域目录中，适用标准 llm-wiki 操作：
 
-### Ingest (per domain)
+### 摄取（单领域）
 
-1. Read source material
-2. Create/update source summary page
-3. Extract entities (new or append to existing)
-4. Extract concepts (new or merge with existing)
-5. Update thread pages
-6. Update `wiki/index.md`
-7. Append to `wiki/log.md`
+1. 先读根层 `wiki/purpose.md` 和领域注册表，判断材料属于哪个领域
+2. 进入领域，按 `llm-wiki` 的定位流程读取 `purpose.md`、`overview.md`、`index.md`、近期 `log.md`
+3. 执行两阶段摄取：先分析实体、概念、矛盾、待更新页面，再生成/更新 wiki 文件
+4. 更新领域 `sources/`、`entities/`、`concepts/`、`comparisons/`、`threads/`、`queries/`
+5. 更新领域 `wiki/index.md`、`wiki/overview.md`、`wiki/log.md`
+6. 若材料影响跨领域主题，再更新根层 `wiki/overview.md` 或 `wiki/queries/`
 
-Cross-domain material goes to root `raw/work/` first, then routed to the
-appropriate domain during ingest.
+跨领域材料先放入根层 `raw/work/`，再在摄取时路由到合适领域。
 
-### Query (per domain)
+### 查询（单领域）
 
-1. Read domain `wiki/index.md`
-2. Locate relevant pages
-3. Read and synthesize
-4. Cite sources with `[[wikilinks]]`
-5. If the user confirms the answer is valuable, save to wiki
+1. 读取根层 `wiki/purpose.md`、`wiki/overview.md`、`wiki/index.md`
+2. 判断是单领域查询还是跨领域查询
+3. 单领域：进入领域后按 `llm-wiki` 查询流程读取 `purpose.md`、`overview.md`、`index.md` 并搜索相关页面
+4. 跨领域：分别查询相关领域，汇总共享概念、差异、冲突和知识空白
+5. 如果答案有保存价值，单领域结果写入领域 `queries/`；跨领域结果写入根层 `queries/` 或 `comparisons/`
 
-For cross-domain queries: check the root registry, then search domains.
+跨领域查询：先检查根层注册表，再搜索各领域。
 
-### Lint (per domain or cross-domain)
+### 检查（单领域或跨领域）
 
-1. Find orphan pages (no inbound wikilinks)
-2. Find broken wikilinks (links to non-existent pages)
-3. Check index completeness (every wiki file in index.md)
-4. Validate frontmatter
-5. Check stale content
-6. Flag contradictions
-7. Output Markdown report
+1. 查找孤立页面（没有入站 wikilink）
+2. 查找断开的 wikilink（链接到不存在页面）
+3. 检查索引完整性（每个 wiki 文件都在 index.md 中）
+4. 校验 frontmatter
+5. 检查 `purpose.md` 对齐度、`overview.md` 是否过期
+6. 检查过期内容、低置信度内容、来源漂移和矛盾内容
+7. 跨领域检查领域边界是否重叠、注册表是否准确、根层是否遗漏共享主题
+8. 输出 Markdown 报告，并追加对应 `wiki/log.md`
 
-## Git Workflow
+## Git 工作流
 
-### Commit Suggestions After Major Milestones
+### 重要里程碑后的提交建议
 
-After init, a full book ingest, or a large batch of updates:
+完成初始化、整本书摄取或大批量更新后：
 
-1. Check `git rev-parse --is-inside-work-tree`
-2. If in a git repo, offer to commit with a suggested message
-3. Default commit scope: `wiki/`, `AGENTS.md`, `domains/*/wiki/`
-4. **Ask before staging** `raw/` (may be large) — suggest gitignore if >50MB
+1. 检查 `git rev-parse --is-inside-work-tree`
+2. 如果位于 Git 仓库内，提供建议提交信息并询问是否提交
+3. 默认提交范围：`wiki/`、`AGENTS.md`、`domains/*/AGENTS.md`、`domains/*/wiki/`
+4. **暂存 `raw/` 前必须询问**（可能很大）— 若超过 50MB，建议加入 gitignore
 
-### Suggested Commit Format
+### 建议提交格式
 
 ```
 ingest: <domain> <topic> — N concepts, M sources
 
-- wiki/index.md, wiki/log.md updated
-- raw: included / gitignored (local only)
+- 已更新 wiki/index.md、wiki/log.md
+- raw: 已包含 / 已忽略（仅本地）
 ```
 
 ### .gitignore
@@ -225,34 +219,27 @@ ingest: <domain> <topic> — N concepts, M sources
 .tmp/
 ```
 
-Config directory is gitignored by default (contains skill-specific config,
-API keys, etc.).
+配置目录默认不提交 Git（包含技能专用配置、API key 等）。
 
-## Template Files
+## 模板文件
 
-This skill ships the following templates in `references/`:
+本技能在 `references/` 中提供以下模板：
 
-| Template | Purpose |
+| 模板 | 用途 |
 |----------|---------|
-| `root-AGENTS.md` | Root schema defining directory structure, domain registry, cross-domain protocol |
-| `domain-AGENTS.md` | Per-domain schema (name, content types, scope rules) |
-| `root-index.md` | Root index template with domain registry table |
-| `domain-index.md` | Domain-level index template |
-| `log-entry.md` | Standard log entry format |
-| `gitignore-snippet.md` | .gitignore content for wiki projects |
+| `root-AGENTS.md` | 定义目录结构、领域注册表和跨领域协议的根级 schema |
+| `domain-AGENTS.md` | 领域级 schema（名称、内容类型、范围规则） |
+| `root-index.md` | 带领域注册表的根索引模板 |
+| `domain-index.md` | 领域级索引模板 |
+| `gitignore-snippet.md` | wiki 项目的 .gitignore 内容 |
 
-## Pitfalls
+## 常见问题
 
-- **One domain per instance**: Do not create overlapping domains for the same topic.
-  If two domains would cover the same ground, consider merging them or establishing
-  a clear boundary in the registry.
-- **Registry accuracy**: The root `wiki/index.md` domain registry must be updated
-  every time a domain is added. Stale registries cause blind spots.
-- **Cross-domain wikilinks**: `[[domain-page]]` links are only valid within the
-  same domain. Use the registry to navigate between domains.
-- **Don't nest domains**: `domains/<name>/domains/` is not supported. Each domain
-  is a leaf.
-- **Root is for fragments**: The root `raw/` and `wiki/` are for cross-domain
-  or uncategorized material. If something clearly belongs to a domain, put it there.
-- **Init preview is mandatory**: Never create files without showing the preview
-  table and getting user confirmation.
+- **一个实例一个领域**：不要为同一主题创建重叠领域。如果两个领域覆盖范围相同，考虑合并，或在注册表中写清边界。
+- **注册表必须准确**：每次新增领域都必须更新根层 `wiki/index.md` 的领域注册表。过期注册表会造成检索盲区。
+- **跨领域 wikilink 限制**：`[[domain-page]]` 链接只在同一领域内有效。跨领域导航应使用注册表。
+- **不要嵌套领域**：不支持 `domains/<name>/domains/`。每个领域都应是叶子节点。
+- **根层用于片段**：根层 `raw/` 与 `wiki/` 用于跨领域或尚未归类的材料。若材料明显属于某个领域，应放入该领域。
+- **根层不是 shared/wiki 的替身**：默认不创建 `shared/wiki/`。跨领域综合写在根层 `wiki/`；只有用户明确需要可独立发布的专题集时，才创建额外目录。
+- **默认不创建 output/**：产出物目录属于项目工作流，不是 llm-wiki 核心结构。需要时按项目约定单独添加。
+- **初始化预览是强制步骤**：展示预览表并获得用户确认前，不要创建文件。

@@ -1,33 +1,49 @@
-# Wiki Index
+# Wiki 索引
 
-> Content catalog. AI should read this first to locate relevant pages for any query.
-> Last updated: {{DATE}}
+> 根层 meta-wiki 内容目录。AI 回答任何查询前，应先读取 `purpose.md`、`overview.md` 和本文件，以定位相关领域与跨领域页面。
+> 最后更新：{{DATE}}
 
 ---
 
-## Domain Registry
+## 领域注册表
 
-> Each domain is an independent knowledge base in `domains/`.
-> Navigate to the domain's `wiki/index.md` for its content catalog.
+> 每个领域都是 `domains/` 下的独立 llm-wiki 实例。
+> 进入对应领域后，先读取该领域的 `wiki/purpose.md`、`wiki/overview.md`、`wiki/index.md`。
 
-| Domain | Path | Description |
+| 领域 | 路径 | 说明 |
 |--------|------|-------------|
 {{DOMAIN_ROWS}}
 
 ---
 
-## Entity Pages (entities/)
+## 跨领域主题（concepts/）
 
-(Ingest entries here as content is added.)
+（记录多个领域共享的概念，每行一个：`- [[page-name]] — 一句话摘要`）
 
-## Concept Pages (concepts/)
+## 横向比较（comparisons/）
 
-(Ingest entries here as content is added.)
+（记录跨领域比较、差异分析、决策依据。）
 
-## Thread Pages (threads/)
+## 查询结果（queries/）
 
-(Ingest entries here as content is added.)
+（记录值得复用的跨领域查询结果。）
 
-## Source Summaries (sources/)
+## 实体页（entities/）
 
-(Ingest entries here as content is added.)
+（添加内容时，在此写入摄取条目。）
+
+## 概念页（concepts/）
+
+（添加内容时，在此写入摄取条目。）
+
+## 线索页（threads/）
+
+（添加内容时，在此写入摄取条目。）
+
+## 来源摘要（sources/）
+
+（添加内容时，在此写入摄取条目。）
+
+## 知识空白 / 待路由材料
+
+（记录还不知道归入哪个领域的材料、缺少来源的问题、需要继续研究的跨领域主题。）

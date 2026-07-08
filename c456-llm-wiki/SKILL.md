@@ -1,31 +1,52 @@
 ---
 name: c456-llm-wiki
-description: >-
-  Extends llm-wiki-domains (multi-domain wiki) with C456.com bidirectional sync.
-  Adds c456-sync/ mirror layer, C456 content type mapping (signal/tool/channel/playbook/walkthrough),
-  publish workflow via c456 CLI, and orphan_local remote-deletion handling.
-  Depends on llm-wiki-domains for the multi-domain structure and llm-wiki for per-domain operations.
+description: "C456 LLM Wiki / c456-sync：当用户要把 llm-wiki 页面发布到 C456、用引用型镜像或 versioned snapshot 绑定线上版本、后接 C456 同步、从 C456 拉回内容、维护 c456-sync/meta.yml 或处理 orphan_local 时触发；用于可插拔 C456 扩展层和 CLI 同步流程。"
+version: 1.4.0
+related_skills:
+  - llm-wiki
+  - llm-wiki-versioned
+  - c456-cli
+  - c456-sync-public-markdown
+  - llm-wiki-domains
 ---
 
 # C456 LLM Wiki — C456 双向同步
 
 ## 架构依赖
 
-本技能基于分层架构构建：
+本技能是本仓库 `llm-wiki` 的 **C456 同步扩展层**。它不提供新的知识库方法论；标准摄取、查询、索引、日志、health-check 仍遵循 `llm-wiki`。
 
 ```
-llm-wiki (Hermes 核心)       ← 单知识库引擎：ingest / query / lint
+llm-wiki                      ← 通用知识库方法论：ingest / query / lint / health-check
     ↑
-llm-wiki-domains             ← 多领域导航：root + domains/
+c456-llm-wiki                ← C456 扩展：c456-sync/ ↔ c456.com
+```
+
+多领域场景可再叠加 `llm-wiki-domains`：
+
+```
+llm-wiki                      ← 每个领域内的知识库协议
+    ↑
+llm-wiki-domains             ← 可选：root + domains/ 多领域导航
     ↑
 c456-llm-wiki                ← C456 同步：c456-sync/ ↔ c456.com
 ```
 
-**前置依赖：** 确保 `llm-wiki` 和 `llm-wiki-domains` 已安装。本技能只负责 C456 特有功能。
+**前置依赖：**
+
+- 必须安装本仓库的 `llm-wiki`。本技能只负责 C456 特有功能。
+- 如果当前知识库使用 `domains/<name>/` 多领域结构，再配合 `llm-wiki-domains` 做领域路由。
+- 发布、更新、拉取 C456 线上内容时，配合 `c456-cli`。
+- 准备对外正文或 `--body-file` 前，配合 `c456-sync-public-markdown` 自检。
+- 如果项目启用了 `llm-wiki-versioned`，引用型镜像可绑定具体 wiki 版本或 snapshot，用于判断线上内容是否落后。
 
 ## 核心思想
 
-在 llm-wiki-domains 多领域架构基础上增加 C456 双向同步层，实现本地知识库与 c456.com 之间的内容发布与拉取。每个领域可独立配置同步范围。
+在标准 `llm-wiki` 知识库旁边增加 `c456-sync/` 镜像层，实现本地 wiki 与 c456.com 之间的内容发布、拉取、更新和冲突处理。`wiki/` 继续承担长期知识网络，`c456-sync/` 承担 C456 线上目录、名称、远端 ID、同步状态和必要正文。
+
+`c456-sync/` 是可插拔插件层：一个已有 `llm-wiki` 可以之后再接入 C456 同步；不需要 C456 时，也可以移除或忽略整个 `c456-sync/`，不污染核心 `wiki/` schema。
+
+如果项目是多领域知识库，每个领域都可以独立拥有自己的 `c456-sync/` 和 C456 映射；根层只负责跨领域导航，不替代领域内的 C456 同步。
 
 ## 必读：仓库根 `AGENTS.md`
 
@@ -37,16 +58,14 @@ c456-llm-wiki                ← C456 同步：c456-sync/ ↔ c456.com
 
 任何写入 **`c456-sync/`**、或组装将提交给 **`c456 intake` / `c456 playbook` / `c456 walkthrough` 的正文** 之前，重读 **§1.3** 自检一遍；**Walkthrough** 另见 `c456-sync-public-markdown` 与 `c456-cli` 的 content-syntax §3（正文勿嵌本页录屏）。
 
-## 四层架构
+## 扩展结构
 
 ```
-raw/（原始素材层）  ← 你存放，AI 只读
-    ↑↓
-c456-sync/（镜像层）← C456 线上内容的本地镜像
-    ↑↓
-wiki/（知识库层）   ← AI 生成的结构化 Markdown，互相链接
-    ↑↓
-AGENTS.md（Schema） ← 定义 AI 如何组织 Wiki
+raw/                  ← llm-wiki 原始素材层，保持可追溯
+wiki/                 ← llm-wiki 知识层，长期维护和互联
+c456-sync/            ← C456 镜像层，面向线上读者的单篇正文
+c456-sync/meta.yml    ← C456 ID 与本地文件的映射索引
+AGENTS.md / SCHEMA.md ← 本地 schema 与同步规则
 ```
 
 ## 目录结构
@@ -54,55 +73,68 @@ AGENTS.md（Schema） ← 定义 AI 如何组织 Wiki
 ```
 .
 ├── raw/
-│   ├── articles/  books/  papers/  courses/
-│   ├── resources/  quotes/  tools/  work/
+│   ├── articles/  books/  papers/  transcripts/
+│   ├── assets/  work/
 ├── c456-sync/
+│   ├── meta.yml
 │   ├── signal/  tool/  channel/  playbook/  walkthrough/
 ├── wiki/
-│   ├── index.md  log.md  c456-meta.yml
-│   ├── entities/  concepts/  threads/  sources/  agents/
-├── output/
+│   ├── purpose.md  overview.md  index.md  log.md
+│   ├── sources/  entities/  concepts/  comparisons/
+│   ├── threads/  queries/  _meta/
 └── AGENTS.md
 ```
 
-### 四层关系
+多领域项目中，上述结构可以出现在某个领域下，例如：
 
+```text
+domains/<domain-name>/
+├── raw/
+├── c456-sync/
+├── wiki/
+└── AGENTS.md
+```
+
+### 三层关系
 
 | 层级           | 谁维护   | 用途      | 与 C456 关系 |
 | ------------ | ----- | ------- | --------- |
 | `raw/`       | 用户放入  | 原始素材    | 上行时作为内容来源 |
-| `c456-sync/` | AI 同步 | C456 镜像 | 与线上一一对应   |
+| `c456-sync/` | AI 同步 | C456 镜像或引用描述 | 与线上目录和名称一一对应 |
 | `wiki/`      | AI 生成 | 提炼后的知识库 | 多对多映射     |
-| `output/`    | 用户创作  | 主动产出    | 可发布到 C456 |
 
 
-**关键原则**：`c456-sync/` 与 `wiki/` 之间不用 symlink。关联通过 Frontmatter 引用 + `wiki/c456-meta.yml` 实现。
+**关键原则**：`c456-sync/` 与 `wiki/` 之间不用 symlink。关联通过 Frontmatter 引用 + `c456-sync/meta.yml` 实现。C456 同步状态属于插件层，不属于核心 wiki schema。
 
 ### c456-sync 与上行正文（执行摘要）
 
-`c456-sync/` 虽是镜像层，正文须视同 **对外读者可读版本**：事实可核对、结构清晰、有推荐结论与诚实边界、CTA 明确；细节与表格见 **`AGENTS.md` §1.3**。
+`c456-sync/` 保持 C456 线上的类型目录和文件名。它有两种模式：
+
+- **引用模式 `sync-mode: reference`**：当 C456 内容直接来自某个 wiki 页面时，`c456-sync/<kind>/<slug>.md` 只保存 C456 frontmatter、线上路径/名称和 `source-wiki-path`，正文写简短引用说明。发布时从 `source-wiki-path` 读取并转换正文。
+- **正文模式 `sync-mode: body`**：当 C456 需要面向外部读者单独改写、拼接多页、或从线上拉回尚未进入 wiki 的内容时，`c456-sync/<kind>/<slug>.md` 保存完整对外正文。
+
+正文模式的内容须视同 **对外读者可读版本**：事实可核对、结构清晰、有推荐结论与诚实边界、CTA 明确；细节与表格见 **`AGENTS.md` §1.3**。引用模式则检查源 wiki 页面是否能被转换为合格对外正文。
 
 ---
 
 ## 页面类型
 
-### 实体页 `wiki/entities/`
+页面类型遵循 `llm-wiki`：`sources/`、`entities/`、`concepts/`、`comparisons/`、`threads/`、`queries/`、`_meta/`。本技能不改变页面分类，只在需要同步 C456 时补充 C456 字段。
 
-- 命名：小写 kebab-case，如 `andrej-karpathy.md`
-- Frontmatter：`type: entity` + `c456-id` + `c456-kind` + `c456-sync-path` + `tags: [...]`
+### C456 Frontmatter 扩展
 
-### 概念页 `wiki/concepts/`
+准备上行或已从 C456 拉回的 wiki 页面，可补充：
 
-- 命名：小写 kebab-case，如 `rag.md`
+- `c456-kind`: `signal | tool | channel | playbook | walkthrough`
+- `c456-title`: 上行 C456 的标题
+- `c456-summary`: 上行 C456 的列表/卡片摘要
+- `c456-id`: 发布后回填的远端 ID
+- `c456-status`: `draft | published | outdated | conflict`
+- `c456-sync-path`: 对应 `c456-sync/<kind>/...md`
+- `c456-sync-mode`: `reference | body`
+- `c456-source-version`: 发布到 C456 时引用的 wiki 当前版本（启用 `llm-wiki-versioned` 时优先写）
 
-### 线索页 `wiki/threads/`
-
-- 命名：小写 kebab-case，如 `ai-engineering-trilogy.md`
-
-### 来源摘要页 `wiki/sources/`
-
-- 命名：与 raw 文件名呼应
-- Frontmatter：`type: source` + `c456-kind` + **`c456-title`** + **`c456-summary`**（上行必备）+ `c456-id` + `c456-status` + `date: YYYY-MM-DD` + `raw: raw/.../xxx.md`
+来源摘要页 `wiki/sources/` 通常最适合承载 `c456-title` 与 `c456-summary`；实体、概念、线索、比较、查询页也可以在需要直接发布时添加这些字段。
 
 ---
 
@@ -114,69 +146,51 @@ AGENTS.md（Schema） ← 定义 AI 如何组织 Wiki
 
 ---
 
-## 核心原则：完整知识提取
+## 知识提取边界
 
-**知识库的目的不是存储原文，而是存储可被问答的知识。** 录入书籍时：
+知识摄取、查询、检查、书籍逐章提取、图片理解和 wiki 页面维护，优先交给 `llm-wiki`、`book-extract`、`wiki-book-ingest`。本技能只在以下环节介入：
 
-1. **逐章提取** — 按目录逐项创建 wiki 页面，每个策略/概念独立成页，不可遗漏任何章节
-2. **图片理解** — 遇到图表/K线图/示意图时，必须结合上下文理解其含义并记录为文字知识。例如 K 线形态图需说明：图形特征、出现位置（底部/顶部）、后续走势含义、操作信号
-3. **条件与参数完整保留** — 选股条件、技术指标阈值、软件操作步骤等不可省略
-4. **案例保留关键信息** — 股票代码、买卖价格、时间周期、获利幅度等数据需记录
-5. **知识密度优先** — 每页 wiki 应包含可被问答的实质性内容，而非目录级概述
+- 判断资料应该对应哪种 C456 类型
+- 生成或更新 `c456-sync/` 镜像正文，或引用型镜像描述
+- 补充 `c456-title`、`c456-summary`、`c456-kind`、`c456-status`
+- 维护 `c456-sync/meta.yml`
+- 调用 `c456-cli` 发布、更新或拉取远端内容
+- 处理冲突、远端删除和 `orphan_local`
 
-### Ingest（摄入）— 书籍专项流程
+### Ingest 后的 C456 扩展
 
-对书籍类素材（raw/books/），执行以下额外步骤：
+先遵循 `llm-wiki` 完成定位、分析、写入、索引、日志。只有当资料需要进入 C456 发布或镜像时，再执行以下扩展：
 
-1. **解析目录** — 提取所有章节标题，建立章节清单
-2. **逐章读取** — 按章节顺序完整读取 Markdown 内容
-3. **图片处理** — 遇到 `![](images/...)` 时：
-   - 读取图片上下文（前后文字说明）
-   - 理解图形含义并转化为文字描述
-   - 在 wiki 页面中保留图片引用 + 文字解释
-4. **策略提取** — 每个独立战法/方法创建为 `wiki/threads/` 或 `wiki/concepts/` 页面，包含：
-   - 核心逻辑（为什么有效）
-   - 优选条件（选股参数、技术指标阈值）
-   - 操作步骤（具体执行流程）
-   - 案例说明（股票代码、价格、时间、结果）
-   - 注意事项（风险点、适用环境）
-5. **概念提取** — 通用知识创建为 `wiki/concepts/` 页面，包含：
-   - 定义与原理
-   - 分类与形态
-   - 应用场景
-   - 与其他概念的关联
-6. **实体提取** — 人物/产品/工具创建为 `wiki/entities/` 页面
-7. **完整性检查** — 对比目录清单，确认所有章节都有对应 wiki 页面
-
-### Ingest（摄入）
-
-1. 读取素材
-2. **验证基础信息**：用户提供的仓库名、账号名、URL 等可能不准确（如 `lan` 实际是 `ian`）。通过 GitHub API 搜索或直接访问候选 URL 验证后再使用。
-3. 判定 C456 类型（signal/tool/channel/playbook/walkthrough）
-4. 创建/更新来源摘要页（Frontmatter 含 `c456-title` + `c456-summary`，供后续上行）
-5. 提取实体（无则新建，有则追加）
-6. 提取概念（无则新建，有则整合）
-7. 更新线索页
-8. 更新 `wiki/index.md`
-9. 追加 `wiki/log.md`
+1. **验证基础信息**：用户提供的仓库名、账号名、URL 等可能不准确（如 `lan` 实际是 `ian`）。通过 GitHub API 搜索或直接访问候选 URL 验证后再使用。
+2. 判定 C456 类型（signal/tool/channel/playbook/walkthrough）。
+3. 选择或创建对应 `c456-sync/<kind>/...md`，保持 C456 线上目录和 slug。
+4. 判断镜像模式：若内容直接来自一个 wiki 页面，优先使用 `sync-mode: reference`；若需要外部化改写、组合多页或下行拉回，使用 `sync-mode: body`。
+5. 在来源摘要页或目标 wiki 页补充 `c456-title`、`c456-summary`、`c456-kind`、`c456-status`、`c456-sync-mode`。
+6. 维护 `c456-sync/meta.yml`：记录本地 wiki 页、镜像文件、远端 ID、checksum、模式和状态。
+7. 更新 `wiki/index.md` 与 `wiki/log.md`，说明本次 C456 同步关系。
 
 **C456 类型判定**：介绍工具用法 → `tool`；介绍作者/频道 → `channel`；step-by-step → `walkthrough`；策略/框架 → `playbook`；其余 → `signal`。
 
-### Query（查询）
+### Query（查询）中的 C456 信息
 
-1. 先读 `wiki/index.md`
-2. 定位相关页
-3. 读取并综合
-4. 引用来源
-5. 回写好答案：若用户认可，提议保存为 wiki 新页面
+查询仍按 `llm-wiki` 执行。若问题涉及 C456 线上状态，还要读取：
 
-### Lint（检查）
+- `c456-sync/meta.yml`
+- 相关 wiki 页的 `c456-*` frontmatter
+- 对应 `c456-sync/<kind>/...md`
+- 必要时通过 `c456-cli` 获取远端最新状态
 
-1. 扫描矛盾
-2. 发现孤立页
-3. 检查缺失页
-4. 评估数据缺口
-5. 输出 Markdown 报告
+### Lint / Health-check 中的 C456 信息
+
+通用健康检查交给 `llm-wiki`。本技能额外检查：
+
+1. `c456-sync/` 是否有孤立镜像（找不到对应 wiki 页或远端 ID）。
+2. `c456-sync/meta.yml` 是否指向不存在的本地文件。
+3. 已发布内容是否缺少 `c456-id`、`c456-kind`、`c456-title`、`c456-summary`。
+4. 远端删除时是否形成 `orphan_local`，且是否等待用户确认。
+5. `sync-mode: reference` 是否有有效的 `source-wiki-path`，且源文件存在。
+6. 若启用 `llm-wiki-versioned`，检查 `source-wiki-version` / `source-wiki-snapshot` 是否落后于当前 wiki 页面版本。
+7. `sync-mode: body` 正文是否符合 `c456-sync-public-markdown`。
 
 ---
 
@@ -185,13 +199,13 @@ AGENTS.md（Schema） ← 定义 AI 如何组织 Wiki
 ### 内容类型映射
 
 
-| C456 类型         | 含义     | 对应 raw/                        | 对应 wiki/                      | 对应 output/ |
-| --------------- | ------ | ------------------------------ | ----------------------------- | ---------- |
-| **signal**      | 信息片段   | articles/, quotes/, resources/ | wiki/sources/                 | 短评         |
-| **tool**        | 工具/软件  | tools/                         | wiki/entities/                | 工具评测       |
-| **channel**     | 频道/账号  | resources/                     | wiki/entities/                | 频道推荐       |
-| **playbook**    | 方法论/框架 | work/, books/                  | wiki/concepts/, wiki/threads/ | 方法论文章      |
-| **walkthrough** | 教程     | courses/, articles/            | wiki/threads/                 | 教程         |
+| C456 类型         | 含义     | 常见 raw 来源 | 常见 wiki 映射 | `c456-sync/` 路径 |
+| --------------- | ------ | ------------ | ------------- | ---------------- |
+| **signal**      | 信息片段   | articles/, papers/, transcripts/, work/ | wiki/sources/, wiki/threads/ | c456-sync/signal/ |
+| **tool**        | 工具/软件  | articles/, work/ | wiki/entities/, wiki/comparisons/ | c456-sync/tool/ |
+| **channel**     | 频道/账号  | articles/, transcripts/, work/ | wiki/entities/, wiki/sources/ | c456-sync/channel/ |
+| **playbook**    | 方法论/框架 | books/, papers/, work/ | wiki/concepts/, wiki/threads/ | c456-sync/playbook/ |
+| **walkthrough** | 教程     | articles/, transcripts/, work/ | wiki/threads/, wiki/queries/ | c456-sync/walkthrough/ |
 
 
 ### Frontmatter 扩展
@@ -209,6 +223,8 @@ type: source
 c456-kind: signal      # signal | tool | channel | playbook | walkthrough
 c456-title: "主标题"
 c456-summary: "一句简短描述，用作上行列表/卡片摘要（副标题语义）"
+c456-sync-mode: reference
+c456-source-version: 3
 c456-id: 42            # 发布后回填
 c456-status: draft     # draft | published | outdated | conflict
 date: 2026-05-08
@@ -218,26 +234,108 @@ date: 2026-05-08
 ### 发布工作流（上行）
 
 1. 扫描带 `c456-kind` 但缺 `c456-id` 或 `status: draft` 的页面
-2. **格式自检**：发布正文前，先加载 `c456-sync-public-markdown` 技能。正文必须符合对外格式规范——无 `#` 一级标题、无制作备忘（仓库路径/截图命令/asset ID 解释）、无 `## 总结` / `## TL;DR` 等标签式二级标题；核心判断写在首节正文段落中。
-3. 转换 Markdown 为 C456 富文本格式（移除 Wikilink、Frontmatter）
-4. 选择命令：signal/tool/channel → `c456 intake new -k <kind>`；playbook/walkthrough → `c456 playbook new`
-5. 正文写入 `.tmp/`，通过 `--body-file` 传入 CLI
-6. 回填 ID 到 Frontmatter `c456-id`，改 `c456-status: published`
-7. 记录日志到 `wiki/log.md`
+2. 读取对应 `c456-sync/<kind>/<slug>.md`，判断 `sync-mode`。
+3. 若为 `reference`，从 `source-wiki-path` 读取源 wiki 页面生成发布正文；若为 `body`，直接使用镜像文件正文。
+4. **格式自检**：发布正文前，先加载 `c456-sync-public-markdown` 技能。正文必须符合对外格式规范——无 `#` 一级标题、无制作备忘（仓库路径/截图命令/asset ID 解释）、无 `## 总结` / `## TL;DR` 等标签式二级标题；核心判断写在首节正文段落中。
+5. 转换 Markdown 为 C456 富文本格式（移除 Wikilink、Frontmatter）
+6. 选择命令：signal/tool/channel → `c456 intake new -k <kind>`；playbook/walkthrough → `c456 playbook new`
+7. 正文写入 `.tmp/`，通过 `--body-file` 传入 CLI
+8. 回填 ID 到 Frontmatter `c456-id`，改 `c456-status: published`，并记录发布时的源 wiki 版本或 checksum
+9. 记录日志到 `wiki/log.md`
 
 更新已有内容：用 `c456 intake update <id>` 或 `c456 playbook update <id>`，不重复新建。
 
+### 引用型镜像（减少冗余）
+
+当用户要把知识库中的某个页面直接发布到 C456，例如把 `wiki/entities/andrej-karpathy.md` 作为 C456 的 `channel` 发布时，默认使用引用型镜像：
+
+```text
+c456-sync/
+└── channel/
+    └── andrej-karpathy.md
+```
+
+`c456-sync/channel/andrej-karpathy.md` 示例：
+
+```yaml
+---
+c456-kind: channel
+c456-title: "Andrej Karpathy"
+c456-summary: "AI 研究者、教育者与 LLM Wiki 方法提出者"
+c456-id:
+c456-status: draft
+sync-mode: reference
+source-wiki-path: wiki/entities/andrej-karpathy.md
+source-wiki-version: 3
+source-wiki-snapshot:
+source-wiki-sha256:
+remote-slug: andrej-karpathy
+---
+
+本文发布内容引用自 `wiki/entities/andrej-karpathy.md`。
+
+发布前请从 `source-wiki-path` 读取源页面，按 `c456-sync-public-markdown` 转换为 C456 对外正文。
+```
+
+规则：
+
+- `c456-sync/` 的目录和文件名跟随 C456 线上类型与 slug，而不是 wiki 页面分类。
+- `source-wiki-path` 使用相对当前知识库根目录的路径。
+- 引用型镜像不复制正文；只保存发布元数据、远端状态、引用关系和必要说明。
+- 若需要对 C456 正文做与 wiki 不同的营销化改写、组合多页或删减敏感内容，改用 `sync-mode: body`。
+- 发布时记录源 wiki 版本。若启用了 `llm-wiki-versioned`，优先记录 `source-wiki-version`，必要时记录 `source-wiki-snapshot`；否则计算并记录 `source-wiki-sha256`。
+- 后续源 wiki 变化但 C456 未更新时，标记 `c456-status: outdated`，并提示用户是否同步到线上。
+
+### 版本化引用（配合 llm-wiki-versioned）
+
+如果当前知识库启用了 `llm-wiki-versioned`，引用型镜像可以指定发布时绑定的源版本：
+
+```yaml
+---
+sync-mode: reference
+source-wiki-path: wiki/entities/andrej-karpathy.md
+source-wiki-version: 3
+source-wiki-snapshot: wiki/.versioned/entities/andrej-karpathy.md/v3-2026-07-08.md
+source-wiki-sha256: "..."
+c456-status: published
+---
+```
+
+规则：
+
+- `source-wiki-version` 表示 C456 线上内容对应的 wiki 页面版本。
+- `source-wiki-snapshot` 可选；当发布内容必须严格追溯到某次历史快照时填写。
+- 如果当前 `source-wiki-path` 的 frontmatter `version` 大于 `source-wiki-version`，或当前文件 hash 与 `source-wiki-sha256` 不一致，说明本地知识已更新而 C456 线上仍是旧内容。
+- 发现版本漂移时，不自动更新线上；先向用户提示差异，并询问是否执行 `c456 intake update <id>` / `c456 playbook update <id>`。
+- 用户确认同步后，从当前 wiki 页面重新生成正文，发布成功后更新 `source-wiki-version`、`source-wiki-snapshot`、`source-wiki-sha256`、`c456-status: published` 和 `c456-sync/meta.yml`。
+- 如果用户选择暂不同步，保留 `c456-status: outdated`，并在 `wiki/log.md` 记录“本地版本已领先线上”。
+
+### 后接入同步（从 C456 拉回本地）
+
+当本地已经有 `llm-wiki`，用户之后才决定接入 C456，或用户已经在 C456 上发布过内容，需要拉回本地时：
+
+1. **初始化插件层**：只创建 `c456-sync/`、`c456-sync/meta.yml` 和五类镜像目录；不要改动既有 `wiki/` 结构。
+2. **拉取远端清单**：通过 `c456-cli` 获取 C456 线上 signal/tool/channel/playbook/walkthrough 列表和详情。
+3. **先写镜像**：把远端正文保存为 `c456-sync/<kind>/<slug>.md`，Frontmatter 记录 `c456-id`、`c456-kind`、`remote-updated-at`、`checksum`、`sync-direction: pull`、`sync-mode: body`。
+4. **匹配既有 wiki**：用标题、URL、实体名、来源链接和正文关键词搜索 `wiki/`，找到可能的 `local-wiki-source`、`local-wiki-entities`、`local-wiki-concepts`。
+5. **更新 meta**：在 `c456-sync/meta.yml` 记录远端 ID、镜像路径、候选 wiki 页面、匹配置信度、同步方向和时间戳。
+6. **用户确认关联**：低置信度或一对多匹配时，先列出候选关系让用户确认，避免把线上内容误并入错误知识页。
+7. **按 llm-wiki 摄取**：若远端内容包含本地 wiki 还没有的知识，再按 `llm-wiki` 的 ingest 流程生成来源摘要、实体、概念、线索或查询页。
+8. **记录日志**：在 `wiki/log.md` 追加 `c456-down-ingest`，说明拉回了哪些远端内容、建立了哪些映射、哪些条目仍待确认。
+
+**原则**：下行同步先保护本地知识库。远端内容先进入 `c456-sync/` 镜像层，不直接覆盖 `wiki/` 页面；是否摄取进知识层由 `llm-wiki` 流程和用户确认决定。
+
 ### 双向同步
 
-**c456-sync/ 目录**：作为 C456 镜像层，按五类型分目录存储。撰写、从线上拉回后的润色、以及准备 `--body-file` 的正文，须满足 **`AGENTS.md` §1.3**。
+**c456-sync/ 目录**：作为 C456 镜像层，按五类型分目录存储。`reference` 模式保持线上目录与元数据，正文来自 wiki；`body` 模式保存独立对外正文。从线上拉回后的内容默认是 `body` 模式，之后可在用户确认后改为引用某个 wiki 页面。
 
-**关联方式**：`c456-sync/` 文件 Frontmatter 标注 `local-wiki-source`、`local-wiki-entities` 等字段；`wiki/` 页面 Frontmatter 标注 `c456-id`、`c456-sync-path`；`wiki/c456-meta.yml` 记录总索引。
+**关联方式**：`c456-sync/` 文件 Frontmatter 标注 `source-wiki-path`、`source-wiki-version`、`source-wiki-snapshot`、`local-wiki-source`、`local-wiki-entities` 等字段；`wiki/` 页面 Frontmatter 只保留轻量引用，如 `c456-id`、`c456-kind`、`c456-sync-path`、`c456-sync-mode`、`c456-source-version`；`c456-sync/meta.yml` 记录完整总索引。
 
 **双向索引**：`wiki/index.md` 中已发布条目可标注 `[c456:#id]`。C456 正文可保留回链到本地 Wiki 的链接。
 
 ### 远程已删、本地仍存（orphan_local）
 
-见仓库根 **`AGENTS.md` §6.5**：须先向用户输出 **待删除/待处理清单** 并取得 **明确确认** 后，方可删除 `c456-sync/` 或调整 `wiki/` 与 `c456-meta.yml`；可选路径含删镜像、wiki 归档、`meta` 去幽灵 id、或 `intake new` 重发。
+见仓库根 **`AGENTS.md` §6.5**：须先向用户输出 **待删除/待处理清单** 并取得 **明确确认** 后，方可删除 `c456-sync/` 或调整 `wiki/` 与 `c456-sync/meta.yml`；可选路径含删镜像、wiki 归档、`meta` 去幽灵 id、或 `intake new` 重发。
 
 ### 状态流转
 
@@ -260,9 +358,16 @@ draft → publishing → published → outdated → published
 操作类型：`ingest`、`query`、`lint`、`update`、`create`、`c456-publish`、`c456-down-ingest`、`c456-conflict`
 保持 append-only。
 
-### `wiki/c456-meta.yml`
+### `c456-sync/meta.yml`
 
-C456 ↔ 本地映射总索引。记录每个 C456 ID 的 `sync_path`、`wiki_pages[]`、状态、时间戳、checksum。AI 在同步操作中自动维护。
+C456 ↔ 本地映射总索引。记录每个 C456 ID 的 `sync_path`、`sync_mode`、`source_wiki_path`、`source_wiki_version`、`source_wiki_snapshot`、`wiki_pages[]`、状态、时间戳、checksum。AI 在同步操作中自动维护。
+
+### 与 `llm-wiki-versioned` 配合
+
+- 未启用版本化时：引用型镜像用 `source-wiki-sha256` 判断源 wiki 是否变化。
+- 已启用版本化时：引用型镜像优先用 `source-wiki-version` 判断线上内容对应哪个 wiki 版本，必要时用 `source-wiki-snapshot` 指向发布时的快照。
+- 普通查询仍只看当前 wiki；只有用户要追溯“发布时的旧版本”或做 C456 线上差异检查时，才读取 `.versioned/`。
+- 发现当前 wiki 版本领先线上版本时，先提示“本地已有新版本，C456 线上仍是 vN”，再让用户选择同步、保持线上旧版或查看 diff。
 
 ---
 
@@ -286,7 +391,7 @@ C456 ↔ 本地映射总索引。记录每个 C456 ID 的 `sync_path`、`wiki_pa
 1. **输入**：用户提供任意信息（官网 URL、GitHub URL、产品名等）
 2. **调研**：AI 使用 WebFetch 工具获取官网、GitHub、包管理器页面
 3. **交叉验证**：确认官网与 GitHub 的对应关系
-4. **补充**：将调研结果填入 raw 素材、c456-sync 镜像、wiki 页面
+4. **补充**：将调研结果填入 raw 素材、`c456-sync/` 镜像、wiki 页面
 5. **发布**：按标准 Ingest 流程创建/更新所有页面
 
 ### 数据填充规则

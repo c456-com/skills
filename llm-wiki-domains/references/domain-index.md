@@ -1,20 +1,33 @@
-# {{DOMAIN_DISPLAY_NAME}} Knowledge Base
+# {{DOMAIN_DISPLAY_NAME}} 知识库
 
-> Domain path: `domains/{{DOMAIN_NAME}}/`
-> Focus: {{DOMAIN_DESCRIPTION}}
+> 领域路径：`domains/{{DOMAIN_NAME}}/`
+> 关注范围：{{DOMAIN_DESCRIPTION}}
+> 查询前先读取：`purpose.md`、`overview.md`、`index.md`、近期 `log.md`
 
-## Core Concepts
+## 来源摘要（sources/）
 
-(Ingest entries here, one per line: `- [[page-name]] — One-line summary`)
+（在此写入摄取条目，每行一个：`- [[page-name]] — 一句话摘要`）
 
-## Threads
+## 实体页（entities/）
 
-(Ingest entries here.)
+（在此写入摄取条目。）
 
-## Source Summaries
+## 核心概念（concepts/）
 
-(Ingest entries here.)
+（在此写入摄取条目。）
 
-## Entity Pages
+## 横向比较（comparisons/）
 
-(Ingest entries here.)
+（在此写入对比分析、方案比较、差异总结。）
+
+## 线索（threads/）
+
+（在此写入长期追踪问题。）
+
+## 查询结果（queries/）
+
+（在此写入值得复用的查询答案、综合判断和研究结论。）
+
+## 知识空白
+
+（在此写入缺少来源、需要补充研究、或需要用户判断的事项。）
