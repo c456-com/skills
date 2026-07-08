@@ -15,7 +15,7 @@
 | 元素 | 语言 | 说明 |
 |------|------|------|
 | 技能**名称** | 英文（原始） | 目录名、`SKILL.md` frontmatter 的 `name`、安装时的 `--skill` 短名均不改写，如 `create-prd`、`llm-wiki-domains` |
-| 技能**描述** | 中文 | `README.md` 技能表、`registry.json` 的 `description`、本地技能 `SKILL.md` frontmatter 的 `description` |
+| 技能**描述** | 中文，可混入必要英文触发词 | `registry.json` 与本地技能 `SKILL.md` frontmatter 的 `description` 是 Agent 触发字段；`README.md` 技能表是面向用户的短摘要 |
 | 正文文档 | 中文 | `README.md`、各技能目录下的 `README.md`、`references/` 等说明性文字 |
 | 章节标题、表格列名 | 中文 | 如「名称」「说明」「安装」「维护」 |
 
@@ -26,6 +26,39 @@
 - 不要整段保留英文描述；从上游同步内容时，应翻译为中文后再写入本仓库文档。
 
 **Submodule 例外：** 不修改 `pm-skills/` 内上游文件的英文原文；在本仓库 `README.md` 的第三方技能表中用**中文描述**索引即可。
+
+## 技能 description 触发规范
+
+`SKILL.md` frontmatter 的 `description` 与 `registry.json` 的 `"description"` 不是普通简介，而是 Agent 决定是否读取技能的**触发语义入口**。维护时优先把它写成「什么时候该用这个技能」。
+
+参考 `skills.sh` 上高质量技能的写法，描述应包含：
+
+- **任务域**：技能覆盖的对象或领域，如 `React / Next.js`、`tmux pane`、`LLM Wiki / knowledge base`。
+- **用户意图**：用户可能说出的动作，如创建、摄取、搜索、查询、更新、监控、编排、恢复、排查、优化。
+- **典型场景**：触发技能的具体问题，如“查旧结论”“选择 VM”“做前端页面”“监控 Cursor Agent 是否 STOPPED”。
+- **产出或行为**：技能会帮助 Agent 做什么，如生成代码、推荐方案、执行消息协议、做 health-check。
+- **常见中英文关键词**：对用户常用中英文混说的领域，保留关键英文，如 `ingest/search/query`、`snapshot/history/provenance`、`zoom/focus/pane`、`EXECUTING/STOPPED`。
+
+描述中应避免：
+
+- 只写功能实现细节、参数名、命令 flag 或内部路径，例如 `--pane 参数用于 session:window.pane`。
+- 写成 README 风格的营销口号，缺少可触发的任务动词。
+- 把多个技能的职责混在一起；需要协作时用 `related_skills` 和正文说明路由关系。
+- 堆砌太多无关关键词，导致本不该触发的场景误触发。
+
+推荐结构：
+
+```yaml
+description: "任务域 / English keyword：当用户要做 A、B、C，或提到 X/Y/Z 场景时触发；用于产出 P、执行 Q、检查 R。"
+```
+
+示例：
+
+```yaml
+description: "Tmux pane / zoom / focus 聚焦规范：当用户要在 tmux 中读取、发送、观察某个窗口或 pane，或需要放大当前对话对象时触发；用于 select-pane、resize-pane -Z 和可见性检查。"
+```
+
+`registry.json` 与 `SKILL.md` frontmatter 的 description 必须逐字一致；`README.md` 技能表说明应语义一致，但可以更短、更面向用户阅读。
 
 ## README.md 结构
 
@@ -65,7 +98,8 @@
 ### 修改技能
 
 - 改行为 → 更新 `SKILL.md` 正文（中文），并**按语义化版本规范 bump 版本号**（见下文）。
-- 改一句话摘要 → 同步 `SKILL.md` frontmatter `description`、`registry.json`（若有）、`README.md` 表格，三处保持一致；若摘要变更反映功能变化，同样需要 bump 版本号。
+- 改触发描述 → 同步 `SKILL.md` frontmatter `description` 与 `registry.json`，两处必须逐字一致；同时检查 `README.md` 表格说明是否需要同步为更短的用户向摘要。若触发范围变化，同样需要 bump 版本号。
+- 改 README 表格摘要 → 确保语义仍与技能触发描述一致；若只是用户向措辞优化且不改变触发范围，可不 bump。
 - 仅改错别字、链接、排版且**不影响 Agent 行为** → 可不 bump，或仅 bump PATCH（维护者自行判断，建议在 commit message 中说明）。
 
 ### 版本号规范（SemVer）
@@ -114,6 +148,8 @@ version: 1.1.3
 
 `name` 英文；`description` 中文，含触发场景关键词；`version` 与 `registry.json` 一致。
 
+维护 description 时，先问一句：**“用户怎么说时，Agent 应该想起这个技能？”** 如果答案不能从 description 中直接看出来，就继续补充触发词和场景。
+
 ## 第三方技能（submodule）
 
 - 路径：`pm-skills/<plugin>/skills/<skill>/SKILL.md`；README 索引路径简写为 `pm-skills/<plugin>/<skill>`。
@@ -141,7 +177,9 @@ git submodule update --remote <pack-name>
 
 - [ ] 用户向文档是否为中文？
 - [ ] 技能名称是否保持原始英文（目录、`name`、链接路径）？
-- [ ] 描述是否为中文，且 README / registry / SKILL frontmatter 已同步？
+- [ ] `SKILL.md` frontmatter 与 `registry.json` 的 description 是否逐字一致？
+- [ ] description 是否写成 Agent 触发语义（任务域 + 用户意图 + 场景关键词 + 产出/行为），而不是参数说明或普通简介？
+- [ ] README 技能表说明是否与 description 语义一致，且更适合用户快速阅读？
 - [ ] **技能内容有实质变更时，`registry.json` 与 `SKILL.md` 的 `version` 是否已按 SemVer bump 且两处一致？**
 - [ ] README 是否仍面向用户（无多余内部架构图/流水线）？
 - [ ] 第三方技能是否只改 README 中文索引，未改 submodule 原文？

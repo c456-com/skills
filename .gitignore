@@ -1,3 +1,4 @@
 .hermes/
 .DS_Store
 __pycache__/
+.trae/
