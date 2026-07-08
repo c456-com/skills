@@ -1,7 +1,7 @@
 ---
 name: llm-wiki-domains
 description: "LLM Wiki Domains / multi-domain knowledge base：当用户要为多个主题建立隔离知识库、跨领域搜索/query、路由资料、维护根层 purpose/overview 或做多领域 health-check 时触发；用于每域独立 llm-wiki 与 meta-wiki 导航。"
-version: 0.3.1
+version: 0.4.0
 tags:
   - wiki
   - knowledge-base
@@ -60,33 +60,27 @@ my-brain/
 
 ### 目录布局
 
-```
+```text
 {{PROJECT_NAME}}/
 ├── AGENTS.md                    ← 根级 schema（本导航层）
 ├── .gitignore                   ← 包含 .config/ 规则
 ├── .config/                     ← 技能专用配置（不提交 Git）
-├── raw/                         ← 跨领域源材料
-│   ├── articles/  books/  papers/  transcripts/
-│   ├── assets/  work/
+├── raw/                         ← 跨领域源材料（子目录按需创建）
 ├── wiki/                        ← 全局知识层（根层）
 │   ├── purpose.md               ← 全局目标、领域边界、关键问题
 │   ├── overview.md              ← 跨领域概要、共享主题、知识空白
 │   ├── index.md                 ← 全局索引 + 领域注册表
-│   ├── log.md                   ← 仅追加操作日志
-│   ├── sources/  entities/  concepts/  comparisons/
-│   ├── threads/  queries/  _meta/
+│   └── log.md                   ← 仅追加操作日志
 ├── domains/                     ← 领域容器
 │   └── <domain-name>/
 │       ├── AGENTS.md            ← 领域专用 schema
-│       ├── raw/                 ← 领域源材料
-│       │   ├── articles/  books/  papers/  transcripts/
-│       │   ├── assets/  work/
-│       ├── wiki/                ← 领域 wiki（llm-wiki 标准）
-│       │   ├── purpose.md  overview.md  index.md  log.md
-│       │   ├── sources/  entities/  concepts/  comparisons/
-│       │   ├── threads/  queries/  _meta/
+│       ├── raw/                 ← 领域源材料（子目录按需创建）
+│       └── wiki/                ← 领域 wiki
+│           ├── purpose.md  overview.md  index.md  log.md
 └── .tmp/                        ← 临时文件
 ```
+
+> **子目录按需创建原则**：`raw/articles/`、`raw/books/`、`wiki/concepts/`、`wiki/entities/` 等子目录不在初始化时创建。只有当首次写入对应类型的内容时，才创建对应目录。这样避免了大量空目录占用视野。
 
 ### 跨领域检索协议
 
@@ -119,7 +113,7 @@ git rev-parse --is-inside-work-tree  # 检查是否位于 Git 仓库内
 
 | 类别 | 路径 | 操作 |
 |----------|------|--------|
-| 新目录 | `raw/articles/` 等 | 创建 |
+| 新目录 | `raw/` | 创建 |
 | 新文件 | `AGENTS.md` | 从模板创建 |
 | 新文件 | `wiki/purpose.md` | 从模板创建 |
 | 新文件 | `wiki/overview.md` | 从模板创建 |
@@ -128,7 +122,7 @@ git rev-parse --is-inside-work-tree  # 检查是否位于 Git 仓库内
 | 新目录 | `domains/<name>/` | 创建 |
 | 新文件 | `domains/<name>/AGENTS.md` | 从模板创建 |
 
-最后提示：*“请确认以上变更。回复 ‘confirm’ 继续，回复 ‘cancel’ 取消，或直接修改领域名称/路径。”*
+> **不预先创建子目录**（如 `raw/articles/`、`wiki/concepts/` 等）。在首次写入内容时按需创建。
 
 ### 步骤 4 — 创建脚手架
 
