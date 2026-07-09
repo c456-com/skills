@@ -101,7 +101,9 @@ def clean_cjk_spaces(text: str) -> str:
     return t
 
 
-_EXTRACT_PROMPT = """识别书籍内容，输出纯JSON（字段名必须是header_text, footer_text, book_pages, chapter, body）：{"header_text":"","footer_text":"","book_pages":[],"chapter":"","body":"正文"}"""
+_EXTRACT_PROMPT = """识别书籍内容，输出纯JSON（字段名必须是header_text, footer_text, book_pages, chapter, body）：{"header_text":"","footer_text":"","book_pages":[],"chapter":"","body":"正文"}
+
+如果是插图/照片/图表，body 中描述画面内容和寓意。图表用 ![图表: 含义] 标注。"""
 
 
 def write_page_md(
