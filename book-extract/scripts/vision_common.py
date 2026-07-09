@@ -175,8 +175,7 @@ def write_page_md(
         "---",
         f"type: book-page",
         f"extract-backend: {backend}",
-        f"source-images: [{source_image.name}]",
-        f"page-index: {page_index}",
+        f"image-index: {page_index}",
     ]
     if meta:
         if meta.get("book_pages"):

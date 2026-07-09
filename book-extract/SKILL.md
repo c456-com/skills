@@ -1,7 +1,7 @@
 ---
 name: book-extract
 description: "书籍素材提取 / book extract：当用户要把 PDF、扫描件、拍照书页、OCR 书页或 MinerU 输出转成 raw/books/ Markdown + 图片时触发；用于书籍入库前的素材提取和来源整理。"
-version: 2.1.0
+version: 2.1.1
 ---
 
 # Book Extract（书籍素材提取）
@@ -39,8 +39,7 @@ domains/<domain>/raw/books/<book-name>/
 ---
 type: book-page
 extract-backend: openai_compatible
-source-images: [page-001.jpg]
-page-index: 1               # PDF图片序号（1-based）
+image-index: 1               # 图片序号（1-based），对应 page-001.jpg
 book-pages: [iii]           # 印刷书籍页码（可选，模型识别）
 chapter: 序                  # 章节标题（可选，模型识别）
 header-text: 好睡 / 序      # 页眉文字（可选）
