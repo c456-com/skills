@@ -31,7 +31,7 @@ domains/<domain>/raw/books/<book-name>/
 
 并写 `.extract-meta.yml`（用户选择的 `extract_method`、`vision_mode`、页数）。
 
-### 输出格式（v2.0+）
+### 输出格式（v3.0+）
 
 每个 `page-NNN.md` 的 frontmatter 包含结构化字段：
 
@@ -41,15 +41,16 @@ type: book-page
 extract-backend: openai_compatible
 image-index: 1               # 图片序号（1-based），对应 page-001.jpg
 book-pages: [iii]           # 印刷书籍页码（可选，模型识别）
-chapter: 序                  # 章节标题（可选，模型识别）
-header-text: 好睡 / 序      # 页眉文字（可选）
-footer-text: 003            # 页脚文字（可选）
+chapter: 序                  # 章节标题（可选）
+header_text: 全部生命系列    # 页眉文字（可选）
+footer_text: 003            # 页脚文字（可选）
 ---
 ```
 
-- 元信息（页眉/页脚/书页/章节）通过 prompt 结构化输出，存入 frontmatter，不污染正文
-- 正文中的配图用 `![描述: 图片内容说明]` 标注
+- **核心变更 v3.0**：不再使用文本标记解析。模型直接输出 JSON `{"header_text":..., "footer_text":..., "book_pages":..., "chapter":..., "body":...}`，脚本解析 JSON 写入 frontmatter。
 - 1 张图片 = 1 个 page-*.md
+- 正文 CJK 空格自动清理
+- 附有 `validate_raw_book()` 函数验证整本书的页面质量（缺页/空正文/格式异常）
 
 ## 硬性约束
 
@@ -185,7 +186,7 @@ python3 "$BOOK_EXTRACT_PATH/scripts/vision_openai_compatible.py" \
 
 1. `.config/book-extract.json` 设 `"vision_mode": "agent_native"`
 2. 从 `.tmp/book-extract/<book-name>/pages/`（或 `photos/`）**逐张** Read → `domains/.../raw/books/<book>/pages/page-NNN.md`
-3. **重要：读图时必须输出结构化元信息** — 按 `references/vision-extract-prompt.md` 的要求，输出 `[页眉:]` `[页脚:]` `[书页:]` `[章节:]` 四行元信息头，然后正文。`parse_page_meta()` 自动解析元信息写入 frontmatter。正文中的配图用 `![描述: 图片说明]` 标注
+3. **重要：读图时必须输出结构化 JSON** — 要求模型输出 `{"header_text":"","footer_text":"","book_pages":[],"chapter":"","body":"正文"}`，脚本解析 JSON 写入 frontmatter。正文中的配图用 `![描述: 图片说明]` 标注
 4. 跳过已有页 = resume
 
 ### `external_api` 流程（禁止即兴写代码）

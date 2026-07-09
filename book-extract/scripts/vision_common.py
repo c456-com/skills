@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Shared helpers for book-extract vision scripts (stdlib only)."""
 
 from __future__ import annotations
@@ -41,13 +40,6 @@ def resolve_api_key(config: dict, env_names: list[str]) -> str:
     raise SystemExit(f"api_key empty in .config/book-extract.json; set vision.api_key or env: {', '.join(env_names)}")
 
 
-def load_prompt(skill_dir: Path) -> str:
-    path = skill_dir / "references" / "vision-extract-prompt.md"
-    if not path.is_file():
-        raise SystemExit(f"Missing prompt file: {path}")
-    return path.read_text(encoding="utf-8").strip()
-
-
 def list_images(images_dir: Path) -> list[Path]:
     if not images_dir.is_dir():
         raise SystemExit(f"images-dir not found: {images_dir}")
@@ -76,7 +68,7 @@ def build_base_parser(description: str) -> argparse.ArgumentParser:
     p.add_argument("--output-dir", required=True, help="Write page-NNN.md here")
     p.add_argument("--start", type=int, default=0, help="Start index in sorted image list (0-based)")
     p.add_argument("--end", type=int, default=-1, help="End index inclusive; -1 = last")
-    p.add_argument("--batch-size", type=int, default=2, help="Images per API request")
+    p.add_argument("--batch-size", type=int, default=1, help=argparse.SUPPRESS)
     p.add_argument("--resume", action="store_true", help="Skip pages that already have page-NNN.md")
     p.add_argument("--delay", type=float, default=0.5, help="Seconds between API batches")
     return p
@@ -102,65 +94,14 @@ def http_post_json(url: str, headers: dict, payload: dict, timeout: int = 300) -
         raise SystemExit(f"HTTP {exc.code} {url}\n{detail}") from exc
 
 
-def parse_page_meta(body: str) -> tuple[dict, str]:
-    """Parse structured metadata header from vision output.
+def clean_cjk_spaces(text: str) -> str:
+    """Remove spaces between CJK characters."""
+    t = re.sub(r"(?<=[\u4e00-\u9fff]) (?=[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef])", "", text)
+    t = re.sub(r"(?<=[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]) (?=[\u4e00-\u9fff])", "", t)
+    return t
 
-    Expected format (first 4 lines):
-        [页眉: ...]
-        [页脚: ...]
-        [书页: ...]
-        [章节: ...]
 
-    Returns (meta_dict, cleaned_body).
-    meta_dict keys: header_text, footer_text, book_pages (list[int|str] or None), chapter
-    """
-    meta: dict = {}
-    lines = body.split("\n")
-    meta_keys = ["header_text", "footer_text", "book_pages_raw", "chapter"]
-    markers = ["[页眉:", "[页脚:", "[书页:", "[章节:"]
-    consume = 0
-
-    for i in range(min(6, len(lines))):
-        stripped = lines[i].strip()
-        for j, marker in enumerate(markers):
-            if stripped.startswith(marker):
-                content_after = stripped[len(marker):]
-                end = content_after.find("]")
-                val = content_after[:end].strip() if end >= 0 else content_after.strip().rstrip("]").strip()
-                if marker == "[书页:":
-                    meta["book_pages_raw"] = val if val else None
-                elif marker == "[页眉:":
-                    meta["header_text"] = val if val else None
-                elif marker == "[页脚:":
-                    meta["footer_text"] = val if val else None
-                elif marker == "[章节:":
-                    meta["chapter"] = val if val else None
-                consume = max(consume, i + 1)
-                break
-
-    # Parse book_pages string into list
-    if meta.get("book_pages_raw"):
-        raw = meta["book_pages_raw"]
-        parts = [p.strip() for p in raw.replace("，", ",").split(",")]
-        book_pages = []
-        for p in parts:
-            try:
-                book_pages.append(int(p))
-            except ValueError:
-                book_pages.append(p)  # keep roman numerals etc as-is
-        meta["book_pages"] = book_pages if book_pages else None
-    else:
-        meta["book_pages"] = None
-    del meta["book_pages_raw"]
-
-    # Remove consumed lines from body
-    body_lines = lines[consume:]
-    # Strip leading empty lines
-    while body_lines and not body_lines[0].strip():
-        body_lines = body_lines[1:]
-    cleaned = "\n".join(body_lines).strip()
-
-    return meta, cleaned
+_EXTRACT_PROMPT = """识别书籍内容，输出纯JSON（字段名必须是header_text, footer_text, book_pages, chapter, body）：{"header_text":"","footer_text":"","book_pages":[],"chapter":"","body":"正文"}"""
 
 
 def write_page_md(
@@ -173,8 +114,7 @@ def write_page_md(
     meta: dict | None = None,
 ) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    frontmatter_lines = [
+    fm = [
         "---",
         f"type: book-page",
         f"extract-backend: {backend}",
@@ -183,22 +123,28 @@ def write_page_md(
     if meta:
         if meta.get("book_pages"):
             bp = ", ".join(str(p) for p in meta["book_pages"])
-            frontmatter_lines.append(f"book-pages: [{bp}]")
+            fm.append(f"book-pages: [{bp}]")
         if meta.get("chapter"):
-            frontmatter_lines.append(f"chapter: {meta['chapter']}")
+            fm.append(f"chapter: {meta['chapter']}")
         if meta.get("header_text"):
-            frontmatter_lines.append(f"header-text: {meta['header_text']}")
+            fm.append(f"header_text: {meta['header_text']}")
         if meta.get("footer_text"):
-            frontmatter_lines.append(f"footer-text: {meta['footer_text']}")
-    frontmatter_lines.append("---")
-
-    content = "\n".join(frontmatter_lines) + "\n\n" + body.strip() + "\n"
+            fm.append(f"footer_text: {meta['footer_text']}")
+    fm.append("---")
+    content = "\n".join(fm) + "\n\n" + clean_cjk_spaces(body.strip()) + "\n"
     output_path.write_text(content, encoding="utf-8")
     print(f"  wrote {output_path}")
 
 
-def chunk_batches(items: list, size: int) -> list[list]:
-    return [items[i : i + size] for i in range(0, len(items), size)]
+def extract_vision_json(text: str) -> dict:
+    """Extract JSON from model response (handles ```json wrapping)."""
+    raw = text.strip()
+    for sep in ["```json", "```JSON", "```"]:
+        if sep in raw:
+            parts = raw.split(sep, 1)
+            if len(parts) > 1 and "```" in parts[1]:
+                raw = parts[1].split("```")[0].strip()
+    return json.loads(raw) if raw.startswith("{") else {}
 
 
 def extract_openai_text(response: dict) -> str:
@@ -217,14 +163,49 @@ def extract_anthropic_text(response: dict) -> str:
         raise SystemExit(f"Unexpected Anthropic response: {response}") from exc
 
 
-_THINKING_MARKERS = [
-    "这个任务需要我", "分析图片结构", "提取元信息",
-    "让我仔细", "让我分析", "让我们", "我看一下",
-    "Here's a thinking process",
-]
+# ---- Raw page quality validation ----
+
+def validate_raw_page(book_dir: Path, page_idx: int) -> dict | None:
+    """Validate a single raw page. Returns re-extraction params if needed."""
+    path = book_dir / f"page-{page_idx:03d}.md"
+    if not path.is_file():
+        return {"action": "re-extract", "reason": "missing"}
+    content = path.read_text(encoding="utf-8")
+    parts = content.split("---\n", 2)
+    if len(parts) < 3:
+        return {"action": "re-extract", "reason": "bad-format"}
+    body = parts[2].strip()
+    if not body or body in ["(此页无正文)", ""]:
+        return {"action": "re-extract", "reason": "empty"}
+    return None
 
 
-def is_thinking_text(text: str) -> bool:
-    """Detect if model output thinking/analysis instead of content."""
-    head = text.strip()[:120]
-    return any(m in head for m in _THINKING_MARKERS)
+def validate_raw_book(book_dir: Path) -> list[dict]:
+    """Validate all pages in a book. Returns list of pages needing re-extraction."""
+    pages = sorted(book_dir.glob("page-*.md"))
+    issues = []
+    for p in pages:
+        idx = int(p.stem.split("-")[1])
+        result = validate_raw_page(book_dir, idx)
+        if result:
+            result["page"] = idx
+            issues.append(result)
+    # Check for gaps
+    indices = set(int(p.stem.split("-")[1]) for p in pages)
+    max_idx = max(indices) if indices else 0
+    for i in range(1, max_idx + 1):
+        if i not in indices:
+            issues.append({"page": i, "action": "re-extract", "reason": "gap"})
+    return issues
+
+
+def _check_body_coherence(body: str) -> list[str]:
+    """Heuristic: flag pages with suspicious content."""
+    warnings = []
+    if len(body) < 50:
+        warnings.append("very-short")
+    lines = body.split("\n")
+    non_empty = [l for l in lines if l.strip()]
+    if len(non_empty) < 2:
+        warnings.append("too-few-paragraphs")
+    return warnings

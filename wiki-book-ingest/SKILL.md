@@ -1,7 +1,7 @@
 ---
 name: wiki-book-ingest
 description: "书籍知识摄取 / book ingest：当用户要把 raw/books/ 编译进 llm-wiki、逐章提取概念/来源/线索、处理图表文字化或做章节 lint 时触发；用于书籍知识库写入和质量检查。"
-version: 1.4.1
+version: 1.5.0
 ---
 
 # Wiki Book Ingest（书籍知识编译）
@@ -51,6 +51,23 @@ version: 1.4.1
 结尾：
 
 > 请确认章节编译计划。回复「确认」后开始写入 wiki。
+
+---
+
+## Phase 3 — Raw 页面质量验证（新增）
+
+在编译 wiki 之前，先验证 raw 页面质量。扫描 `raw/books/<book>/pages/` 所有 `.md`：
+
+| 检查项 | 标准 | 处理方式 |
+|--------|------|----------|
+| 缺页 | page-*.md 文件存在 | 缺则重新识别对应图片 |
+| 空正文 | body 非空、非`(此页无正文)` | 重新识别对应图片 |
+| 格式异常 | frontmatter image-index 连续无缺口 | 补缺页 |
+| 内容过短 | body > 50 字符 | 标记可疑，Agent 复核 |
+
+**自动修复**：对缺页/空页，调用 book-extract 脚本（`external_api` 模式）或 Agent native 重新识别对应图片。重试 1 次仍失败则标记为「需人工复核」，不在 wiki 编译中引用该页。
+
+验证结果写入 `domains/<domain>/.tmp/<book>-validation-report.md`。
 
 ---
 
@@ -122,6 +139,7 @@ version: 1.4.1
 
 ### 每批完成后
 
+- 验证 raw 页面质量（空页/缺页/格式异常 → 自动重提取）
 - 更新 `wiki/index.md`
 - 追加 `wiki/log.md`：`## [DATE] ingest | <书名> <章节范围>`
 - **更新来源页**：在来源页的 `derived:` frontmatter 和「衍生知识」章节添加新建的概念/线索/实体链接
