@@ -11,12 +11,9 @@ from vision_common import (
     encode_image,
     extract_openai_text,
     http_post_json,
-    is_thinking_text,
     list_images,
     load_json_config,
-    load_prompt,
     page_output_path,
-    parse_page_meta,
     resolve_api_key,
     skill_root,
     slice_images,
@@ -24,21 +21,25 @@ from vision_common import (
 )
 
 
+_EXTRACT_PROMPT = """识别书籍内容，输出纯JSON（字段名必须是header_text, footer_text, book_pages, chapter, body）：{"header_text":"","footer_text":"","book_pages":[],"chapter":"","body":"正文"}"""
+
+
 def call_vision(
     *,
     base_url: str,
     api_key: str,
     model: str,
-    prompt: str,
     image_path: Path,
-    max_tokens: int = 4096,
-) -> str:
+    prompt: str | None = None,
+    max_tokens: int = 8192,
+) -> tuple[dict, str]:
+    """Call vision API with JSON extraction."""
     base = base_url.rstrip("/")
     url = f"{base}/chat/completions" if not base.endswith("/chat/completions") else base
 
     mime, data = encode_image(image_path)
     content: list[dict] = [
-        {"type": "text", "text": prompt},
+        {"type": "text", "text": _EXTRACT_PROMPT},
         {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{data}"}},
     ]
 
@@ -53,7 +54,18 @@ def call_vision(
         "Authorization": f"Bearer {api_key}",
     }
     response = http_post_json(url, headers, payload)
-    return extract_openai_text(response)
+    raw = extract_openai_text(response).strip()
+
+    # Extract JSON from markdown code block if present
+    for sep in ["```json", "```JSON", "```"]:
+        if sep in raw:
+            parts = raw.split(sep, 1)
+            if len(parts) > 1 and "```" in parts[1]:
+                raw = parts[1].split("```")[0].strip()
+
+    data = json.loads(raw) if raw.startswith("{") else {}
+    body = data.get("body", "") or "\\n".join(data.get("text_content", "") or [""])
+    return data, body
 
 
 def main() -> None:
@@ -73,7 +85,6 @@ def main() -> None:
     api_key = resolve_api_key(config, ["OPENAI_API_KEY", "OPENROUTER_API_KEY", "DEEPSEEK_API_KEY"])
     base_url = vision.get("base_url", "https://api.openai.com/v1").strip()
     model = vision.get("model", "gpt-4o")
-    prompt = load_prompt(skill_root())
 
     all_images = list_images(images_dir)
     images = slice_images(all_images, args.start, args.end)
@@ -87,38 +98,20 @@ def main() -> None:
             continue
 
         print(f"  page {i}: {img.name}")
-        text = call_vision(
+        data, body = call_vision(
             base_url=base_url,
             api_key=api_key,
             model=model,
-            prompt=prompt,
             image_path=img,
         )
-        meta, clean_body = parse_page_meta(text)
-        # Retry once if model output thinking text instead of content
-        if is_thinking_text(clean_body):
-            print(f"    ↻ thinking detected, retrying with direct prompt...")
-            retry_prompt = "只输出识别结果，不要分析过程，不要添加任何说明：\n[页眉: ]\n[页脚: ]\n[书页: ]\n[章节: ]"
-            retry_text = call_vision(
-                base_url=base_url,
-                api_key=api_key,
-                model=model,
-                prompt=retry_prompt,
-                image_path=img,
-            )
-            retry_meta, retry_body = parse_page_meta(retry_text)
-            if not is_thinking_text(retry_body):
-                meta, clean_body = retry_meta, retry_body
-                print(f"    ✓ retry succeeded")
-            else:
-                print(f"    ✗ retry still has thinking, using original")
+        # body already has CJK spaces cleaned
         write_page_md(
             out_path,
             page_index=i,
             source_image=img,
-            body=clean_body,
+            body=body,
             backend="openai_compatible",
-            meta=meta,
+            meta=data,
         )
         if args.delay:
             time.sleep(args.delay)
