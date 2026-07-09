@@ -1,7 +1,7 @@
 ---
 name: book-extract
 description: "书籍素材提取 / book extract：当用户要把 PDF、扫描件、拍照书页、OCR 书页或 MinerU 输出转成 raw/books/ Markdown + 图片时触发；用于书籍入库前的素材提取和来源整理。"
-version: 1.2.0
+version: 2.0.0
 ---
 
 # Book Extract（书籍素材提取）
@@ -25,7 +25,7 @@ version: 1.2.0
 domains/<domain>/raw/books/<book-name>/
 ├── images/              # 页图
 ├── pages/               # page-NNN.md（视觉路径）
-│   └── page-000.md
+│   └── page-001.md      # 1 张图片 = 1 个 page-*.md（不含 .png/.jpg 源图）
 └── book.md              # MinerU 路径或合并后的全书 MD（可选）
 ```
 
