@@ -1,7 +1,7 @@
 ---
 name: book-extract
 description: "书籍素材提取 / book extract：当用户要把 PDF、扫描件、拍照书页、OCR 书页或 MinerU 输出转成 raw/books/ Markdown + 图片时触发；用于书籍入库前的素材提取和来源整理。"
-version: 2.0.0
+version: 2.1.0
 ---
 
 # Book Extract（书籍素材提取）
@@ -30,6 +30,27 @@ domains/<domain>/raw/books/<book-name>/
 ```
 
 并写 `.extract-meta.yml`（用户选择的 `extract_method`、`vision_mode`、页数）。
+
+### 输出格式（v2.0+）
+
+每个 `page-NNN.md` 的 frontmatter 包含结构化字段：
+
+```yaml
+---
+type: book-page
+extract-backend: openai_compatible
+source-images: [page-001.jpg]
+page-index: 1               # PDF图片序号（1-based）
+book-pages: [iii]           # 印刷书籍页码（可选，模型识别）
+chapter: 序                  # 章节标题（可选，模型识别）
+header-text: 好睡 / 序      # 页眉文字（可选）
+footer-text: 003            # 页脚文字（可选）
+---
+```
+
+- 元信息（页眉/页脚/书页/章节）通过 prompt 结构化输出，存入 frontmatter，不污染正文
+- 正文中的配图用 `![描述: 图片内容说明]` 标注
+- 1 张图片 = 1 个 page-*.md
 
 ## 硬性约束
 
@@ -165,7 +186,7 @@ python3 "$BOOK_EXTRACT_PATH/scripts/vision_openai_compatible.py" \
 
 1. `.config/book-extract.json` 设 `"vision_mode": "agent_native"`
 2. 从 `.tmp/book-extract/<book-name>/pages/`（或 `photos/`）**逐张** Read → `domains/.../raw/books/<book>/pages/page-NNN.md`
-3. **重要：读图时必须让大模型自然识别实际页码和所属章节** — 按 `references/vision-extract-prompt.md` 的要求，在输出内容中自然描述页码和章节信息（如"第5页，第一章…"）。不要用脚本解析页码，让模型根据内容判断
+3. **重要：读图时必须输出结构化元信息** — 按 `references/vision-extract-prompt.md` 的要求，输出 `[页眉:]` `[页脚:]` `[书页:]` `[章节:]` 四行元信息头，然后正文。`parse_page_meta()` 自动解析元信息写入 frontmatter。正文中的配图用 `![描述: 图片说明]` 标注
 4. 跳过已有页 = resume
 
 ### `external_api` 流程（禁止即兴写代码）

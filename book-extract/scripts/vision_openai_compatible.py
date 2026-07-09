@@ -15,6 +15,7 @@ from vision_common import (
     load_json_config,
     load_prompt,
     page_output_path,
+    parse_page_meta,
     resolve_api_key,
     skill_root,
     slice_images,
@@ -92,12 +93,14 @@ def main() -> None:
             prompt=prompt,
             image_path=img,
         )
+        meta, clean_body = parse_page_meta(text)
         write_page_md(
             out_path,
-            page_indices=[i],
-            source_images=[img],
-            body=text,
+            page_index=i,
+            source_image=img,
+            body=clean_body,
             backend="openai_compatible",
+            meta=meta,
         )
         if args.delay:
             time.sleep(args.delay)

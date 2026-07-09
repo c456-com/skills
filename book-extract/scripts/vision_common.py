@@ -101,26 +101,96 @@ def http_post_json(url: str, headers: dict, payload: dict, timeout: int = 300) -
         raise SystemExit(f"HTTP {exc.code} {url}\n{detail}") from exc
 
 
+def parse_page_meta(body: str) -> tuple[dict, str]:
+    """Parse structured metadata header from vision output.
+
+    Expected format (first 4 lines):
+        [页眉: ...]
+        [页脚: ...]
+        [书页: ...]
+        [章节: ...]
+
+    Returns (meta_dict, cleaned_body).
+    meta_dict keys: header_text, footer_text, book_pages (list[int|str] or None), chapter
+    """
+    meta: dict = {}
+    lines = body.split("\n")
+    meta_keys = ["header_text", "footer_text", "book_pages_raw", "chapter"]
+    markers = ["[页眉:", "[页脚:", "[书页:", "[章节:"]
+    consume = 0
+
+    for i in range(min(6, len(lines))):
+        stripped = lines[i].strip()
+        for j, marker in enumerate(markers):
+            if stripped.startswith(marker):
+                val = stripped[len(marker):].strip().rstrip("]").strip()
+                if marker == "[书页:":
+                    meta["book_pages_raw"] = val if val else None
+                elif marker == "[页眉:":
+                    meta["header_text"] = val if val else None
+                elif marker == "[页脚:":
+                    meta["footer_text"] = val if val else None
+                elif marker == "[章节:":
+                    meta["chapter"] = val if val else None
+                consume = max(consume, i + 1)
+                break
+
+    # Parse book_pages string into list
+    if meta.get("book_pages_raw"):
+        raw = meta["book_pages_raw"]
+        parts = [p.strip() for p in raw.replace("，", ",").split(",")]
+        book_pages = []
+        for p in parts:
+            try:
+                book_pages.append(int(p))
+            except ValueError:
+                book_pages.append(p)  # keep roman numerals etc as-is
+        meta["book_pages"] = book_pages if book_pages else None
+    else:
+        meta["book_pages"] = None
+    del meta["book_pages_raw"]
+
+    # Remove consumed lines from body
+    body_lines = lines[consume:]
+    # Strip leading empty lines
+    while body_lines and not body_lines[0].strip():
+        body_lines = body_lines[1:]
+    cleaned = "\n".join(body_lines).strip()
+
+    return meta, cleaned
+
+
 def write_page_md(
     output_path: Path,
     *,
-    page_indices: list[int],
-    source_images: list[Path],
+    page_index: int,
+    source_image: Path,
     body: str,
     backend: str,
+    meta: dict | None = None,
 ) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    names = ", ".join(p.name for p in source_images)
-    idx_str = ", ".join(str(i) for i in page_indices)
-    content = f"""---
-type: book-page
-extract-backend: {backend}
-source-images: [{names}]
-page-indices: [{idx_str}]
----
 
-{body.strip()}
-"""
+    frontmatter_lines = [
+        "---",
+        f"type: book-page",
+        f"extract-backend: {backend}",
+        f"source-images: [{source_image.name}]",
+        f"page-index: {page_index}",
+    ]
+    if meta:
+        if meta.get("book_pages"):
+            bp = ", ".join(str(p) for p in meta["book_pages"])
+            frontmatter_lines.append(f"book-pages: [{bp}]")
+        if meta.get("chapter"):
+            frontmatter_lines.append(f"chapter: {meta['chapter']}")
+        if meta.get("header_text"):
+            frontmatter_lines.append(f"header-text: {meta['header_text']}")
+        if meta.get("footer_text"):
+            frontmatter_lines.append(f"footer-text: {meta['footer_text']}")
+    frontmatter_lines.append("---")
+
+    content = "\n".join(frontmatter_lines) + "\n\n" + body.strip() + "\n"
     output_path.write_text(content, encoding="utf-8")
     print(f"  wrote {output_path}")
 
