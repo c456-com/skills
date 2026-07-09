@@ -8,6 +8,7 @@ import base64
 import json
 import mimetypes
 import os
+import re
 import time
 import urllib.error
 import urllib.request
