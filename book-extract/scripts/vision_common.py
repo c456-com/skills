@@ -124,7 +124,9 @@ def parse_page_meta(body: str) -> tuple[dict, str]:
         stripped = lines[i].strip()
         for j, marker in enumerate(markers):
             if stripped.startswith(marker):
-                val = stripped[len(marker):].strip().rstrip("]").strip()
+                content_after = stripped[len(marker):]
+                end = content_after.find("]")
+                val = content_after[:end].strip() if end >= 0 else content_after.strip().rstrip("]").strip()
                 if marker == "[书页:":
                     meta["book_pages_raw"] = val if val else None
                 elif marker == "[页眉:":
