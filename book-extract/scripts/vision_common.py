@@ -213,3 +213,16 @@ def extract_anthropic_text(response: dict) -> str:
         return "\n".join(texts)
     except (KeyError, TypeError) as exc:
         raise SystemExit(f"Unexpected Anthropic response: {response}") from exc
+
+
+_THINKING_MARKERS = [
+    "这个任务需要我", "分析图片结构", "提取元信息",
+    "让我仔细", "让我分析", "让我们", "我看一下",
+    "Here's a thinking process",
+]
+
+
+def is_thinking_text(text: str) -> bool:
+    """Detect if model output thinking/analysis instead of content."""
+    head = text.strip()[:120]
+    return any(m in head for m in _THINKING_MARKERS)

@@ -11,6 +11,7 @@ from vision_common import (
     encode_image,
     extract_openai_text,
     http_post_json,
+    is_thinking_text,
     list_images,
     load_json_config,
     load_prompt,
@@ -94,6 +95,23 @@ def main() -> None:
             image_path=img,
         )
         meta, clean_body = parse_page_meta(text)
+        # Retry once if model output thinking text instead of content
+        if is_thinking_text(clean_body):
+            print(f"    ↻ thinking detected, retrying with direct prompt...")
+            retry_prompt = "只输出识别结果，不要分析过程，不要添加任何说明：\n[页眉: ]\n[页脚: ]\n[书页: ]\n[章节: ]"
+            retry_text = call_vision(
+                base_url=base_url,
+                api_key=api_key,
+                model=model,
+                prompt=retry_prompt,
+                image_path=img,
+            )
+            retry_meta, retry_body = parse_page_meta(retry_text)
+            if not is_thinking_text(retry_body):
+                meta, clean_body = retry_meta, retry_body
+                print(f"    ✓ retry succeeded")
+            else:
+                print(f"    ✗ retry still has thinking, using original")
         write_page_md(
             out_path,
             page_index=i,
