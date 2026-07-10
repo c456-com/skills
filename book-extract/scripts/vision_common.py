@@ -129,9 +129,9 @@ def write_page_md(
         if meta.get("chapter"):
             fm.append(f"chapter: {meta['chapter']}")
         if meta.get("header_text"):
-            fm.append(f"header_text: {meta['header_text']}")
+            fm.append(f"header-text: {meta['header_text']}")
         if meta.get("footer_text"):
-            fm.append(f"footer_text: {meta['footer_text']}")
+            fm.append(f"footer-text: {meta['footer_text']}")
     fm.append("---")
     content = "\n".join(fm) + "\n\n" + clean_cjk_spaces(body.strip()) + "\n"
     output_path.write_text(content, encoding="utf-8")
