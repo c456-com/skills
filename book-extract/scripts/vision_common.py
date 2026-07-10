@@ -103,7 +103,9 @@ def clean_cjk_spaces(text: str) -> str:
 
 _EXTRACT_PROMPT = """识别书籍内容，输出纯JSON（字段名必须是header_text, footer_text, book_pages, chapter, body）：{"header_text":"","footer_text":"","book_pages":[],"chapter":"","body":"正文"}
 
-如果是插图/照片/图表，body 中描述画面内容和寓意。图表用 ![图表: 含义] 标注。"""
+规则：
+- book_pages: 只填印刷在页面上的实际页码数字（如[17]或[iii]）。找不到页码就留空数组[]，绝对不要把正文文字填进去。
+- 如果是插图/照片/图表，body 中描述画面内容和寓意。图表用 ![图表: 含义] 标注。"""
 
 
 def write_page_md(
@@ -124,8 +126,14 @@ def write_page_md(
     ]
     if meta:
         if meta.get("book_pages"):
-            bp = ", ".join(str(p) for p in meta["book_pages"])
-            fm.append(f"book-pages: [{bp}]")
+            # Sanitize: only keep numeric or roman numeral entries
+            valid = []
+            for p in meta["book_pages"]:
+                s = str(p).strip()
+                if s.isdigit() or re.match(r'^[ivxlcdm]+$', s, re.IGNORECASE):
+                    valid.append(s)
+            if valid:
+                fm.append(f"book-pages: [{', '.join(valid)}]")
         if meta.get("chapter"):
             fm.append(f"chapter: {meta['chapter']}")
         if meta.get("header_text"):

@@ -1,7 +1,7 @@
 ---
 name: book-extract
 description: "书籍素材提取 / book extract：当用户要把 PDF、扫描件、拍照书页、OCR 书页或 MinerU 输出转成 raw/books/ Markdown + 图片时触发；用于书籍入库前的素材提取和来源整理。"
-version: 3.1.0
+version: 3.1.1
 ---
 
 # Book Extract（书籍素材提取）
