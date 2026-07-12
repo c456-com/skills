@@ -51,6 +51,7 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | [c456-llm-wiki](c456-llm-wiki/SKILL.md) | **数据同步** — C456 LLM Wiki 扩展：wiki ↔ c456-sync 双向同步、引用型镜像、版本绑定 |
 | [c456-publish](c456-publish/SKILL.md) | **数据发布** — 从 c456-sync 到 C456 线上发布：净稿、CLI 发布、回填元数据、SEO 分发 |
 | [c456-rails-startup](c456-rails-startup/SKILL.md) | Rails startup — Rails + Inertia + React + shadcn/ui 从零脚手架与 hello-world 验证 |
+| [c456-skills-repo](c456-skills-repo/SKILL.md) | 元技能 — c456-com/skills 仓库维护（README 分类、submodule、registry 注册、Logo） |
 
 ### 📦 第三方技能
 

@@ -1,6 +1,12 @@
 {
   "skills": [
     {
+      "name": "c456-skills-repo",
+      "description": "Maintain the c456-com/skills 技能分发仓库 — README 分类、submodule 管理、registry 注册、Logo 品牌化。元技能，仅仓库维护者使用。",
+      "tags": ["c456", "skills", "repo", "maintenance", "branding"],
+      "version": "1.0.0"
+    },
+    {
       "name": "c456-team-work",
       "description": "辉常团队 / multi-agent team workflow：当用户要启动或重启多角色 AI Agent 团队、创建工作组、从 Agency Agents 等职业技能库选择专家角色、处理 handoff/relay/通知、做团队汇报或推进开发闭环时触发；用于团队入口路由、角色边界、助理纪律和多工作组协作。",
       "tags": ["team", "workflow", "multi-agent", "coordination", "handoff", "relay", "monitoring"],
