@@ -3,7 +3,7 @@ name: c456-team-work
 category: autonomous-ai-agents
 tags: [team, workflow, multi-agent, coordination, handoff, relay, discipline, monitoring, roles]
 description: "辉常团队 / multi-agent team workflow：当用户要启动或重启多角色 AI Agent 团队、创建工作组、从 Agency Agents 等职业技能库选择专家角色、处理 handoff/relay/通知、做团队汇报或推进开发闭环时触发；用于团队入口路由、角色边界、助理纪律和多工作组协作。"
-version: 1.3.0
+version: 1.4.0
 triggers:
   - 启动/重启团队多角色协作 session 时
   - 创建新工作组或并行方向时
@@ -12,7 +12,7 @@ triggers:
   - 处理具体 Agent 的停止、等待输入或任务完成通知时
   - relay 角色间 handoff 时
   - 用户说「团队开工」「交给你们团队」「团队汇报」时
-related_skills: [tmux-pane-workspace, tmux-cursor-agent, doc-driven-multi-agent]
+related_skills: [using-c456, tmux-pane-workspace, tmux-cursor-agent, doc-driven-multi-agent]
 ---
 
 # c456 Team Work — 辉常团队多角色协作工作流
@@ -26,6 +26,7 @@ related_skills: [tmux-pane-workspace, tmux-cursor-agent, doc-driven-multi-agent]
 
 | 场景 | 读取技能 | 用途 |
 |------|----------|------|
+| 其他 C456 任务（非团队场景） | `/using-c456` | C456 平台统一路由入口，自动识别并推荐技能 |
 | 需要 tmux pane / 多窗口工作区 | `tmux-pane-workspace` | pane 聚焦缩放、多 pane 布局、圆桌会议、职业角色来源 |
 | 需要控制 Cursor Agent | `tmux-cursor-agent` | Cursor Agent 启动、状态检测、消息发送、停止 / 恢复、监控 |
 | 需要角色协作协议 | `doc-driven-multi-agent` | handoff 三要素、comm log、G0-G4、角色 SOP |

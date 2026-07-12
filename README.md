@@ -2,6 +2,21 @@
 
 C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https://github.com/vercel-labs/skills)**（GitHub 为技能源）。
 
+> **快速入口**：如果你在处理 C456 相关工作（写文章、做对比、发布 playbook、同步 wiki、团队协作等）但不确定用哪个技能，在对话中输入 `/using-c456`。技能会自动识别当前工作场景并路由到最合适的技能。
+
+常见场景快速选择：
+
+| 场景 | 推荐技能 |
+|------|----------|
+| 不确定 C456 任务该用哪个技能 | [using-c456](using-c456/SKILL.md) |
+| 写产品/渠道长文、tool 介绍、公众号稿 | [c456-product-channel-article](c456-product-channel-article/SKILL.md) |
+| 做产品对比、竞品分析、选型建议 | [c456-signal-product-vs](c456-signal-product-vs/SKILL.md) |
+| 收录新闻、行业动态、signal 研究 | [c456-signal-researcher](c456-signal-researcher/SKILL.md) |
+| 发布 playbook、上传配图、同步元数据 | [c456-playbook-publishing](c456-playbook-publishing/SKILL.md) |
+| 把 llm-wiki 内容发布到 C456 或拉回本地 | [c456-llm-wiki](c456-llm-wiki/SKILL.md) |
+| intake、assets、搜索、截图上传、API 操作 | [c456-cli](c456-cli/SKILL.md) |
+| 启动多角色 AI Agent 团队协作 | [c456-team-work](c456-team-work/SKILL.md) |
+
 ## 技能列表
 
 ### 🧰 通用技能
@@ -30,6 +45,7 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 
 | 名称 | 说明 |
 |------|------|
+| [using-c456](using-c456/SKILL.md) | C456 技能路由入口 — `/using-c456` 显式触发，自动识别工作场景并路由到对应技能 |
 | [c456-cli](c456-cli/SKILL.md) | C456 CLI / c456.com 操作 — intake、playbook、assets、搜索、截图上传与 API 工作流 |
 | [c456-llm-wiki](c456-llm-wiki/SKILL.md) | C456 LLM Wiki 扩展 — 给 `llm-wiki` 后接 `c456-sync/`，支持引用型镜像、版本绑定、发布与拉取 |
 | [c456-product-channel-article](c456-product-channel-article/SKILL.md) | C456 产品/渠道长文 — tool/channel 介绍、公众号渠道稿、五段式产品叙事 |
