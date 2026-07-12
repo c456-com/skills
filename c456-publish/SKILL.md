@@ -23,9 +23,10 @@ related_skills:
 
 | 用户说 | 你要做什么 |
 |--------|----------|
-| 「对外发布」 / 「公开发布」 / 「发到 c456」 | 执行 `c456 <kind> new -u <URL> -t "标题" [--auto-resolve-url] --body-file .tmp/净稿.md`。**这就是发布**，不需要额外步骤 |
+| 「发布到 c456」 / 「上传到 c456」 | **`c456 <kind> new ...`** — 创建草稿，仅自己可见 |
+| **「对外发布」 / 「公开发布」** | **`c456 <kind> update <id> --publish`**（或 `--published` 管理员直发）— 改为公开可见 |
 | 「配图用 X」 / 「截图用这个链接」 | 用用户指定的 URL 截图，**不要**截官网首页 |
-| 「收录 XXX 到 c456 并且对外发布，配图用 Y」 | 完整流程：调研 → 写正文 → `c456 screenshot Y` → `c456 asset upload` → 拼接 body → `c456 tool new` → 回填 |
+| 「收录 XXX 到 c456 并且对外发布，配图用 Y」 | 完整流程：调研 → 写正文 → `c456 screenshot Y` → `c456 asset upload` → `c456 tool new`（草稿）→ **`c456 tool update <ID> --publish`**（对外发布）→ 回填 |
 
 ### 完整端到端示例
 
@@ -41,8 +42,9 @@ related_skills:
    后接正文（## 起，符合 c456-sync 格式）
 7. 写净稿到 .tmp/shoplazza-净稿.md
 8. c456 tool new -u https://www.shoplazza.cn/ --auto-resolve-url -t "店匠 | 独立站建站" --body-file .tmp/shoplazza-净稿.md
-   → 输出 ID: N ← 这就是发布成功
-9. 回填本地 c456-sync + wiki 元数据
+   → 输出 ID: N（此时是草稿，仅自己可见）
+9. c456 tool update N --publish  ← 对外发布！
+10. 回填本地 c456-sync + wiki 元数据
 ```
 
 ---

@@ -59,10 +59,14 @@ related_skills:
 
 | 用户说 | 含义 | 执行的动作 |
 |--------|------|-----------|
-| 「收录 XXX」 | 调研一个工具/产品并入库 | ① 调研 URL（产品名/官网/GitHub）→ ② 写 `c456-sync/<kind>/<name>.md` 正文 → ③ 截图（见规则 10）→ ④ **对外发布** |
-| 「对外发布」 / 「公开发布」 / 「发到 c456」 | 调用 CLI 创建 intake | **`c456 <kind> new -u <URL> -t "标题" --auto-resolve-url --body-file .tmp/净稿.md`**（创建即上线，见 `c456-publish` §3） |
+| 「收录 XXX」「上传到 c456」「发布到 c456」 | 在 C456 创建一条内容（草稿，仅创建者可见） | **`c456 <kind> new -u <URL> -t "标题" [--auto-resolve-url] --body-file .tmp/净稿.md`** |
+| **「对外发布」 / 「公开发布」** | **将内容从草稿改为公开可见** | **`c456 <kind> update <id> --publish`**（申请公开，需审核）或 **`c456 <kind> update <id> --published`**（管理员直接发布） |
 | 「配图用 URL」 / 「截图用这个链接」 | 用指定 URL 截图（替代官网首页） | `c456 screenshot <指定URL> -o .tmp/<name>.png` 而非 `c456 screenshot <官网URL>` |
 | 「收录这个频道」 / 「收录这个账号」 | 渠道类型 | **`c456 channel new`**（规则 7） |
+
+**⚠️ 区分「发布到 c456」和「对外发布」**：
+- 「发布到 c456」= `c456 <kind> new` → 内容存到 C456，**只有创建者能看见**（草稿）
+- 「对外发布」= `c456 <kind> update <id> --publish` → **公开可见**（所有人能看见）
 
 **完整示例**：用户说「收录 https://www.shoplazza.cn/ 到 c456 并且对外发布，配图用 https://www.shoplazza.cn/why-choose-shoplazza」
 → ① 调研 shoplazza.cn（电商 SaaS，tool 类型）
@@ -71,7 +75,9 @@ related_skills:
 → ④ `c456 asset upload -f .tmp/shoplazza-hero.png`
 → ⑤ 拼接 body（第一行配图 + 正文）
 → ⑥ **`c456 tool new -u https://www.shoplazza.cn/ --auto-resolve-url -t "店匠 | 独立站建站" --body-file .tmp/shoplazza-净稿.md`**
-→ ⑦ 回填本地元数据
+→ ⑦ 记录返回的 ID
+→ ⑧ **`c456 tool update <ID> --publish`**（对外发布）
+→ ⑨ 回填本地元数据
 
 ## 命令速查
 
