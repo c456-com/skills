@@ -9,12 +9,11 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | 场景 | 推荐技能 |
 |------|----------|
 | 不确定 C456 任务该用哪个技能 | [using-c456](using-c456/SKILL.md) |
-| 写产品/渠道长文、tool 介绍、公众号稿 | [c456-product-channel-article](c456-product-channel-article/SKILL.md) |
-| 做产品对比、竞品分析、选型建议 | [c456-signal-product-vs](c456-signal-product-vs/SKILL.md) |
-| 收录新闻、行业动态、signal 研究 | [c456-signal-researcher](c456-signal-researcher/SKILL.md) |
-| 发布 playbook、上传配图、同步元数据 | [c456-playbook-publishing](c456-playbook-publishing/SKILL.md) |
+| 写对外正文、检查格式、配图策略 | [c456-sync](c456-sync/SKILL.md) |
+| 写信号/产品对比/渠道文章 | [c456-write](c456-write/SKILL.md) |
+| 发布上线、净稿、回填元数据、SEO 分发 | [c456-publish](c456-publish/SKILL.md) |
 | 把 llm-wiki 内容发布到 C456 或拉回本地 | [c456-llm-wiki](c456-llm-wiki/SKILL.md) |
-| intake、assets、搜索、截图上传、API 操作 | [c456-cli](c456-cli/SKILL.md) |
+| intake、assets、搜索、截图、CDP、API 操作 | [c456-cli](c456-cli/SKILL.md) |
 | 启动多角色 AI Agent 团队协作 | [c456-team-work](c456-team-work/SKILL.md) |
 
 ## 技能列表
@@ -46,13 +45,11 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | 名称 | 说明 |
 |------|------|
 | [using-c456](using-c456/SKILL.md) | C456 技能路由入口 — `/using-c456` 显式触发，自动识别工作场景并路由到对应技能 |
-| [c456-cli](c456-cli/SKILL.md) | C456 CLI / c456.com 操作 — intake、playbook、assets、搜索、截图上传与 API 工作流 |
-| [c456-llm-wiki](c456-llm-wiki/SKILL.md) | C456 LLM Wiki 扩展 — 给 `llm-wiki` 后接 `c456-sync/`，支持引用型镜像、版本绑定、发布与拉取 |
-| [c456-product-channel-article](c456-product-channel-article/SKILL.md) | C456 产品/渠道长文 — tool/channel 介绍、公众号渠道稿、五段式产品叙事 |
-| [c456-signal-product-vs](c456-signal-product-vs/SKILL.md) | C456 产品对比 signal — tool vs tool、选型建议、竞品差异与信息源分层 |
-| [c456-signal-researcher](c456-signal-researcher/SKILL.md) | C456 signal 研究写作 — 新闻收录、行业动态、事实核验、来源块与站内关联 |
-| [c456-sync-public-markdown](c456-sync-public-markdown/SKILL.md) | C456 public Markdown — `c456-sync/` 对外正文、frontmatter 剥离与发布格式检查 |
-| [c456-playbook-publishing](c456-playbook-publishing/SKILL.md) | C456 playbook 发布 — 长文写作、配图上传、字数校验、CLI 发布与本地元数据同步 |
+| [c456-cli](c456-cli/SKILL.md) | **基础能力** — C456 CLI / c456.com 操作：intake、CDP、截图、assets、搜索、API 工作流与 Agent 规则 |
+| [c456-sync](c456-sync/SKILL.md) | **数据同步** — c456-sync/ 对外正文规范（格式、禁止项）与配图策略（截图 vs Unsplash） |
+| [c456-write](c456-write/SKILL.md) | **数据同步** — 内容写作方法论：信号研究员、产品对比、产品/渠道五段式文章 |
+| [c456-llm-wiki](c456-llm-wiki/SKILL.md) | **数据同步** — C456 LLM Wiki 扩展：wiki ↔ c456-sync 双向同步、引用型镜像、版本绑定 |
+| [c456-publish](c456-publish/SKILL.md) | **数据发布** — 从 c456-sync 到 C456 线上发布：净稿、CLI 发布、回填元数据、SEO 分发 |
 | [c456-rails-startup](c456-rails-startup/SKILL.md) | Rails startup — Rails + Inertia + React + shadcn/ui 从零脚手架与 hello-world 验证 |
 
 ### 📦 第三方技能

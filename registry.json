@@ -3,27 +3,13 @@
     {
       "name": "c456-team-work",
       "description": "辉常团队 / multi-agent team workflow：当用户要启动或重启多角色 AI Agent 团队、创建工作组、从 Agency Agents 等职业技能库选择专家角色、处理 handoff/relay/通知、做团队汇报或推进开发闭环时触发；用于团队入口路由、角色边界、助理纪律和多工作组协作。",
-      "tags": [
-        "team",
-        "workflow",
-        "multi-agent",
-        "coordination",
-        "handoff",
-        "relay",
-        "monitoring"
-      ],
+      "tags": ["team", "workflow", "multi-agent", "coordination", "handoff", "relay", "monitoring"],
       "version": "1.4.0"
     },
     {
       "name": "c456-software-dev-sop",
       "description": "软件开发 SOP / development workflow：当用户要从需求到实现推进功能、修 bug、做兼容性评估、同步文档或验收交付时触发；用于需求分析、理论调研、编码、测试和 llm-wiki 记录。",
-      "tags": [
-        "development",
-        "sop",
-        "workflow",
-        "documentation",
-        "knowledge-base"
-      ],
+      "tags": ["development", "sop", "workflow", "documentation", "knowledge-base"],
       "version": "1.0.1"
     },
     {
@@ -34,223 +20,105 @@
     },
     {
       "name": "c456-cli",
-      "description": "C456 CLI / c456.com 操作：当用户要收录 intake、发布 playbook、管理 assets 媒体库、搜索/获取 C456 内容、截图上传或同步 self-hosted C456 数据时触发；用于 CLI 命令、CDP 截图和 API v1 工作流。",
-      "tags": [
-        "c456"
-      ],
-      "version": "1.0.1"
+      "description": "C456 CLI 基础能力 — 收录 intake、playbook、assets 管理、搜索、截图 CDP 与 API 工作流；封面截图与发布流程见 c456-sync 与 c456-publish。",
+      "tags": ["c456"],
+      "version": "1.2.0"
     },
     {
       "name": "c456-llm-wiki",
       "description": "C456 LLM Wiki / c456-sync：当用户要把 llm-wiki 页面发布到 C456、用引用型镜像或 versioned snapshot 绑定线上版本、后接 C456 同步、从 C456 拉回内容、维护 c456-sync/meta.yml 或处理 orphan_local 时触发；用于可插拔 C456 扩展层和 CLI 同步流程。",
-      "tags": [
-        "c456",
-        "wiki",
-        "sync",
-        "knowledge-base",
-        "llm-wiki",
-        "c456-sync",
-        "c456-cli",
-        "pull",
-        "reference-mirror",
-        "versioned"
-      ],
+      "tags": ["c456", "wiki", "sync", "knowledge-base", "llm-wiki", "c456-sync", "c456-cli", "pull", "reference-mirror", "versioned"],
       "version": "1.4.0"
     },
     {
-      "name": "c456-product-channel-article",
-      "description": "C456 产品/渠道长文写作：当用户要写 tool/channel 产品介绍、公众号渠道稿、图文脚本、SaaS/开源工具介绍或按五段式产品叙事漏斗成稿时触发；用于概述钩子、产品基因、功能、差异化和 CTA。",
-      "tags": [
-        "c456"
-      ],
-      "version": "1.0.1"
+      "name": "c456-sync",
+      "description": "C456 数据同步层 — c456-sync/ 镜像内容撰写规范与配图策略。对外正文格式（无 # 标题、无内部备忘）、截图 vs Unsplash 配图策略、发布前 self-check。与 c456-publish 配合使用。",
+      "tags": ["c456", "sync", "markdown", "formatting", "image", "asset", "public-content"],
+      "version": "1.0.0"
     },
     {
-      "name": "c456-signal-product-vs",
-      "description": "C456 产品对比 signal / tool vs tool：当用户要写 Auth/IdP、SaaS、开源工具等产品深度对比、选型建议或竞品差异分析时触发；用于信息源分层、核心判断、对比结构和对外正文约束。",
-      "tags": [
-        "c456"
-      ],
-      "version": "1.0.1"
+      "name": "c456-write",
+      "description": "C456 数据同步层 — 内容写作方法论。三种写作模式：信号研究员（新闻/行业动态）、产品对比（深度 vs 选型）、产品/渠道文章（五段式叙事）。合并自 c456-signal-researcher / c456-signal-product-vs / c456-product-channel-article。",
+      "tags": ["c456", "writing", "signal", "product", "channel", "article", "content"],
+      "version": "1.0.0"
     },
     {
-      "name": "c456-signal-researcher",
-      "description": "C456 signal 研究写作：当用户要撰写新闻收录、行业动态、研究信号、事实核验短文或关联站内已有内容时触发；用于新闻研究员风格、价值判断、来源块和 signal 路由。",
-      "tags": [
-        "c456"
-      ],
-      "version": "1.0.1"
-    },
-    {
-      "name": "c456-sync-public-markdown",
-      "description": "C456 public Markdown / c456-sync 正文规范：当用户要编写或发布 tool/signal/channel/walkthrough 镜像正文、处理 --body-file、剥离 frontmatter 或检查对外稿格式时触发；用于无一级标题、无制作备忘、媒体级正文。",
-      "tags": [
-        "c456"
-      ],
-      "version": "1.0.1"
-    },
-    {
-      "name": "book-extract",
-      "description": "书籍素材提取 / book extract：当用户要把 PDF、扫描件、拍照书页、OCR 书页或 MinerU 输出转成 raw/books/ Markdown + 图片时触发；用于书籍入库前的素材提取和来源整理。",
-      "tags": [
-        "knowledge-base",
-        "book",
-        "pdf",
-        "vision",
-        "mineru"
-      ],
-      "version": "1.1.3"
-    },
-    {
-      "name": "llm-wiki-book",
-      "description": "书籍知识编译 / book ingest：当用户要把 raw/books/ 连续书页录入、消化、整理到领域 llm-wiki，或基于书籍知识查询时触发；用于连续内容窗口理解、概念/案例/故事提取与交叉链接维护。",
-      "tags": [
-        "wiki",
-        "books",
-        "ingest",
-        "knowledge-base",
-        "cases",
-        "query"
-      ],
-      "version": "0.2.0"
-    },
-    {
-      "name": "llm-wiki",
-      "description": "卡帕西 LLM Wiki / knowledge base / wiki notes：当用户要建知识库、摄取资料 ingest、写入 Markdown wiki、搜索 search、查询 query、整理笔记、总结研究或做 health-check 时触发；用于互联 Markdown 知识库读写维护。",
-      "tags": [
-        "wiki",
-        "knowledge-base",
-        "research",
-        "notes",
-        "markdown",
-        "llm-wiki",
-        "ingest",
-        "search",
-          "query",
-          "rag-alternative"
-        ],
-        "version": "1.2.0"
-    },
-    {
-      "name": "llm-wiki-domains",
-      "description": "LLM Wiki Domains / multi-domain knowledge base：当用户要为多个主题建立隔离知识库、跨领域搜索/query、路由资料、维护根层 purpose/overview 或做多领域 health-check 时触发；用于每域独立 llm-wiki 与 meta-wiki 导航。",
-      "tags": [
-        "wiki",
-        "knowledge-base",
-        "domains",
-        "multi-domain",
-        "llm-wiki",
-        "ingest",
-        "search",
-        "query",
-        "meta-wiki"
-      ],
-      "version": "0.3.1"
-    },
-    {
-      "name": "tmux-cursor-agent",
-      "description": "Cursor Agent over tmux：当用户要控制、监控或给 tmux 中的 Cursor AI Agent 发消息，判断 EXECUTING/STOPPED、取消执行、轮询 daemon、处理 CURSOR-STOPPED 通知或 pane 级监控时触发；用于状态检测和四步消息协议。",
-      "tags": [
-        "tmux",
-        "cursor",
-        "agent",
-        "automation",
-        "monitoring"
-      ],
-      "version": "0.4.7"
-    },
-    {
-      "name": "tmux-pane-workspace",
-      "description": "Tmux pane workspace / zoom / layout / meeting：当用户要在 tmux 中聚焦或放大 pane、读取/输入/发送消息、管理多 pane 工作区、创建圆桌会议/多窗口讨论、维护会议日志、从 Agency Agents 等职业角色库选择专家 pane，或为 tmux-cursor-agent、tmux-trae-agent、tmux-codex-agent 等具体 Agent 技能提供 workspace 边界时触发；用于通用 pane 可见性、布局与会议协作。",
-      "tags": [
-        "tmux",
-        "pane",
-        "workspace",
-        "zoom",
-        "layout",
-        "meeting",
-        "multi-agent"
-      ],
-      "version": "2.1.0"
-    },
-    {
-      "name": "doc-driven-multi-agent",
-      "description": "文档驱动多代理协作 / document-driven multi-agent：当用户要定义 AI Agent 角色 SOP、handoff 三要素、G0-G4 门禁、越界拒绝、团队配置持久化或跨平台协作协议时触发；适用于 Cursor/Claude Code/Copilot/Gemini/Hermes 等。",
-      "tags": [
-        "multi-agent",
-        "coordination",
-        "document-driven",
-        "handoff",
-        "sop",
-        "workflow"
-      ],
-      "version": "1.2.0"
-    },
-    {
-      "name": "camofox-scraping",
-      "description": "CamoFox scraping / Cloudflare bypass：当用户要抓取受 Cloudflare/反爬保护的网页、做浏览器自动化采集、登录态页面研究或 CamoFox 失败回退 web_search 时触发；用于 npx 运行的反检测浏览器抓取。",
-      "tags": [
-        "scraping",
-        "camofox",
-        "browser-automation",
-        "research",
-        "cloudflare"
-      ],
-      "version": "1.2.1"
-    },
-    {
-      "name": "product-niche-discovery",
-      "description": "产品赛道发现 / product niche discovery：当用户要找赛道、挖痛点、做 market research、竞品/差评/定价抓取、生成关键词或准备 PMF/JTBD 分析原始材料时触发；用于 52 渠道执行层调研。",
-      "tags": [
-        "product-discovery",
-        "pain-points",
-        "market-research",
-        "niche-finding",
-        "competitive-analysis"
-      ],
-      "version": "1.2.2"
-    },
-    {
-      "name": "short-viral-content",
-      "description": "短视频爆款内容 / short viral content：当用户要为小红书、抖音、视频号等生成标题、关键词、描述、话题标签，或基于中心思想/受众偏好做高热长尾词调研时触发；用于平台化内容包装。",
-      "tags": [
-        "short-video",
-        "marketing",
-        "content-strategy",
-        "keywords",
-        "xiaohongshu",
-        "douyin",
-        "wechat"
-      ],
-      "version": "1.1.1"
-    },
-    {
-      "name": "c456-playbook-publishing",
-      "description": "C456 playbook publishing / 长文发布：当用户要为 c456.com 写软文、blog、技术分享、playbook、长文内容，或需要 frontmatter、配图上传、字数校验、CLI 发布和本地 wiki 元数据同步时触发。",
-      "tags": ["c456", "playbook", "publishing", "content", "wiki-sync"],
-      "version": "1.0.1"
-    },
-    {
-      "name": "llm-wiki-versioned",
-      "description": "LLM Wiki versioned / history / provenance：当用户要更新知识页但保留旧结论、查历史版本、做 version diff、恢复页面、追踪事实漂移或检查 snapshot/search history 时触发；用于 .versioned/ 快照和历史搜索规则。",
-      "tags": [
-        "wiki",
-        "versioning",
-        "knowledge-base",
-        "llm-wiki",
-        "history",
-        "provenance",
-        "snapshot",
-        "search",
-        "search-rules"
-      ],
-      "version": "3.0.1"
+      "name": "c456-publish",
+      "description": "C456 数据发布层 — 从 c456-sync 到 C456 线上发布的完整流程。净稿处理、CLI 发布（new/update）、回填本地元数据、长文发布专属、发布后 SEO 分发。合并自 c456-wiki-sync-publish / c456-playbook-publishing / c456-playbook-seo-distribution。",
+      "tags": ["c456", "publish", "cli", "intake", "playbook", "seo", "distribution"],
+      "version": "1.0.0"
     },
     {
       "name": "c456-rails-startup",
       "description": "Rails startup / Rails + Inertia + React：当用户要从零创建 Rails 全栈应用、安装 Ruby/asdf、集成 Inertia.js、React、TypeScript、Vite、shadcn/ui、Tailwind CSS v4 或验证 hello-world 时触发；用于脚手架和环境搭建。",
       "tags": ["rails", "inertia", "react", "shadcn", "vite", "startup", "scaffold", "full-stack"],
       "version": "1.0.1"
+    },
+    {
+      "name": "book-extract",
+      "description": "书籍素材提取 / book extract：当用户要把 PDF、扫描件、拍照书页、OCR 书页或 MinerU 输出转成 raw/books/ Markdown + 图片时触发；用于书籍入库前的素材提取和来源整理。",
+      "tags": ["knowledge-base", "book", "pdf", "vision", "mineru"],
+      "version": "1.1.3"
+    },
+    {
+      "name": "llm-wiki-book",
+      "description": "书籍知识编译 / book ingest：当用户要把 raw/books/ 连续书页录入、消化、整理到领域 llm-wiki，或基于书籍知识查询时触发；用于连续内容窗口理解、概念/案例/故事提取与交叉链接维护。",
+      "tags": ["wiki", "books", "ingest", "knowledge-base", "cases", "query"],
+      "version": "0.2.0"
+    },
+    {
+      "name": "llm-wiki",
+      "description": "卡帕西 LLM Wiki / knowledge base / wiki notes：当用户要建知识库、摄取资料 ingest、写入 Markdown wiki、搜索 search、查询 query、整理笔记、总结研究或做 health-check 时触发；用于互联 Markdown 知识库读写维护。",
+      "tags": ["wiki", "knowledge-base", "research", "notes", "markdown", "llm-wiki", "ingest", "search", "query", "rag-alternative"],
+      "version": "1.2.0"
+    },
+    {
+      "name": "llm-wiki-domains",
+      "description": "LLM Wiki Domains / multi-domain knowledge base：当用户要为多个主题建立隔离知识库、跨领域搜索/query、路由资料、维护根层 purpose/overview 或做多领域 health-check 时触发；用于每域独立 llm-wiki 与 meta-wiki 导航。",
+      "tags": ["wiki", "knowledge-base", "domains", "multi-domain", "llm-wiki", "ingest", "search", "query", "meta-wiki"],
+      "version": "0.3.1"
+    },
+    {
+      "name": "tmux-cursor-agent",
+      "description": "Cursor Agent over tmux：当用户要控制、监控或给 tmux 中的 Cursor AI Agent 发消息，判断 EXECUTING/STOPPED、取消执行、轮询 daemon、处理 CURSOR-STOPPED 通知或 pane 级监控时触发；用于状态检测和四步消息协议。",
+      "tags": ["tmux", "cursor", "agent", "automation", "monitoring"],
+      "version": "0.4.7"
+    },
+    {
+      "name": "tmux-pane-workspace",
+      "description": "Tmux pane workspace / zoom / layout / meeting：当用户要在 tmux 中聚焦或放大 pane、读取/输入/发送消息、管理多 pane 工作区、创建圆桌会议/多窗口讨论、维护会议日志、从 Agency Agents 等职业角色库选择专家 pane，或为 tmux-cursor-agent、tmux-trae-agent、tmux-codex-agent 等具体 Agent 技能提供 workspace 边界时触发；用于通用 pane 可见性、布局与会议协作。",
+      "tags": ["tmux", "pane", "workspace", "zoom", "layout", "meeting", "multi-agent"],
+      "version": "2.1.0"
+    },
+    {
+      "name": "doc-driven-multi-agent",
+      "description": "文档驱动多代理协作 / document-driven multi-agent：当用户要定义 AI Agent 角色 SOP、handoff 三要素、G0-G4 门禁、越界拒绝、团队配置持久化或跨平台协作协议时触发；适用于 Cursor/Claude Code/Copilot/Gemini/Hermes 等。",
+      "tags": ["multi-agent", "coordination", "document-driven", "handoff", "sop", "workflow"],
+      "version": "1.2.0"
+    },
+    {
+      "name": "camofox-scraping",
+      "description": "CamoFox scraping / Cloudflare bypass：当用户要抓取受 Cloudflare/反爬保护的网页、做浏览器自动化采集、登录态页面研究或 CamoFox 失败回退 web_search 时触发；用于 npx 运行的反检测浏览器抓取。",
+      "tags": ["scraping", "camofox", "browser-automation", "research", "cloudflare"],
+      "version": "1.2.1"
+    },
+    {
+      "name": "product-niche-discovery",
+      "description": "产品赛道发现 / product niche discovery：当用户要找赛道、挖痛点、做 market research、竞品/差评/定价抓取、生成关键词或准备 PMF/JTBD 分析原始材料时触发；用于 52 渠道执行层调研。",
+      "tags": ["product-discovery", "pain-points", "market-research", "niche-finding", "competitive-analysis"],
+      "version": "1.2.2"
+    },
+    {
+      "name": "short-viral-content",
+      "description": "短视频爆款内容 / short viral content：当用户要为小红书、抖音、视频号等生成标题、关键词、描述、话题标签，或基于中心思想/受众偏好做高热长尾词调研时触发；用于平台化内容包装。",
+      "tags": ["short-video", "marketing", "content-strategy", "keywords", "xiaohongshu", "douyin", "wechat"],
+      "version": "1.1.1"
+    },
+    {
+      "name": "llm-wiki-versioned",
+      "description": "LLM Wiki versioned / history / provenance：当用户要更新知识页但保留旧结论、查历史版本、做 version diff、恢复页面、追踪事实漂移或检查 snapshot/search history 时触发；用于 .versioned/ 快照和历史搜索规则。",
+      "tags": ["wiki", "versioning", "knowledge-base", "llm-wiki", "history", "provenance", "snapshot", "search", "search-rules"],
+      "version": "3.0.1"
     }
   ]
 }

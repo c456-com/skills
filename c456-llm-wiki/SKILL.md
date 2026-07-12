@@ -6,7 +6,7 @@ related_skills:
   - llm-wiki
   - llm-wiki-versioned
   - c456-cli
-  - c456-sync-public-markdown
+  - c456-sync
   - llm-wiki-domains
 ---
 
@@ -37,7 +37,7 @@ c456-llm-wiki                ← C456 同步：c456-sync/ ↔ c456.com
 - 必须安装本仓库的 `llm-wiki`。本技能只负责 C456 特有功能。
 - 如果当前知识库使用 `domains/<name>/` 多领域结构，再配合 `llm-wiki-domains` 做领域路由。
 - 发布、更新、拉取 C456 线上内容时，配合 `c456-cli`。
-- 准备对外正文或 `--body-file` 前，配合 `c456-sync-public-markdown` 自检。
+- 准备对外正文或 `--body-file` 前，配合 `c456-sync` 自检。
 - 如果项目启用了 `llm-wiki-versioned`，引用型镜像可绑定具体 wiki 版本或 snapshot，用于判断线上内容是否落后。
 
 ## 核心思想
@@ -56,7 +56,7 @@ c456-llm-wiki                ← C456 同步：c456-sync/ ↔ c456.com
 
 **冷启动 / 初始化目录时**：先打开仓库根 `AGENTS.md`，确认已包含 **§1.2–1.3** 与 **§6.5**（若缺失则补全后再建 `c456-sync/` 或首次 Ingest）；旧模板仅有 §1.2–1.3 时至少补 **§6.5**。可在首条 `wiki/log.md` 注明「已对齐 §1.2–1.3 / §6.5」。
 
-任何写入 **`c456-sync/`**、或组装将提交给 **`c456 intake` / `c456 playbook` / `c456 walkthrough` 的正文** 之前，重读 **§1.3** 自检一遍；**Walkthrough** 另见 `c456-sync-public-markdown` 与 `c456-cli` 的 content-syntax §3（正文勿嵌本页录屏）。
+任何写入 **`c456-sync/`**、或组装将提交给 **`c456 intake` / `c456 playbook` / `c456 walkthrough` 的正文** 之前，重读 **§1.3** 自检一遍；**Walkthrough** 另见 `c456-sync` 与 `c456-cli` 的 content-syntax §3（正文勿嵌本页录屏）。
 
 ## 扩展结构
 
@@ -190,7 +190,7 @@ domains/<domain-name>/
 4. 远端删除时是否形成 `orphan_local`，且是否等待用户确认。
 5. `sync-mode: reference` 是否有有效的 `source-wiki-path`，且源文件存在。
 6. 若启用 `llm-wiki-versioned`，检查 `source-wiki-version` / `source-wiki-snapshot` 是否落后于当前 wiki 页面版本。
-7. `sync-mode: body` 正文是否符合 `c456-sync-public-markdown`。
+7. `sync-mode: body` 正文是否符合 `c456-sync`。
 
 ---
 
@@ -236,7 +236,7 @@ date: 2026-05-08
 1. 扫描带 `c456-kind` 但缺 `c456-id` 或 `status: draft` 的页面
 2. 读取对应 `c456-sync/<kind>/<slug>.md`，判断 `sync-mode`。
 3. 若为 `reference`，从 `source-wiki-path` 读取源 wiki 页面生成发布正文；若为 `body`，直接使用镜像文件正文。
-4. **格式自检**：发布正文前，先加载 `c456-sync-public-markdown` 技能。正文必须符合对外格式规范——无 `#` 一级标题、无制作备忘（仓库路径/截图命令/asset ID 解释）、无 `## 总结` / `## TL;DR` 等标签式二级标题；核心判断写在首节正文段落中。
+4. **格式自检**：发布正文前，先加载 `c456-sync` 技能。正文必须符合对外格式规范——无 `#` 一级标题、无制作备忘（仓库路径/截图命令/asset ID 解释）、无 `## 总结` / `## TL;DR` 等标签式二级标题；核心判断写在首节正文段落中。
 5. 转换 Markdown 为 C456 富文本格式（移除 Wikilink、Frontmatter）
 6. 选择命令：signal/tool/channel → `c456 intake new -k <kind>`；playbook/walkthrough → `c456 playbook new`
 7. 正文写入 `.tmp/`，通过 `--body-file` 传入 CLI
@@ -274,7 +274,7 @@ remote-slug: andrej-karpathy
 
 本文发布内容引用自 `wiki/entities/andrej-karpathy.md`。
 
-发布前请从 `source-wiki-path` 读取源页面，按 `c456-sync-public-markdown` 转换为 C456 对外正文。
+发布前请从 `source-wiki-path` 读取源页面，按 `c456-sync` 转换为 C456 对外正文。
 ```
 
 规则：

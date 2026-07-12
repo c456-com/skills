@@ -1,12 +1,18 @@
 ---
 name: c456-cli
 description: "C456 CLI / c456.com 操作：当用户要收录 intake、发布 playbook、管理 assets 媒体库、搜索/获取 C456 内容、截图上传或同步 self-hosted C456 数据时触发；用于 CLI 命令、CDP 截图和 API v1 工作流。"
-version: 1.0.1
+version: 1.2.0
+related_skills:
+  - c456-sync
+  - c456-publish
+  - c456-write
 ---
 
 # C456 CLI（c456-cli）
 
-**重要**：发布正文到 C456 前，应先加载 `c456-sync-public-markdown` 技能，按对外正文格式规范（无 `#` 一级标题、无制作备忘、无标签式二级标题）撰写 `--body-file`。**尤其注意** `c456-sync-public-markdown` §0 要求的 frontmatter 剥离步骤不可跳过。
+> **基础能力层技能**。本技能仅覆盖 CLI 命令操作本身。正文格式规范见 `c456-sync`，发布上线流程见 `c456-publish`。
+
+**重要**：发布正文到 C456 前，应先加载 `c456-sync` 技能，按对外正文格式规范撰写 `--body-file`。发布流程见 `c456-publish` 技能。
 
 ## Agent 激活时自动检查并启动 CDP
 
@@ -24,45 +30,6 @@ version: 1.0.1
 ## 安装 CLI
 
 未安装时可用 **`npx c456-cli …`** 或 **`bunx c456-cli …`**；已全局安装则直接 **`c456`**。
-
-## 安装本技能（给其他仓库）
-
-**推荐**：在目标项目根目录执行（内部调用官方 **`npx skills add`**，需本机可执行 `npx`）：
-
-```bash
-c456 skill install
-```
-
-- **交互终端**：多选菜单（**取消安装** 在列表末尾）；**`c456-cli` 必选**；**`llm-wiki-domains`** 与 **c456-com/skills 可选技能** 同步显示。
-- **免交互**：命令后接技能 id（仍含 **`c456-cli`**），例如：
-
-```bash
-c456 skill install c456-signal-product-vs c456-signal-researcher
-```
-
-- **非交互终端**（无 TTY、且未传技能 id）：仅安装 **`c456-cli`**，并在 stderr 提示可用「显式 id」方式多装。
-
-私人知识库一条装齐：
-
-```bash
-c456 skill install --with-wiki
-```
-
-细节与顺序见 [`docs/private-knowledge-base.md`](../../docs/private-knowledge-base.md) §3。
-
-也可自行执行：
-
-```bash
-npx skills add xiaohui-zhangxh/c456-cli --skill c456-cli -y
-```
-
-若已克隆 [c456-cli](https://github.com/xiaohui-zhangxh/c456-cli) 仓库，可在该仓库根目录：
-
-```bash
-npx skills add . --skill c456-cli -y
-```
-
-列出远程包内可用技能而不安装：`npx skills add xiaohui-zhangxh/c456-cli -l`
 
 ## 鉴权与站点
 
@@ -83,22 +50,11 @@ npx skills add . --skill c456-cli -y
 4. **严禁编造参数**：只能使用 `c456 <command> --help`（或本仓库源码/文档）明确存在的选项；不确定时先运行 `--help` 再行动。
 5. **严禁重复创建**：若 `tool new` / `signal new` / `channel new` / `intake new` / `playbook new` 输出了 `ID:` 或 `--- JSON ---`（含 `id`），视为已成功创建，后续只能 `show <id>` / `update <id>`，不得再次 `new` 重试（避免重复发布两条）。
 6. **内容一律用文件传入**：创建/更新正文等长文本时，不要在命令行直接写内容（避免引号/换行/转义错误）。必须把内容写到**当前工作目录**的 `.tmp/` 下临时文件，再用 `--body-file` / `--summary-file` 传入。
-7. **自媒体账号默认收录为渠道**：用户要收录 **YouTube / 抖音 / 小红书 / B 站 / 微博** 等**自媒体账号主页或频道**时，**默认使用 `c456 channel new`**（不要用 `c456 tool new`），并配合 `-u <主页或频道 URL>`；需要服务端按 URL 自动填资料段时再加 `--auto-resolve-url`。仅做「不落库的 URL 资料预览/抓取」时用 `c456 fetch profile -p social_account -u "<url>"`。
+7. **自媒体账号默认收录为渠道**：用户要收录 **YouTube / 抖音 / 小红书 / B 站 / 微博** 等**自媒体账号主页或频道**时，**默认使用 `c456 channel new`**（不要用 `c456 tool new`），并配合 `-u <主页或频道 URL>`；需要服务端按 URL 自动填资料段时再加 `--auto-resolve-url`。仅做「不落库的 URL 资料预览/抓取」时用 `c456 fetch profile -p social_account -u "url"`。
 8. **渠道（及 tool）必须带至少一条「资料」**：`c456 channel new` 或 `c456 tool new` 时，服务端要求 **profile_data 里至少有一条资料段**（例如主页 **URL**、**媒体账号** 等对应 facet），常见做法是 `-u <url>` 并加 **`--auto-resolve-url`** 让服务端生成资料段；如需手写 **`--profile-data-json`**，**必须先阅读** [references/intake-profile-data-json.md](references/intake-profile-data-json.md)（含各 `profile_id`、必填字段与最小 JSON 示例）。**不能只写标题/正文而不提供 URL/资料段**，否则会 **422 校验失败**（提示含「至少添加一个资料段或图标」等）。
 9. **素材库与列表图标**：上传、插入正文、设置 tool/channel 列表图标（`list_icon_url`）见 [references/media-library-and-icons.md](references/media-library-and-icons.md)；CLI：`c456 asset …`、`c456 intake update … --profile-data-json-file`。
-10. **工具 / 渠道介绍里的产品截图**：优先 **`c456 browser start`**（持久 profile：`~/.cache/c456-cli/chrome-profile`，可保留登录态）→ 需要时在窗口内登录 → **`c456 screenshot <url> [-o .tmp/…]`** 复用 CDP；结束用 **`c456 browser stop`**。无长会话时可只跑 **`c456 screenshot <url>`**（可省略 **`-o`**，在当前目录按 URL 生成文件名）。然后 **`c456 asset upload`** → **`markdownSnippet`** 写入 **`--body-file`**。**产品官网 / 落地页首屏类截图一律只做视窗截图**：**不要**加 **`-f` / `--full-page`**（默认即为视口高度；整页长图上传后素材处理与阅读体验均易变差）。**仅当**收录时的**产品链接**为 **RubyGems / npm 等包注册表页**（如 **`-u`** 或资料中的包页 URL），并需要**基于该包页**为介绍配截图时：**`c456 screenshot` 的 URL 优先**用 **`c456 fetch profile -p package_registry -u "<该包页完整 URL>"`** 解析出的 **GitHub 仓库根页**（`https://github.com/owner/repo`），**不要**优先直接对 **rubygems.org/gems/…** 或 **www.npmjs.com/package/…** 截图（侧栏多、README 首屏弱；仓库页与 CLI 隐藏文件表一致）。若产品链接已是 **GitHub / 官网 / 文档站**等，或用户**指定了其它截图目标 URL**，则**按该 URL 截图**，**不适用**本条「包页 → GitHub」规则。详见 [references/product-screenshots-for-intake.md](references/product-screenshots-for-intake.md)（**不用** IDE MCP；不强制安装 Playwright 自带 Chromium，见 README）。
-11. **⚠️ 收录 tool/channel 必须配封面截图**：用户说「收录 XXX」并给出 URL 时，**必须**执行截图流程，将截图作为正文第一张配图。步骤：
-    - `c456 browser start`（如未运行）→ `c456 screenshot <官网URL> -o .tmp/<name>-hero.png`
-    - 截图目标：产品官网/首页首屏视口（**不**加 `-f`/`--full-page`）
-    - `c456 asset upload -f .tmp/<name>-hero.png` → 得到 asset ID
-    - 正文开头写入 `![{title}-hero](c456:asset/{id})`
-    - **例外**：用户明确说不需要截图、或 URL 无法访问、或收录类型为 signal/playbook/walkthrough 不需要封面。
-12. **「公开发布」= `c456 {type} new` 即上线**：当用户说「公开发布到 c456」时，`c456 tool new` / `c456 channel new` / `c456 signal new` 等命令**本身就是发布行为**——创建即上线，无需额外 publish/approve/confirm 步骤。执行 `new` 后：
-    - 拿到返回的 `ID:`（如 `ID: 239`）
-    - 回填到本地 `c456-sync/` 文件的 frontmatter：`c456-id: {id}`、`c456-status: published`、`c456-url: https://c456.com/intakes/{id}`
-    - 更新 `wiki/entities/` 对应页面的 `c456-status: published`
-    - 在 `wiki/log.md` 追加 `c456-publish` 日志，记录 ID、URL、操作命令
-    - 更新 `wiki/index.md` 中对应实体行标注 `[c456:#{id}]`
+10. **工具 / 渠道介绍里的产品截图**：优先 **`c456 browser start`**（持久 profile：`~/.cache/c456-cli/chrome-profile`，可保留登录态）→ 需要时在窗口内登录 → **`c456 screenshot <url> [-o .tmp/…]`** 复用 CDP；结束用 **`c456 browser stop`**。无长会话时可只跑 **`c456 screenshot <url>`**（可省略 **`-o`**，在当前目录按 URL 生成文件名）。然后 **`c456 asset upload`** → **`markdownSnippet`** 写入 **`--body-file`**。**产品官网 / 落地页首屏类截图一律只做视窗截图**：**不要**加 **`-f` / `--full-page`**（默认即为视口高度；整页长图上传后素材处理与阅读体验均易变差）。**仅当**收录时的**产品链接**为 **RubyGems / npm 等包注册表页**（如 **`-u`** 或资料中的包页 URL），并需要**基于该包页**为介绍配截图时：**`c456 screenshot` 的 URL 优先**用 **`c456 fetch profile -p package_registry -u "包页完整URL"`** 解析出的 **GitHub 仓库根页**（`https://github.com/owner/repo`），**不要**优先直接对包页截图。若产品链接已是 **GitHub / 官网 / 文档站**等，或用户**指定了其它截图目标 URL**，则**按该 URL 截图**。详见 [references/product-screenshots-for-intake.md](references/product-screenshots-for-intake.md)。
+11. **封面截图与发布上线流程已迁至独立技能**：正文格式规范、配图策略 → 加载 **`c456-sync`**；净稿、CLI 发布、回填元数据、SEO 分发 → 加载 **`c456-publish`**。
 
 ## 命令速查
 
@@ -108,89 +64,74 @@ npx skills add . --skill c456-cli -y
 
 **技能 `skill`**
 
-- `c456 skill install [[skillIds...]] [--with-wiki] [-C <cwd>] [-g] [-a <agent>] [--copy]`（仅 `npx skills add`；无参数且为 TTY 时多选菜单；传 `skillIds` 免交互；`--with-wiki` 时装 llm-wiki-domains、c456-llm-wiki 与 c456-cli，见 docs/private-knowledge-base.md §3）
+- `c456 skill install [[skillIds...]] [--with-wiki] [-C <cwd>] [-g] [-a <agent>] [--copy]`（仅 `npx skills add`；无参数且为 TTY 时多选菜单；传 `skillIds` 免交互；`--with-wiki` 时装 llm-wiki-domains、c456-llm-wiki 与 c456-cli）
 
 **浏览器（系统 Chrome + CDP）**
 
 - `c456 browser start [-p 端口]` · `stop` · `status`（持久 profile 默认 `~/.cache/c456-cli/chrome-profile`）
-- `c456 screenshot <url> [-o <path>] [--full-page] [--viewport 1280x720] [--wait-after-load ms] [--no-reuse] [--keep-github-files-table]`（默认 **`--wait-after-load 3000`**；**github.com** 默认隐藏 README 上方「文件与目录」表格以突出说明；**产品官网介绍勿加 `--full-page`**，保持视窗截图）
+- `c456 screenshot <url> [-o <path>] [--full-page] [--viewport 1280x720] [--wait-after-load ms] [--no-reuse] [--keep-github-files-table]`（默认 **`--wait-after-load 3000`**；**github.com** 默认隐藏 README 上方文件表格；**产品官网介绍勿加 `--full-page`**）
 
 **收录 `intake`**
 
 - 新建（AI 自动识别）：`c456 intake new [-u <url>] [--hint signal|tool|channel|playbook] [-t 标题] [--body-file <path>]`
-- 新建工具（手动指定）：`c456 tool new -u <url> -t <标题> [--auto-resolve-url] [--body-file <path>]`（`profile_data` 结构见 [references/intake-profile-data-json.md](references/intake-profile-data-json.md)；长 JSON 建议写入 `.tmp/` 再用 `"$(cat .tmp/profile.json)"` 传入）
+- 新建工具（手动指定）：`c456 tool new -u <url> -t <标题> [--auto-resolve-url] [--body-file <path>]`（profile_data 结构见 [references/intake-profile-data-json.md](references/intake-profile-data-json.md)）
 - 新建信号（手动指定）：`c456 signal new ...`
 - 新建渠道（手动指定）：`c456 channel new ...`
-- 查看 / 更新 / 删除 / 列表：`c456 intake show <id>` · `c456 intake update <id> …`（支持 **`--profile-data-json`** / **`--profile-data-json-file`** 合并更新 tool/channel 的 `profile_data` 或仅 `list_icon_url`） · `c456 intake delete <id> [-f]` · `c456 intake list [-k] [-q] [-p 页] [-n 每页]`
-
-`--auto-resolve-url` 说明：
-
-- **默认不解析**：`-u/--url` 只保存为 URL 输入；服务端不会默认生成资料段。
-- **显式开启才解析**：当 `-k` 传入 `tool|channel` 且传入 `--auto-resolve-url` 时，服务端会尝试检测平台并回填 `profile_data`（可能导致校验失败/成功与否不同；会发起网络请求）。
-- **GitHub API 限流回退**：对 GitHub 仓库 URL 使用 `--auto-resolve-url` 时，服务端可能返回 403（GitHub API 未认证限流）。此时改用 `link_product` profile 手动传入：`--profile-data-json '{"facets":[{"profile_id":"link_product","data":{"url":"<仓库URL>","name":"<产品名>"}}],"primary_profile_id":"link_product"}'`。不要试图用 `github_origin` profile 的 `repo_url` 字段跳过解析——手工 `github_origin` 需要 `_dict_key` + `full_name` 且不适用于纯 URL 场景。
+- 查看 / 更新 / 删除 / 列表：`c456 intake show <id>` · `c456 intake update <id> …` · `c456 intake delete <id> [-f]` · `c456 intake list [-k] [-q] [-p 页] [-n 每页]`
 
 **搜索 `search`**
 
-- `c456 search signals -q "…" [-k kind] [-l n]`
-- `c456 search playbooks -q "…" [-l n]`
+- `c456 search signals -q "..." [-k kind] [-l n]`
+- `c456 search playbooks -q "..." [-l n]`
 
 **打法 `playbook`**
 
 - 新建：`c456 playbook new -t "标题" [--body-file <path>] [--ref-intake id …] [--ref-playbook id …]`
-- 另有 `show` / `list` / `update` / `delete`（与 `c456 playbook --help` 一致）
+- 另有 `show` / `list` / `update` / `delete`
 
 **讲解 `walkthrough`**
 
-- 新建：`c456 walkthrough new …` · 更新：`c456 walkthrough update <id> --body-file <path> [--summary-file <path>]` · 另有 `show` / `list` / `delete`（见 `c456 walkthrough --help`）
-- **正文不要嵌入本页录屏**：详情页前端已自动展示 Walkthrough 媒体；`body` 只写文字/步骤，**禁止** `:::walkthrough{id=<当前 id>}`（见 [content-syntax-kramdown.md](references/content-syntax-kramdown.md) §3）。在其他 signal/playbook 正文里**引用**某讲解时，才用 `:::walkthrough{id=N}`。
+- 新建：`c456 walkthrough new …` · 更新：`c456 walkthrough update <id> --body-file <path> [--summary-file <path>]` · 另有 `show` / `list` / `delete`
 
 **素材库 `asset`**
 
-- `c456 asset upload -f <path>` · `list` · `show <id>` · `update <id> --filename <名>` · `delete <id>` · `refresh-markdown` · `fingerprint`（插图与图标流程见 [references/media-library-and-icons.md](references/media-library-and-icons.md)）
+- `c456 asset upload -f <path>` · `list` · `show <id>` · `update <id> --filename <名>` · `delete <id>` · `refresh-markdown` · `fingerprint`
 
 **资料 `fetch`**
 
-- `c456 fetch profile -u <url> -p <profile_id>`（`profile_id` 必填；否则 API 返回「不支持的资料类型」）。**仅当**你要以**包页 URL 作为产品链接**去截介绍图、且已对该 URL 使用 **`package_registry`** 拉元数据时：若解析结果中含 **GitHub 仓库** 链接，**`c456 screenshot` 可优先使用该仓库根 URL**（非此场景勿生搬），见 [references/product-screenshots-for-intake.md](references/product-screenshots-for-intake.md)。
+- `c456 fetch profile -u <url> -p <profile_id>`（`profile_id` 必填）
 
 `profile_id` 类型含义：
-
-- `link_product`：产品/官网等普通链接页（解析 name/icon/description）
+- `link_product`：产品/官网等普通链接页
 - `package_registry`：软件包页（npm、RubyGems 等）
 - `github_origin`：代码仓库（GitHub/GitLab/Gitee）
-- `social_account`：社交账号主页/频道（YouTube/抖音/小红书等）
+- `social_account`：社交账号主页/频道
 
 ## 子技能（references/）
 
 | 子技能 | 用途 | 触发条件 |
 |--------|------|---------|
-| **c456-signal-researcher**（正文仅在 LLM Wiki 仓库 `.cursor/skills/c456-signal-researcher/SKILL.md`） | 以新闻研究员视角生成 signal：事实 → 价值 → 关联 → 来源 | 写信号、收录新闻、发布行业动态 |
 | [intake-profile-data-json](references/intake-profile-data-json.md) | profile_data 字段定义与校验 | 手写 `--profile-data-json` |
-| [intake-profile-data-quickref](references/intake-profile-data-quickref.md) | 三种最常见 profile_data JSON 模板 + 故障排除 | 快速复制 github_origin / link_product / social_account 模板 |
+| [intake-profile-data-quickref](references/intake-profile-data-quickref.md) | 三种最常见 profile_data JSON 模板 | 快速复制 |
 | [media-library-and-icons](references/media-library-and-icons.md) | 素材库上传、正文插图、列表图标 | 配图与图标流程 |
 | [product-screenshots-for-intake](references/product-screenshots-for-intake.md) | 产品截图最佳实践 | tool/channel 收录配图 |
 | [douyin-channel-intake](references/douyin-channel-intake.md) | 抖音渠道收录特殊说明 | 抖音账号收录 |
 | [content-syntax-kramdown](references/content-syntax-kramdown.md) | C456 富文本语法 | 生成/写入正文内容 |
 
-## 更完整的说明
+## 分层技能体系
 
-见各命令的 `--help` 与本仓库 `README.md`、`DEVELOPMENT.md`。
+| 层级 | 技能 | 职责 |
+|------|------|------|
+| **基础能力** | `c456-cli`（本技能） | CLI 命令、CDP、鉴权、Agent 规则 |
+| **基础能力** | `c456-skills-repo` | 技能仓库维护 |
+| **数据同步** | `c456-sync` | 对外正文格式 + 配图策略 |
+| **数据同步** | `c456-write` | 信号/产品对比/工具渠道文章写作 |
+| **数据同步** | `c456-llm-wiki` | wiki ↔ C456 双向同步 |
+| **数据发布** | `c456-publish` | 净稿 → CLI 发布 → 回填 → SEO 分发 |
 
-### 分页参数（list 类命令）
+## 收录最佳实践
 
-- `-p, --page`: **1-10000**
-- `-n, --per-page`: **1-100**（默认 20；服务端会截断到最大值）
-
-### 内容语法（富文本）
-
-CLI `--help` 中会用 `type: <type_name>` 标注字段类型；Agent 在生成/写入内容时，必须按下表选择语法与约束：
-
-- `markdown_kramdown` → [references/content-syntax-kramdown.md](references/content-syntax-kramdown.md)（与 `SKILL.md` 同级目录下，随 `npx skills add` 一并安装）
-
-### 收录最佳实践
-
-- **自媒体 / 社交账号**（主页、频道页）：**一律按渠道收录** → `c456 channel new`；抖音场景补充说明见 [references/douyin-channel-intake.md](references/douyin-channel-intake.md)。
-- **渠道 / 工具**：新建时务必带上 **至少一种结构化资料**（常见：`-u` + `--auto-resolve-url`，或 `--profile-data-json`），否则服务端会因缺少资料段而拒绝保存。
-- **`--profile-data-json`**：键名与校验规则与 Web 端一致，**不要编造字段**；完整说明与示例见 [references/intake-profile-data-json.md](references/intake-profile-data-json.md)（优先自动解析，其次再手写）。**仅改列表图标**见 [references/media-library-and-icons.md](references/media-library-and-icons.md)。
-- **软件 / 产品 / 仓库 / 包页**：一般用 `c456 tool new`（或用户明确要当「工具资料」收录时）。**仅当** **`-u` 或资料中的「产品链接」** 为 **RubyGems / npm 等包注册表页**，且需要**基于该包页**为正文配产品截图时，**`c456 screenshot` 优先**对 **`c456 fetch profile -p package_registry -u "<该包页>"`** 解析出的 **GitHub 仓库根页**截图；包站主要作解析入口。**产品链接非包页**（已是 GitHub、独立官网等）或用户指定其它截图目标时，**按实际 URL**，勿套用本条。详见 [references/product-screenshots-for-intake.md](references/product-screenshots-for-intake.md)「包管理器」节。
-- **产品界面进介绍**：优先 **`c456 browser` + `c456 screenshot`**（见 [references/product-screenshots-for-intake.md](references/product-screenshots-for-intake.md)）→ `asset upload` → `body`（`--body-file`）；**不用** IDE MCP。**官网 / 落地页截图仅视窗**，勿 `-f`。
-- **讲解 Walkthrough**：`walkthrough update` 的 `--body-file` 勿含本页 `:::walkthrough{id=…}`；录屏由 Walkthrough 记录本身绑定，页头自动播放。
+- **自媒体 / 社交账号**：一律按渠道收录 → `c456 channel new`
+- **渠道 / 工具**：新建时务必带上至少一种结构化资料（`-u` + `--auto-resolve-url`，或 `--profile-data-json`）
+- **软件 / 产品 / 仓库**：一般用 `c456 tool new`
+- **产品界面进介绍**：优先 `c456 browser` + `c456 screenshot` → `asset upload` → `body`；**官网截图仅视窗**，勿 `-f`
