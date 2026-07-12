@@ -19,32 +19,6 @@ related_skills:
 2. `c456` CLI 已安装并配置 API Key
 3. 若需配封面截图，Chrome CDP 可用
 
-### 关键词速查
-
-| 用户说 | 你要做什么 |
-|--------|----------|
-| 「对外发布」 / 「公开发布」 / 「发到 c456」 | 执行 `c456 <kind> new -u <URL> -t "标题" [--auto-resolve-url] --body-file .tmp/净稿.md`。**这就是发布**，不需要额外步骤 |
-| 「配图用 X」 / 「截图用这个链接」 | 用用户指定的 URL 截图，**不要**截官网首页 |
-| 「收录 XXX 到 c456 并且对外发布，配图用 Y」 | 完整流程：调研 → 写正文 → `c456 screenshot Y` → `c456 asset upload` → 拼接 body → `c456 tool new` → 回填 |
-
-### 完整端到端示例
-
-用户说：「收录 https://www.shoplazza.cn/ 到 c456 并且对外发布，配图用 https://www.shoplazza.cn/why-choose-shoplazza」
-
-```
-1. 调研 → 电商独立站建站平台 SaaS，tool 类型
-2. 调研信息写入 c456-sync/tool/shoplazza.md
-3. c456 browser start（如未运行）
-4. c456 screenshot https://www.shoplazza.cn/why-choose-shoplazza -o .tmp/shoplazza-hero.png
-5. c456 asset upload -f .tmp/shoplazza-hero.png → 得到 asset:N
-6. 拼接 body：第一行 ![店匠官网](https://c456.com/our-assets/N/... "c456:asset:N")
-   后接正文（## 起，符合 c456-sync 格式）
-7. 写净稿到 .tmp/shoplazza-净稿.md
-8. c456 tool new -u https://www.shoplazza.cn/ --auto-resolve-url -t "店匠 | 独立站建站" --body-file .tmp/shoplazza-净稿.md
-   → 输出 ID: N ← 这就是发布成功
-9. 回填本地 c456-sync + wiki 元数据
-```
-
 ---
 
 ## §1 前置准备：封面截图

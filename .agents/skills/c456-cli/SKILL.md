@@ -55,23 +55,6 @@ related_skills:
 9. **素材库与列表图标**：上传、插入正文、设置 tool/channel 列表图标（`list_icon_url`）见 [references/media-library-and-icons.md](references/media-library-and-icons.md)；CLI：`c456 asset …`、`c456 intake update … --profile-data-json-file`。
 10. **工具 / 渠道介绍里的产品截图**：优先 **`c456 browser start`**（持久 profile：`~/.cache/c456-cli/chrome-profile`，可保留登录态）→ 需要时在窗口内登录 → **`c456 screenshot <url> [-o .tmp/…]`** 复用 CDP；结束用 **`c456 browser stop`**。无长会话时可只跑 **`c456 screenshot <url>`**（可省略 **`-o`**，在当前目录按 URL 生成文件名）。然后 **`c456 asset upload`** → **`markdownSnippet`** 写入 **`--body-file`**。**产品官网 / 落地页首屏类截图一律只做视窗截图**：**不要**加 **`-f` / `--full-page`**（默认即为视口高度；整页长图上传后素材处理与阅读体验均易变差）。**仅当**收录时的**产品链接**为 **RubyGems / npm 等包注册表页**（如 **`-u`** 或资料中的包页 URL），并需要**基于该包页**为介绍配截图时：**`c456 screenshot` 的 URL 优先**用 **`c456 fetch profile -p package_registry -u "包页完整URL"`** 解析出的 **GitHub 仓库根页**（`https://github.com/owner/repo`），**不要**优先直接对包页截图。若产品链接已是 **GitHub / 官网 / 文档站**等，或用户**指定了其它截图目标 URL**，则**按该 URL 截图**。详见 [references/product-screenshots-for-intake.md](references/product-screenshots-for-intake.md)。
 11. **封面截图与发布上线流程已迁至独立技能**：正文格式规范、配图策略 → 加载 **`c456-sync`**；净稿、CLI 发布、回填元数据、SEO 分发 → 加载 **`c456-publish`**。
-12. **用户关键词 → 动作映射**：用户说的日常用语直接映射为以下 CLI 操作序列：
-
-| 用户说 | 含义 | 执行的动作 |
-|--------|------|-----------|
-| 「收录 XXX」 | 调研一个工具/产品并入库 | ① 调研 URL（产品名/官网/GitHub）→ ② 写 `c456-sync/<kind>/<name>.md` 正文 → ③ 截图（见规则 10）→ ④ **对外发布** |
-| 「对外发布」 / 「公开发布」 / 「发到 c456」 | 调用 CLI 创建 intake | **`c456 <kind> new -u <URL> -t "标题" --auto-resolve-url --body-file .tmp/净稿.md`**（创建即上线，见 `c456-publish` §3） |
-| 「配图用 URL」 / 「截图用这个链接」 | 用指定 URL 截图（替代官网首页） | `c456 screenshot <指定URL> -o .tmp/<name>.png` 而非 `c456 screenshot <官网URL>` |
-| 「收录这个频道」 / 「收录这个账号」 | 渠道类型 | **`c456 channel new`**（规则 7） |
-
-**完整示例**：用户说「收录 https://www.shoplazza.cn/ 到 c456 并且对外发布，配图用 https://www.shoplazza.cn/why-choose-shoplazza」
-→ ① 调研 shoplazza.cn（电商 SaaS，tool 类型）
-→ ② 写 `c456-sync/tool/shoplazza.md` 正文
-→ ③ `c456 screenshot https://www.shoplazza.cn/why-choose-shoplazza -o .tmp/shoplazza-hero.png`
-→ ④ `c456 asset upload -f .tmp/shoplazza-hero.png`
-→ ⑤ 拼接 body（第一行配图 + 正文）
-→ ⑥ **`c456 tool new -u https://www.shoplazza.cn/ --auto-resolve-url -t "店匠 | 独立站建站" --body-file .tmp/shoplazza-净稿.md`**
-→ ⑦ 回填本地元数据
 
 ## 命令速查
 

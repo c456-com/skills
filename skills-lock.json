@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "skills": {
+    "c456-cli": {
+      "source": "/Users/xiaohui/Codes/c456-com/skills",
+      "sourceType": "local",
+      "computedHash": "8b26cf6eb42ab1dcc51b14de99b3de6e937d8785dda0b83ee24150c1573ff32d"
+    },
+    "c456-llm-wiki": {
+      "source": "/Users/xiaohui/Codes/c456-com/skills",
+      "sourceType": "local",
+      "computedHash": "ca4cbcc5dcdc5c5a5ee55d3c4854e6da393b072d8b6481a6c712d4eb006df4df"
+    },
+    "c456-publish": {
+      "source": "/Users/xiaohui/Codes/c456-com/skills",
+      "sourceType": "local",
+      "computedHash": "3191caab43669c9240d79771bc40870885530ef868075c8453d47ccf1beff138"
+    },
+    "c456-skills-repo": {
+      "source": "/Users/xiaohui/Codes/c456-com/skills",
+      "sourceType": "local",
+      "computedHash": "892c38e9f427db74288aaa1dd0d7de321fb578c783268bc01063c5528993939a"
+    },
+    "c456-sync": {
+      "source": "/Users/xiaohui/Codes/c456-com/skills",
+      "sourceType": "local",
+      "computedHash": "96124fc2a91803f853464d2bb482fdf92eb895af82c368bdffdf4b8233719830"
+    },
+    "c456-write": {
+      "source": "/Users/xiaohui/Codes/c456-com/skills",
+      "sourceType": "local",
+      "computedHash": "396a306b2daeb6df774523f64784825e72aa3f77e4ba4d95554cd21c1639d99d"
+    }
+  }
+}
