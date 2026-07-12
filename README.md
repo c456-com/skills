@@ -28,7 +28,7 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | [llm-wiki](llm-wiki/SKILL.md) | 卡帕西 LLM Wiki / knowledge base — 互联 Markdown 知识摄取、搜索、查询与维护 |
 | [llm-wiki-domains](llm-wiki-domains/SKILL.md) | 多领域 LLM Wiki / meta-wiki — 多主题隔离知识库、跨领域路由与根层导航 |
 | [book-extract](book-extract/SKILL.md) | 书籍素材提取 — PDF、扫描件、拍照书页、OCR → `raw/books/`（MinerU 或视觉） |
-| [wiki-book-ingest](wiki-book-ingest/SKILL.md) | 书籍知识摄取 — `raw/books/` → llm-wiki 概念、来源、线索与章节检查 |
+| [llm-wiki-book](llm-wiki-book/SKILL.md) | 书籍知识编译 — `raw/books/` → 连续内容窗口理解、案例/故事/概念提取、交叉链接维护 |
 | [tmux-cursor-agent](tmux-cursor-agent/SKILL.md) | Cursor Agent over tmux — 状态检测、四步消息协议、取消执行、监控 daemon |
 | [tmux-pane-workspace](tmux-pane-workspace/SKILL.md) | Tmux pane workspace — pane 聚焦缩放、多 pane 布局、圆桌会议、职业角色来源与会议日志 |
 | [doc-driven-multi-agent](doc-driven-multi-agent/SKILL.md) | 文档驱动多代理协作 — 角色 SOP、handoff 三要素、G0-G4 门禁、越界拒绝 |

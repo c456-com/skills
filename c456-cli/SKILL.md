@@ -87,6 +87,18 @@ npx skills add . --skill c456-cli -y
 8. **渠道（及 tool）必须带至少一条「资料」**：`c456 channel new` 或 `c456 tool new` 时，服务端要求 **profile_data 里至少有一条资料段**（例如主页 **URL**、**媒体账号** 等对应 facet），常见做法是 `-u <url>` 并加 **`--auto-resolve-url`** 让服务端生成资料段；如需手写 **`--profile-data-json`**，**必须先阅读** [references/intake-profile-data-json.md](references/intake-profile-data-json.md)（含各 `profile_id`、必填字段与最小 JSON 示例）。**不能只写标题/正文而不提供 URL/资料段**，否则会 **422 校验失败**（提示含「至少添加一个资料段或图标」等）。
 9. **素材库与列表图标**：上传、插入正文、设置 tool/channel 列表图标（`list_icon_url`）见 [references/media-library-and-icons.md](references/media-library-and-icons.md)；CLI：`c456 asset …`、`c456 intake update … --profile-data-json-file`。
 10. **工具 / 渠道介绍里的产品截图**：优先 **`c456 browser start`**（持久 profile：`~/.cache/c456-cli/chrome-profile`，可保留登录态）→ 需要时在窗口内登录 → **`c456 screenshot <url> [-o .tmp/…]`** 复用 CDP；结束用 **`c456 browser stop`**。无长会话时可只跑 **`c456 screenshot <url>`**（可省略 **`-o`**，在当前目录按 URL 生成文件名）。然后 **`c456 asset upload`** → **`markdownSnippet`** 写入 **`--body-file`**。**产品官网 / 落地页首屏类截图一律只做视窗截图**：**不要**加 **`-f` / `--full-page`**（默认即为视口高度；整页长图上传后素材处理与阅读体验均易变差）。**仅当**收录时的**产品链接**为 **RubyGems / npm 等包注册表页**（如 **`-u`** 或资料中的包页 URL），并需要**基于该包页**为介绍配截图时：**`c456 screenshot` 的 URL 优先**用 **`c456 fetch profile -p package_registry -u "<该包页完整 URL>"`** 解析出的 **GitHub 仓库根页**（`https://github.com/owner/repo`），**不要**优先直接对 **rubygems.org/gems/…** 或 **www.npmjs.com/package/…** 截图（侧栏多、README 首屏弱；仓库页与 CLI 隐藏文件表一致）。若产品链接已是 **GitHub / 官网 / 文档站**等，或用户**指定了其它截图目标 URL**，则**按该 URL 截图**，**不适用**本条「包页 → GitHub」规则。详见 [references/product-screenshots-for-intake.md](references/product-screenshots-for-intake.md)（**不用** IDE MCP；不强制安装 Playwright 自带 Chromium，见 README）。
+11. **⚠️ 收录 tool/channel 必须配封面截图**：用户说「收录 XXX」并给出 URL 时，**必须**执行截图流程，将截图作为正文第一张配图。步骤：
+    - `c456 browser start`（如未运行）→ `c456 screenshot <官网URL> -o .tmp/<name>-hero.png`
+    - 截图目标：产品官网/首页首屏视口（**不**加 `-f`/`--full-page`）
+    - `c456 asset upload -f .tmp/<name>-hero.png` → 得到 asset ID
+    - 正文开头写入 `![{title}-hero](c456:asset/{id})`
+    - **例外**：用户明确说不需要截图、或 URL 无法访问、或收录类型为 signal/playbook/walkthrough 不需要封面。
+12. **「公开发布」= `c456 {type} new` 即上线**：当用户说「公开发布到 c456」时，`c456 tool new` / `c456 channel new` / `c456 signal new` 等命令**本身就是发布行为**——创建即上线，无需额外 publish/approve/confirm 步骤。执行 `new` 后：
+    - 拿到返回的 `ID:`（如 `ID: 239`）
+    - 回填到本地 `c456-sync/` 文件的 frontmatter：`c456-id: {id}`、`c456-status: published`、`c456-url: https://c456.com/intakes/{id}`
+    - 更新 `wiki/entities/` 对应页面的 `c456-status: published`
+    - 在 `wiki/log.md` 追加 `c456-publish` 日志，记录 ID、URL、操作命令
+    - 更新 `wiki/index.md` 中对应实体行标注 `[c456:#{id}]`
 
 ## 命令速查
 

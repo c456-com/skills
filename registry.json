@@ -102,15 +102,17 @@
       "version": "1.1.3"
     },
     {
-      "name": "wiki-book-ingest",
-      "description": "书籍知识摄取 / book ingest：当用户要把 raw/books/ 编译进 llm-wiki、逐章提取概念/来源/线索、处理图表文字化或做章节 lint 时触发；用于书籍知识库写入和质量检查。",
+      "name": "llm-wiki-book",
+      "description": "书籍知识编译 / book ingest：当用户要把 raw/books/ 连续书页录入、消化、整理到领域 llm-wiki，或基于书籍知识查询时触发；用于连续内容窗口理解、概念/案例/故事提取与交叉链接维护。",
       "tags": [
-        "knowledge-base",
-        "book",
+        "wiki",
+        "books",
         "ingest",
-        "llm-wiki-domains"
+        "knowledge-base",
+        "cases",
+        "query"
       ],
-      "version": "1.0.1"
+      "version": "0.1.0"
     },
     {
       "name": "llm-wiki",
@@ -124,10 +126,10 @@
         "llm-wiki",
         "ingest",
         "search",
-        "query",
-        "rag-alternative"
-      ],
-      "version": "1.1.1"
+          "query",
+          "rag-alternative"
+        ],
+        "version": "1.2.0"
     },
     {
       "name": "llm-wiki-domains",
