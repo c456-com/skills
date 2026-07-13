@@ -3,7 +3,7 @@ name: doc-driven-multi-agent
 category: autonomous-ai-agents
 tags: [multi-agent, coordination, document-driven, handoff, roles, SOP, workflow, protocol]
 description: "文档驱动多代理协作 / document-driven multi-agent：当用户要定义 AI Agent 角色 SOP、handoff 三要素、G0-G4 门禁、越界拒绝、团队配置持久化或跨平台协作协议时触发；适用于 Cursor/Claude Code/Copilot/Gemini/Hermes 等。"
-version: 1.2.0
+version: 1.3.0
 triggers:
   - 启动/重启多代理协作 session 时
   - 需要定义 AI Agent 角色及其职权边界时
@@ -320,6 +320,50 @@ git branch -d feat/<topic>
 | `tmux-cursor-agent` | Cursor 运行时层 | Cursor Agent 怎么跑：启动、登录、状态检测、四步消息协议、daemon、恢复 |
 
 三者可以配合使用：`tmux-pane-workspace` 管 tmux 可见工作区，`tmux-cursor-agent` 管 Cursor Agent 运行细节，本协议管跨角色任务流转和可审计文档。
+
+---
+
+## 与其它文档技能的关系
+
+本文档链（spec → plan → comm → review）是统一文档规则中 **第 3 层（superpowers）** 的核心，与其它文档技能组成三层结构：
+
+```
+统一文档规则（c456-software-dev-sop 定义）
+│
+├─ 第 1 层：产品方向/     ← 产品负责人手写，AI 不碰
+├─ 第 2 层：开发旅程/     ← 负责人+AI 对话沉淀（决策、过程）
+├─ 第 3 层：superpowers/  ← AI 团队产出 ← 本技能在此
+└─ 归档层：{领域目录}/    ← 实现完成后的稳定知识
+```
+
+### 各技能在此框架中的定位
+
+| 技能 | 所属层 | 产出文档路径 | 生命周期 |
+|------|--------|-------------|----------|
+| **doc-driven-multi-agent**（本技能） | 第 3 层 | `docs/superpowers/{comms,specs,plans,reviews}/` | 功能开发期活跃 |
+| brainstorming（superpowers） | 第 3 层 | `docs/superpowers/specs/*-design.md` | 设计阶段，实现后归档 |
+| writing-plans（superpowers） | 第 3 层 | `docs/superpowers/plans/YYYY-MM-DD-*.md` | 实现阶段，完成后归档 |
+| c456-software-dev-sop | 全部层 + 归档层 | `docs/` 分层 + `{领域目录}/` 结构 | 持续维护 |
+| c456-docs-governance（项目级） | 项目级覆盖 | `docs/` 命名与规范 | 持续维护 |
+
+### 三层流转与本技能的关系
+
+```
+产品负责人方向（第 1 层）
+    ↓ 经由开发旅程讨论（第 2 层）
+本技能启动 G0 → 创建 comm/spec（第 3 层）
+    ↓ G1 设计冻结 → G2 实现放行
+team 产出 plans → code → reviews（第 3 层）
+    ↓ G3 验收 → G4 关闭
+有价值内容沉淀到归档层 {领域目录}/
+```
+
+### 关键分界线
+
+- **AI 团队（本技能）不碰第 1 层**（产品方向文档，负责人手写）
+- **第 2 层（开发旅程）记录决策过程**，本技能以 comm log 记录 AI 团队内部的决策，两者互补不覆盖
+- **第 3 层文档有生命周期**（功能开发 → 关闭 → 归档），不长期维护
+- **归档层是跨项目沉淀**，按 `c456-software-dev-sop` 的分类（10-架构、20-领域等）组织
 
 ---
 

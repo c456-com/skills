@@ -1,7 +1,7 @@
 ---
 name: c456-cli
 description: "C456 CLI / c456.com 操作：当用户要收录 intake、发布 playbook、管理 assets 媒体库、搜索/获取 C456 内容、截图上传或同步 self-hosted C456 数据时触发；用于 CLI 命令、CDP 截图和 API v1 工作流。"
-version: 1.2.0
+version: 1.3.0
 related_skills:
   - c456-sync
   - c456-publish
@@ -98,8 +98,8 @@ related_skills:
 
 - 新建（AI 自动识别）：`c456 intake new [-u <url>] [--hint signal|tool|channel|playbook] [-t 标题] [--body-file <path>]`
 - 新建工具（手动指定）：`c456 tool new -u <url> -t <标题> [--auto-resolve-url] [--body-file <path>]`（profile_data 结构见 [references/intake-profile-data-json.md](references/intake-profile-data-json.md)）
-- 新建信号（手动指定）：`c456 signal new ...`
-- 新建渠道（手动指定）：`c456 channel new ...`
+- 新建信号（手动指定）：`c456 signal new -t "标题" [--description "摘要"] --body-file <path>`
+- 新建渠道（手动指定）：`c456 channel new ...`（渠道同上支持 `--description`）
 - 查看 / 更新 / 删除 / 列表：`c456 intake show <id>` · `c456 intake update <id> …` · `c456 intake delete <id> [-f]` · `c456 intake list [-k] [-q] [-p 页] [-n 每页]`
 
 **搜索 `search`**
@@ -109,8 +109,8 @@ related_skills:
 
 **打法 `playbook`**
 
-- 新建：`c456 playbook new -t "标题" [--body-file <path>] [--ref-intake id …] [--ref-playbook id …]`
-- 另有 `show` / `list` / `update` / `delete`
+- 新建：`c456 playbook new -t "标题" [--description "摘要"] --body-file <path> [--ref-intake id …] [--ref-playbook id …]`
+- 更新：`c456 playbook update <id> [-t 新标题] [--description "摘要"] [--body-file <path>]`（也支持 `--publish` / `--published` / `--featured` / `--favorited`）
 
 **讲解 `walkthrough`**
 

@@ -117,6 +117,40 @@ PYEOF
 
 正确第一行应为：`## `、导语段落、配图 markdown、或 `>` 引语。
 
+## §2.5 编写描述（必选）
+
+正文第一段会被 c456 自动提取为列表/卡片上的描述文字。如果正文第一段不是精炼的摘要，卡片显示就是从正文中间截取的片段，阅读体验差。
+
+**规则：**
+- 正文的**第一段**（第一到三句话）必须是独立的摘要
+- 目标是用户在列表页扫一眼就能判断「这条内容跟我有没有关系」
+- 不能以「在……的今天」「本文介绍了……」等零信息开头
+
+**新版本 CLI 支持 `--description` / `--description-file` 参数优先设置描述（v0.10.0+）：**
+
+新建时直接传入：
+```bash
+c456 signal new -t "标题" --description "精炼的卡片描述" --body-file body.md
+c456 playbook new -t "标题" --description "精炼的卡片描述" --body-file body.md
+```
+
+单独更新描述（无需重新传正文）：
+```bash
+c456 signal update <id> --description "新的精炼描述"
+c456 playbook update <id> --description "新的描述"
+```
+
+从文件读取：
+```bash
+c456 signal update <id> --description-file .tmp/summary.md
+```
+
+**自检清单：**
+- [ ] 第一段是独立摘要，不加 `##` 标题
+- [ ] 用户读完能回答「发生了什么、为什么重要」
+- [ ] 没有零信息开篇
+- [ ] 字数控制在 30-100 字
+
 ---
 
 ## §3 CLI 发布

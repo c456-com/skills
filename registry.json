@@ -28,7 +28,7 @@
       "name": "c456-cli",
       "description": "C456 CLI 基础能力 — 收录 intake、playbook、assets 管理、搜索、截图 CDP 与 API 工作流；封面截图与发布流程见 c456-sync 与 c456-publish。",
       "tags": ["c456"],
-      "version": "1.2.0"
+      "version": "1.3.0"
     },
     {
       "name": "c456-llm-wiki",
