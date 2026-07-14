@@ -48,7 +48,7 @@ related_skills:
 2. 非交互场景为 `intake delete` 等加 **`-f` / `--force`**，避免等待终端确认（删除前仍应确认用户意图）。
 3. 勿在日志或回复中回显完整 API Key。
 4. **严禁编造参数**：只能使用 `c456 <command> --help`（或本仓库源码/文档）明确存在的选项；不确定时先运行 `--help` 再行动。
-5. **严禁重复创建**：若 `tool new` / `signal new` / `channel new` / `intake new` / `playbook new` 输出了 `ID:` 或 `--- JSON ---`（含 `id`），视为已成功创建，后续只能 `show <id>` / `update <id>`，不得再次 `new` 重试（避免重复发布两条）。
+5. **严禁重复创建**：若 `tool new` / `signal new` / `channel new` / `intake new` / `playbook new` 输出了 `ID:` 或 `--- JSON ---`（含 `id`），视为已成功创建，后续只能 `show <id>` / `update <id>`，不得再次 `new` 重试（避免重复发布两条）。CLI 应同时返回完整的公开 URL（如 `https://c456.com/signals/<id>`），以便直接验证和引用。各类型 URL 模式：signal → `/signals/`、tool → `/tools/`、channel → `/channels/`、playbook → `/playbooks/`。
 6. **内容一律用文件传入**：创建/更新正文等长文本时，不要在命令行直接写内容（避免引号/换行/转义错误）。必须把内容写到**当前工作目录**的 `.tmp/` 下临时文件，再用 `--body-file` / `--summary-file` 传入。
 7. **自媒体账号默认收录为渠道**：用户要收录 **YouTube / 抖音 / 小红书 / B 站 / 微博** 等**自媒体账号主页或频道**时，**默认使用 `c456 channel new`**（不要用 `c456 tool new`），并配合 `-u <主页或频道 URL>`；需要服务端按 URL 自动填资料段时再加 `--auto-resolve-url`。仅做「不落库的 URL 资料预览/抓取」时用 `c456 fetch profile -p social_account -u "url"`。
 8. **渠道（及 tool）必须带至少一条「资料」**：`c456 channel new` 或 `c456 tool new` 时，服务端要求 **profile_data 里至少有一条资料段**（例如主页 **URL**、**媒体账号** 等对应 facet），常见做法是 `-u <url>` 并加 **`--auto-resolve-url`** 让服务端生成资料段；如需手写 **`--profile-data-json`**，**必须先阅读** [references/intake-profile-data-json.md](references/intake-profile-data-json.md)（含各 `profile_id`、必填字段与最小 JSON 示例）。**不能只写标题/正文而不提供 URL/资料段**，否则会 **422 校验失败**（提示含「至少添加一个资料段或图标」等）。

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>c456 · 公众号排版预览</title>
+<style>
+  body { margin:0; padding:20px; background:#f5f5f5; font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; }
+  #js_content { max-width:640px; margin:0 auto; background:#fff; padding:0; }
+  .toolbar { position:fixed; top:0; left:0; right:0; background:#fff; border-bottom:1px solid #e5e7eb; padding:12px 20px; z-index:100; display:flex; justify-content:space-between; align-items:center; }
+  .toolbar h1 { margin:0; font-size:15px; color:#18181B; font-weight:600; }
+  .toolbar span { font-size:12px; color:#999; }
+  #copy-btn { background:#fa9704; color:#fff; border:none; padding:8px 20px; border-radius:6px; font-size:14px; cursor:pointer; font-weight:500; }
+  #copy-btn:hover { background:#e08800; }
+  body { padding-top:60px; }
+  #toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 20px; border-radius:6px; font-size:14px; opacity:0; transition:opacity 0.3s; z-index:999; }
+  #toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <h1>c456 · 策思路 <span>排版预览</span></h1>
+  <button id="copy-btn">复制正文到公众号</button>
+</div>
+
+<section id="js_content">
+
+<div style="background:#fafafa;padding:20px;border-left:4px solid #fa9704;">
+  <p style="margin:0;font-size:16px;line-height:1.75;color:#555;">导语文字，一句话点明核心判断。</p>
+</div>
+
+<div style="background:#fff;padding:32px 20px 24px;">
+  <h2 style="margin:0 0 16px;font-size:20px;color:#18181B;text-align:center;font-weight:600;letter-spacing:2px;">章节标题</h2>
+  <div style="width:40px;height:3px;background:#fa9704;margin:0 auto 24px;"></div>
+  <p style="margin:0;font-size:16px;line-height:1.75;color:#333;">正文内容。<strong style="color:#fa9704;">关键词</strong>用暖橙色加粗。</p>
+</div>
+
+<div style="background:#fafafa;padding:24px 20px;">
+  <h3 style="margin:0 0 10px;padding:0 0 0 14px;border-left:3px solid #fa9704;font-size:17px;font-weight:600;color:#18181B;line-height:1.5;">小标题文字</h3>
+  <p style="margin:0;font-size:16px;line-height:1.75;color:#333;">正文内容。</p>
+</div>
+
+<div style="background:#fff;padding:20px;">
+  <blockquote style="margin:0;padding:12px 16px;background:#fafafa;border-left:4px solid #fa9704;font-size:15px;line-height:1.75;color:#555;">引语内容。</blockquote>
+</div>
+
+<div style="background:#fafafa;padding:24px 20px;">
+  <!-- 对比表：flex 行，gap:1px 利用父背景做列分隔线，列背景横向交替 -->
+  <section style="display:flex;gap:1px;background:#e5e7eb;border-radius:8px;overflow:hidden;">
+    <section style="flex:1;padding:12px;background:#fff;">
+      <section style="line-height:1.6;margin:0;font-size:14px;color:#999;">方案名</section>
+      <section style="line-height:1.6;margin:4px 0 0;font-size:15px;color:#18181B;font-weight:600;">数据</section>
+    </section>
+    <section style="flex:1;padding:12px;background:#fafafa;">
+      <section style="line-height:1.6;margin:0;font-size:14px;color:#999;">方案名</section>
+      <section style="line-height:1.6;margin:4px 0 0;font-size:15px;color:#18181B;font-weight:600;">数据</section>
+    </section>
+    <section style="flex:1;padding:12px;background:#fafafa;">
+      <section style="line-height:1.6;margin:0;font-size:14px;color:#999;">方案名</section>
+      <section style="line-height:1.6;margin:4px 0 0;font-size:15px;color:#18181B;font-weight:600;">数据</section>
+    </section>
+  </section>
+</div>
+
+<div style="background:#fafafa;border-top:3px solid #fa9704;padding:20px;">
+  <p style="margin:0;font-size:16px;line-height:1.75;color:#555;">总结内容文字。</p>
+</div>
+
+<hr style="border:none;border-top:1px solid #e5e7eb;margin:0;">
+<div style="background:#fff;padding:16px 20px;">
+  <p style="margin:0 0 6px;font-size:13px;color:#666;font-weight:600;">关联阅读</p>
+  <p style="margin:0 0 4px;font-size:14px;line-height:1.6;"><a href="#" style="color:#fa9704;text-decoration:none;">信号标题 →</a></p>
+  <p style="margin:0;font-size:14px;line-height:1.6;"><a href="#" style="color:#fa9704;text-decoration:none;">信号标题 →</a></p>
+</div>
+
+</section>
+
+<div id="toast"></div>
+
+<script>
+document.getElementById('copy-btn').addEventListener('click', async function() {
+  const el = document.getElementById('js_content');
+  const html = el.outerHTML;
+  const text = el.innerText;
+  try {
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        'text/html': new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob([text], { type: 'text/plain' })
+      })
+    ]);
+    const t = document.getElementById('toast');
+    t.textContent = '✅ 已复制，请到公众号后台 Ctrl+V';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  } catch (err) {
+    alert('复制失败: ' + err.message);
+  }
+});
+</script>
+</body>
+</html>

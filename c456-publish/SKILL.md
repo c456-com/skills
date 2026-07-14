@@ -211,9 +211,15 @@ c456 intake show <id> | head -10
 
 ```yaml
 c456-id: <id>
-c456-url: https://c456.com/intakes/<id>
+c456-url: https://c456.com/<type>/<id>
 c456-status: published
 ```
+
+**注意**：各类型的公开 URL 不同，`<type>` 替换为实际类型：
+- signal → `https://c456.com/signals/<id>`
+- tool → `https://c456.com/tools/<id>`
+- channel → `https://c456.com/channels/<id>`
+- playbook → `https://c456.com/playbooks/<id>`
 
 ### 4.2 wiki 实体页
 
@@ -231,7 +237,7 @@ c456-status: published
 ## [YYYY-MM-DD] c456-publish | <标题> → C456
 
 - **操作**：`c456 <type> new ...` → ID: **<id>**
-- **URL**：https://c456.com/intakes/<id>
+- **URL**：https://c456.com/<type>/<id>（signal → `/signals/`，tool → `/tools/`，channel → `/channels/`，playbook → `/playbooks/`）
 - **回填**：`c456-sync/<type>/<file>.md`、`wiki/entities/<file>.md`
 - **状态**：published
 ```

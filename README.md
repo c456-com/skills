@@ -12,6 +12,7 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | 写对外正文、检查格式、配图策略 | [c456-sync](c456-sync/SKILL.md) |
 | 写信号/产品对比/渠道文章 | [c456-write](c456-write/SKILL.md) |
 | 发布上线、净稿、回填元数据、SEO 分发 | [c456-publish](c456-publish/SKILL.md) |
+| 转为公众号 HTML 排版发布 | [c456-wechat-publish](c456-wechat-publish/SKILL.md) |
 | 把 llm-wiki 内容发布到 C456 或拉回本地 | [c456-llm-wiki](c456-llm-wiki/SKILL.md) |
 | intake、assets、搜索、截图、CDP、API 操作 | [c456-cli](c456-cli/SKILL.md) |
 | 启动多角色 AI Agent 团队协作 | [c456-team-work](c456-team-work/SKILL.md) |
@@ -50,6 +51,7 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | [c456-write](c456-write/SKILL.md) | **数据同步** — 内容写作方法论：信号研究员、产品对比、产品/渠道五段式文章 |
 | [c456-llm-wiki](c456-llm-wiki/SKILL.md) | **数据同步** — C456 LLM Wiki 扩展：wiki ↔ c456-sync 双向同步、引用型镜像、版本绑定 |
 | [c456-publish](c456-publish/SKILL.md) | **数据发布** — 从 c456-sync 到 C456 线上发布：净稿、CLI 发布、回填元数据、SEO 分发 |
+| [c456-wechat-publish](c456-wechat-publish/SKILL.md) | **公众号发布** — 将 C456 内容转为 WeChat 兼容 HTML（inline style、全 section、暖橙配色、横向对比表），一键复制到公众号后台 |
 | [c456-rails-startup](c456-rails-startup/SKILL.md) | Rails startup — Rails + Inertia + React + shadcn/ui 从零脚手架与 hello-world 验证 |
 | [c456-skills-repo](c456-skills-repo/SKILL.md) | 元技能 — c456-com/skills 仓库维护（README 分类、submodule、registry 注册、Logo） |
 
