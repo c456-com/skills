@@ -14,9 +14,17 @@ metadata:
 
 # tmux-cursor-agent
 
+<<<<<<< Updated upstream
 > 通过 tmux 控制和监控 Cursor AI agent — 检测状态、发送消息、取消执行。
 
 > **术语别名：** 此用户将 tmux 称为「多窗口终端」(multi-window terminal)。当用户说「多窗口终端」「终端管理器」或「终端分屏」时，将其视为 tmux 的等效说法。此别名适用于全文："启动一个 多窗口终端 会话"、"从 多窗口终端 捕获面板内容"等。
+=======
+> Control and monitor Cursor AI agents through tmux — detect states, send messages, cancel execution.
+>
+> **Cache note:** Constant tmux sessions (always-on) actually provide the **best** cache utilization vs on-demand sessions. Cursor/Claude Code cache the system prompt and conversation history across turns within the same session. With constant tmux, each follow-up call only pays for new input+output (cached reads at $0.25/MTok vs full $1.25/MTok). On-demand `cursor run` sessions lose this cache advantage — each new call reloads the entire prompt. So for multi-round workflows, **keeping sessions alive in tmux is not waste; it is the most efficient approach.**
+>
+> **Terminology alias:** This user calls tmux「多窗口终端」(multi-window terminal). When they say「多窗口终端」「终端管理器」or「终端分屏」, treat it as equivalent to tmux. This alias applies throughout: "start a 多窗口终端 session", "capture pane from 多窗口终端", etc.
+>>>>>>> Stashed changes
 
 发布于：`c456-com/skills` — <https://github.com/c456-com/skills/tree/main/tmux-cursor-agent>
 安装方式：`npx skills add c456-com/skills --skill tmux-cursor-agent -y`

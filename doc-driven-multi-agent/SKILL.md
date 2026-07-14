@@ -105,26 +105,36 @@ Analyst 发现数据 bug ──→ Dev（代码）| Arch（架构）| PO（产�
 
 ---
 
-## Handoff 协议（三要素）
+## Handoff Protocol (三要素 — Three Mandatory Fields)
 
-这是本协议的**核心机制**。任意角色之间交接任务，都必须在 comm log 中写入结构化区块，并包含三要素：
+This is the **core mechanism** of the protocol. Every task transfer between roles must include three elements written as a structured YAML block in the comm log:
 
-| 要素 | 字段名 | 要求 |
+| Element | YAML field | Requirement |
 |---------|-----------|-------------|
-| **Target** | `对象` | 角色全名 + code，例如 `Developer (Dev)` |
-| **Address** | `地址` | 仓库路径（当前 comm、spec、plan、review、code 等），至少 1 个 |
-| **Task** | `事项` | 用一两句话说明下一个角色要做什么 |
+| **Target** | `from` + `to` | Role codes, e.g., `from: Arch` / `to: Dev` |
+| **Address** | `read` | Repository paths — at least 1 |
+| **Task** | `action` | One sentence describing what the next role should do |
 
-### 标准 Handoff 区块
+### Standard Handoff YAML Block
 
-```markdown
-**Handoff:**
-- **Target:** Developer (Dev)
-- **Address:** `docs/superpowers/comms/<feature>.md`（当前条目）, `docs/superpowers/specs/<feature>.md`
-- **Task:** 按 spec §4 验收标准实现 plan Task 3.2；只在 worktree `.worktrees/feat-<topic>` 中工作
+```yaml
+handoff:
+  from: Dev
+  to: Arch
+  task: <feature-slug>
+  action: 实现完成，请代码审核
+  read:
+    - docs/superpowers/comms/<feature>.md
+    - stock_picker/...
+  verification:
+    - cmd: make ci-quick
+      result: PASS
+  expect: ARCH_PASS / ARCH_FAIL
 ```
 
-### 无效 Handoff（下一个 Agent 必须拒绝）
+**Use YAML only.** Natural language paragraphs for handoffs are forbidden. The full YAML template catalog is in the project's `docs/40-ops/roles/HANDOFF-CHAT-TEMPLATE.md`.
+
+### Invalid Handoffs (next agent MUST refuse)
 
 - Handoff 只存在于聊天 / Agent 回复中，没有写进 comm log
 - comm log 里有 Handoff，但缺少 target、address 或 task 中任意一个（缺一项 → `BLOCKED`）
@@ -222,7 +232,44 @@ Analyst 发现数据 bug ──→ Dev（代码）| Arch（架构）| PO（产�
 
 ---
 
+<<<<<<< Updated upstream
 ## 默认交付链路（Happy Path）
+=======
+## Orchestrator's Active Role (协调者主动决策)
+
+本文档的 handoff 协议假设角色之间通过文档交接。但在实际运行中，**协调者（Hermes）**还需要处理 agent 在执行过程中的反问。
+
+### 反问 vs Handoff
+
+| 场景 | 定义 | 协调者行为 |
+|------|------|-----------|
+| **反问** | Agent 在执行中提出问题（"选A还是B？"、"我能删文件吗？"） | 协调者基于上下文**直接回答**，同一 agent 继续工作。**不触发 handoff、不交换角色** |
+| **Handoff** | Agent 完成任务后输出最终结果（"spec 写好了"） | 协调者将输出写入 comm log，按三要素 relay 给下一角色 |
+
+### 协调者自主决策边界
+
+| 反问类型 | 协调者可否自答 | 依据 |
+|---------|:------------:|------|
+| 技术选型（已知项目规范） | ✅ 可 | 基于已有 spec/plan/comm log 中的偏好和约束 |
+| 操作权限（"能执行吗？"） | ✅ 可 | 按项目安全规则判断，安全则放行 |
+| 排期/优先级 | ⚠️ 有限 | 已知 deadline 可答，涉及资源冲突时转 PM |
+| 业务语义/需求模糊 | ❌ 转人类 | 涉及产品定义，需要辉哥确认 |
+
+### 工作流中的 Hermes 位置
+
+```
+Human (辉哥) ←→ Hermes (协调者) ←→ PM ↔ Arch ↔ Dev ↔ Analyst
+                       │
+                       └─→ Agent 反问 → 直接回答 → 继续工作
+                       └─→ Agent 完成 → handoff relay → 写 comm log
+```
+
+Hermes 不是简单的"传话筒"，而是**带上下文的决策网关**——能答的问题就地解决，不能答的才转发或上报。
+
+---
+
+## Default Delivery Chain (Happy Path)
+>>>>>>> Stashed changes
 
 ```
 Step 1:  PM + PO      启动 ──→ comm + spec 占位
