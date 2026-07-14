@@ -131,6 +131,12 @@
       "description": "公众号发布 HTML 排版：当用户需要把 C456 内容（信号/打法）转为公众号兼容的 inline-style HTML 时触发；用于全 section 标签、暖橙品牌色、横向对比表列交替背景、H2 居中底橙线的公众号排版输出。配合 c456-voice-journalist 使用。",
       "tags": ["c456", "wechat", "mp", "publish", "html", "公众号", "排版"],
       "version": "1.1.0"
+    },
+    {
+      "name": "ceo-product-argumentation",
+      "description": "产品方向正反论证 / CEO decision framework：当用户要对一个新想法、新产品方向、新商业假设做结构化可行性判断时触发；用于第一性原理分析、JTBD 价值主张、RAT 最危险假设测试、ERRC 蓝海定位、事前验尸、逆向思维、AI 替代悖论检查、可复制性分析和加权汇总打分，输出 GO/NO-GO 判断和验证节奏。",
+      "tags": ["product", "strategy", "decision-making", "ceo", "validation"],
+      "version": "1.0.0"
     }
   ]
 }
