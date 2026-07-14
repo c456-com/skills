@@ -33,7 +33,8 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | [tmux-pane-workspace](tmux-pane-workspace/SKILL.md) | Tmux pane workspace — pane 聚焦缩放、多 pane 布局、圆桌会议、职业角色来源与会议日志 |
 | [doc-driven-multi-agent](doc-driven-multi-agent/SKILL.md) | 文档驱动多代理协作 — 角色 SOP、handoff 三要素、G0-G4 门禁、越界拒绝 |
 | [camofox-scraping](camofox-scraping/SKILL.md) | CamoFox scraping — 抓取 Cloudflare / 反爬页面，失败时回退 web_search |
-| [product-niche-discovery](product-niche-discovery/SKILL.md) | 产品赛道发现 — 52 渠道找赛道、挖痛点、抓竞品/差评/定价原始材料 |\n|| [ceo-product-argumentation](ceo-product-argumentation/SKILL.md) | 产品方向正反论证 — 8 套方法论框架对新产品方向做结构化可行性判断，输出 GO/NO-GO 和验证节奏 |
+| [product-niche-discovery](product-niche-discovery/SKILL.md) | 产品赛道发现 — 52 渠道找赛道、挖痛点、抓竞品/差评/定价原始材料 |
+| [ceo-product-argumentation](ceo-product-argumentation/SKILL.md) | 产品方向正反论证 — 8 套方法论框架对新产品方向做结构化可行性判断，输出 GO/NO-GO 和验证节奏 |
 | [short-viral-content](short-viral-content/SKILL.md) | 短视频爆款内容 — 小红书、抖音、视频号标题、关键词、描述与话题标签 |
 | [c456-team-work](c456-team-work/SKILL.md) | 辉常团队工作流 — 多角色 AI Agent 团队入口、职业角色选择、handoff/relay、通知与开发闭环 |
 | [llm-wiki-versioned](llm-wiki-versioned/SKILL.md) | LLM Wiki 版本化 — `.versioned/` 快照、旧结论回溯、版本对比、provenance |
