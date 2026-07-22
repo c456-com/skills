@@ -38,6 +38,7 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | [short-viral-content](short-viral-content/SKILL.md) | 短视频爆款内容 — 小红书、抖音、视频号标题、关键词、描述与话题标签 |
 | [c456-team-work](c456-team-work/SKILL.md) | 辉常团队工作流 — 多角色 AI Agent 团队入口、职业角色选择、handoff/relay、通知与开发闭环 |
 | [llm-wiki-versioned](llm-wiki-versioned/SKILL.md) | LLM Wiki 版本化 — `.versioned/` 快照、旧结论回溯、版本对比、provenance |
+| [cli-doc-landing](cli-doc-landing/SKILL.md) | CLI 文档介绍页生成器 — 从结构化数据生成单文件 HTML 页面（Hero/安装/特性/工作流/FAQ/CTA），结构源自 yixiaoer.cn/cli |
 | [c456-software-dev-sop](c456-software-dev-sop/SKILL.md) | 软件开发 SOP — 需求、调研、兼容性评估、编码、测试、文档同步与验收 |
 
 ### 🏢 C456 通用技能

@@ -1,6 +1,18 @@
 {
   "skills": [
     {
+      "name": "cli-doc-landing",
+      "description": "CLI 文档介绍页 / CLI landing page generator：当用户要为 CLI 工具生成产品介绍页面、创建命令参考文档、做工具官网、或展示 CLI 的安装/特性/工作流/FAQ 时触发；输出单文件自包含 HTML 页面，结构源自 yixiaoer.cn/cli，独立配色风格。",
+      "tags": [
+        "cli",
+        "landing-page",
+        "html",
+        "documentation",
+        "website"
+      ],
+      "version": "1.0.0"
+    },
+    {
       "name": "c456-skills-repo",
       "description": "Maintain the c456-com/skills 技能分发仓库 — README 分类、submodule 管理、registry 注册、Logo 品牌化。元技能，仅仓库维护者使用。",
       "tags": [
