@@ -3,7 +3,7 @@ name: c456-publish
 category: c456
 tags: [c456, publish, cli, intake, playbook, seo, distribution]
 description: "C456 数据发布层 — 从 c456-sync 到 C456 线上发布的完整流程。当用户需要将内容发布到 c456.com（tool/signal/channel/playbook/walkthrough）、处理净稿、CLI 发布、回填本地元数据或做发布后 SEO 分发时触发。前置条件：使用 c456-sync 技能确保正文格式正确。"
-version: 1.0.0
+version: 1.1.0
 related_skills:
   - c456-sync
   - c456-cli
@@ -211,15 +211,11 @@ c456 intake show <id> | head -10
 
 ```yaml
 c456-id: <id>
-c456-url: https://c456.com/<type>/<id>
+c456-url: https://c456.com/<type>s/<id>
 c456-status: published
 ```
 
-**注意**：各类型的公开 URL 不同，`<type>` 替换为实际类型：
-- signal → `https://c456.com/signals/<id>`
-- tool → `https://c456.com/tools/<id>`
-- channel → `https://c456.com/channels/<id>`
-- playbook → `https://c456.com/playbooks/<id>`
+> **URL 说明**：模板中的 `/<type>s/<id>` 会自动 301 到完整 slug URL（如 `https://c456.com/playbooks/29-why-many-companies-refuse-feishu-docs-yuque-product-help-center`）。无需手工拼接 slug。类型对照：`tools`、`signals`、`channels`、`playbooks`、`walkthroughs`。
 
 ### 4.2 wiki 实体页
 
@@ -237,7 +233,7 @@ c456-status: published
 ## [YYYY-MM-DD] c456-publish | <标题> → C456
 
 - **操作**：`c456 <type> new ...` → ID: **<id>**
-- **URL**：https://c456.com/<type>/<id>（signal → `/signals/`，tool → `/tools/`，channel → `/channels/`，playbook → `/playbooks/`）
+- **URL**：https://c456.com/<type>s/<id>（自动 301 到完整 slug URL）
 - **回填**：`c456-sync/<type>/<file>.md`、`wiki/entities/<file>.md`
 - **状态**：published
 ```
@@ -315,7 +311,7 @@ c456 playbook update <related_id> --body-file .tmp/updated.md
 - 标题含核心关键词
 - 正文插入 2-3 次原文链接
 - 各平台发不同版本，避免重复内容判罚
-- 结尾统一引导：「点击阅读完整报告 → https://c456.com/<type>/<id>」
+- 结尾统一引导：「点击阅读完整报告 → https://c456.com/<type>s/<id>」
 
 ### 6.4 长尾词内容矩阵
 
