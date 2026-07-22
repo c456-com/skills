@@ -3,7 +3,7 @@ name: c456-publish
 category: c456
 tags: [c456, publish, cli, intake, playbook, seo, distribution]
 description: "C456 数据发布层 — 从 c456-sync 到 C456 线上发布的完整流程。当用户需要将内容发布到 c456.com（tool/signal/channel/playbook/walkthrough）、处理净稿、CLI 发布、回填本地元数据或做发布后 SEO 分发时触发。前置条件：使用 c456-sync 技能确保正文格式正确。"
-version: 1.1.0
+version: 1.1.1
 related_skills:
   - c456-sync
   - c456-cli
@@ -247,6 +247,27 @@ c456-status: published
 ## §5 长文发布（Playbook 专属）
 
 发布 playbook 时，除上述通用流程外，还需要：
+
+### 5.0 设置描述（必选，不可跳过）
+
+playbook 在列表页显示的摘要来自 `--description` 参数，正文第一段不会被自动截取为摘要。**不设描述 = 列表页显示空白或乱码。**
+
+`new` 时必须传 `--description`：
+
+```bash
+c456 playbook new -t "标题" --description "精炼的一句话摘要（30-100字）" --body-file .tmp/净稿.md
+```
+
+如果 `new` 时忘了设，`update` 补上，**不得跳过**：
+
+```bash
+c456 playbook update <id> --description "精炼的一句话摘要"
+```
+
+**自检：**
+- [ ] `--description` 是否已设置？（发布前必须确认，不跳过）
+- [ ] 摘要是否控制在 30-100 字？
+- [ ] 摘要是否能单独作为列表页的卡片描述，不依赖正文上下文？
 
 ### 5.1 字数验证
 
