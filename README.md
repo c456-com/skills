@@ -40,6 +40,7 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | [llm-wiki-versioned](llm-wiki-versioned/SKILL.md) | LLM Wiki 版本化 — `.versioned/` 快照、旧结论回溯、版本对比、provenance |
 | [cli-doc-landing](cli-doc-landing/SKILL.md) | CLI 文档介绍页生成器 — 从结构化数据生成单文件 HTML 页面（Hero/安装/特性/工作流/FAQ/CTA），结构源自 yixiaoer.cn/cli |
 | [c456-software-dev-sop](c456-software-dev-sop/SKILL.md) | 软件开发 SOP — 需求、调研、兼容性评估、编码、测试、文档同步与验收 |
+| [c456-ruby-llm](c456-ruby-llm/SKILL.md) | RubyLLM 场景技能 — Chat/Tools/Agents/Workflow、流式 SSE、Schema、多模态、Rails acts_as_chat、测试 stub（含 c456-aio 实践） |
 
 ### 🏢 C456 通用技能
 

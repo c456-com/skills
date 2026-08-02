@@ -319,6 +319,22 @@
         "validation"
       ],
       "version": "1.0.0"
+    },
+    {
+      "name": "c456-ruby-llm",
+      "description": "RubyLLM gem guide for Rails AI apps: chat, tool-calling, agents vs workflows, streaming/SSE, structured schema, multimodal attachments, acts_as_chat, embeddings, and test stubs. Use when building or refactoring LLM features in Ruby/Rails (incl. OpenAI-compatible gateways).",
+      "tags": [
+        "ruby",
+        "rails",
+        "llm",
+        "ai",
+        "ruby-llm",
+        "agents",
+        "tools",
+        "streaming",
+        "openai"
+      ],
+      "version": "1.0.0"
     }
   ]
 }
