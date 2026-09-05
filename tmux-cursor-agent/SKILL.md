@@ -127,7 +127,7 @@ tmux capture-pane -t cursor:0 -p -S -15
 |---------|------|------|
 | `→ Add a follow-up`（或 Plan 占位符） | ✅ 干净，可发送 | 继续执行步骤 1 |
 | `→ YOUR_TEXT`（你之前的文本还在） | ❌ 未提交的残留 | 先清除（见下方） |
-| `┌─ follow-ups ───┐` + `○ … enter send now` | ❌ 队列模式 | 按一次 Enter 将其提交为活跃消息 |
+| `┌─ follow-ups ───┐` + `○ … enter steer`（旧版本显示 `enter send now`） | ❌ 队列模式 | 在空输入中按一次 Enter 提升第 1 条；若框仍在且显示 +N more lines，继续按 Enter 直到框消失 |
 | 多行文本不在对话历史中 | ❌ 残留 | 先清除 |
 
 **清除残留（发送前）：**
@@ -166,7 +166,7 @@ tmux capture-pane -t cursor:0 -p -S -15
 | 文本出现在对话历史中 + Working/spinner | ✅ 已投递，执行中 | 完成 |
 | 文本出现在对话历史中，尚无 spinner | ✅ 已投递，等待中 | 等待几秒 |
 | 输入栏显示 `→ YOUR_TEXT` | ❌ 卡在输入框中 | sleep 2 + 按一次 Enter，重新验证 |
-| `○ … enter send now` 后续框 | ❌ 在队列中，非活跃 | 在空输入中按一次 Enter 将其提升 |
+| `┌─ follow-ups ───┐` + `enter steer` 可见 | ❌ 在队列中，非活跃 | 在空输入中按一次 Enter 提升；若框仍显示 +N more lines 再按 Enter（重复直到框消失）；验证文本进入对话历史 |
 | 文本在面板中完全不可见 | ❌ 未投递 | 检查 session:window，重试四步协议 |
 | `Press Ctrl+C again to exit` | ❌ 误按 C-c | 按一次 Enter 恢复，然后重试 |
 
@@ -472,6 +472,8 @@ CURSOR_MONITOR_INTERVAL=5 exec python3 -m core.monitor daemon --group YOUR_GROUP
 其他可调环境变量：`CURSOR_MONITOR_STATUS_INTERVAL`（心跳日志，默认 600s）、`CURSOR_MONITOR_LINES`（面板捕获行数，默认 15）。低于 10s 会增加 CPU 占用但收益有限 — 大多数工作流在 10s 或 15s 下即可正常工作。
 
 **修复后早期通知的说明：** TASK_COUNT 修复（陷阱 #32）后，提交后台 shell 命令（如 `make ci-quick`）的 agent 在 shell 运行时显示空闲 — 这是**正确行为**。Agent 没有在活跃处理；它在等待。在长时间 shell 命令期间频繁的 `CURSOR-STOPPED:idle` 是预期行为，不是回归。守护进程现在准确报告 agent 活动而非将后台进程计数与 agent 状态混淆。
+
+34. **Follow-ups 队列识别特征（`enter steer` vs 文档 `enter send now`）**：follow-ups 框的**唯一可靠特征**是框头 `┌─ follow-ups ───┐` 与末行 `+N more lines · enter steer`（旧版本显示 `enter send now`）。不要在捕获中只搜 `enter send now` — 新版本不会匹配，消息会静默堆积。**每次发送后必须检查**：若捕获中出现 follow-ups 框，说明消息未投递，需要立即在空输入行按 Enter 提升（每条消息一次 Enter，重复按到框消失）。排查顺序：`capture-pane -S -40` → grep `follow-ups|enter steer|enter send now` → 有框则 Enter 提升 → 再 capture 确认消息已在对话历史中（框外）→ 才声明发送成功。
 
 ## 文档
 
