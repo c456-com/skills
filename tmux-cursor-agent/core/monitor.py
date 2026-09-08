@@ -199,9 +199,28 @@ def _format_stopped(group: str, raw_line: str) -> str:
     return f"{prefix}{group}:{rest}"
 
 
-def daemon_tick(group: str, lines: int, debug: bool, log: MonitorLog) -> tuple[int, int, int]:
+def daemon_tick(
+    group: str,
+    lines: int,
+    debug: bool,
+    log: MonitorLog,
+    last_reported: dict[str, tuple[str, str]],
+) -> tuple[int, int, int, bool]:
+    """One poll cycle over all registered monitors.
+
+    stdout discipline (token-cost aware): stdout carries ONLY state-change
+    events. Steady-state repeats (same state+reason as the previous tick)
+    and the per-tick heartbeat go to the audit FILE only, so an idle pane
+    produces zero stdout noise for the parent process (Hermes poll / cron /
+    watch_patterns) to ingest.
+
+    Returns (ok, skipped, total, has_activity). has_activity=True when any
+    pane is EXECUTING — the caller keeps fast polling so the executing→
+    stopped transition is noticed promptly.
+    """
     data = load_group_state(group)
     ok = skipped = 0
+    has_activity = False
     for m in data["monitors"]:
         if not m.get("enabled", True):
             continue
@@ -212,6 +231,7 @@ def daemon_tick(group: str, lines: int, debug: bool, log: MonitorLog) -> tuple[i
         if subprocess.run(["tmux", "has-session", "-t", session], capture_output=True).returncode != 0:
             if debug:
                 print(f"  [{target}] SKIP session missing", file=sys.stderr)
+            # session loss is an exceptional event → stdout
             log.emit(
                 f"CURSOR-MONITOR-SKIP group={group} session={target} reason=session_missing"
             )
@@ -219,21 +239,42 @@ def daemon_tick(group: str, lines: int, debug: bool, log: MonitorLog) -> tuple[i
             continue
         result = _invoke_watch(session, window, lines, debug, pane=pane)
         ok += 1
-        log.emit(
-            f"CURSOR-MONITOR-WATCH group={group} session={target} "
-            f"state={result.state} reason={result.reason}"
-        )
+        if result.state == "executing":
+            has_activity = True
+        cur = (result.state, result.reason)
+        prev = last_reported.get(target)
+        changed = prev is None or prev != cur
+        if changed:
+            # State/reason changed (or first observation) → event line to stdout
+            last_reported[target] = cur
+            log.emit(
+                f"CURSOR-MONITOR-WATCH group={group} session={target} "
+                f"state={result.state} reason={result.reason}"
+            )
+        else:
+            # Steady state: audit file only, keep stdout silent
+            log.emit_file_only(
+                f"CURSOR-MONITOR-WATCH group={group} session={target} "
+                f"state={result.state} reason={result.reason}"
+            )
         if result.notify_line:
             log.emit_with_body(
                 _format_stopped(group, result.notify_line),
                 result.pane_content,
             )
-    return ok, skipped, len(data["monitors"])
+    return ok, skipped, len(data["monitors"]), has_activity
 
 
 def cmd_daemon(args: argparse.Namespace) -> int:
     group = args.group
-    interval = int(os.environ.get("CURSOR_MONITOR_INTERVAL", "15"))
+    # Active interval: poll every N s while any pane is EXECUTING (keeps the
+    # executing→stopped handoff prompt). Idle interval: poll every N s when
+    # every pane is steady-state stopped — saves tmux captures, CPU and any
+    # stdout-capacity consumed per tick.
+    active_interval = int(
+        os.environ.get("CURSOR_MONITOR_ACTIVE_INTERVAL", os.environ.get("CURSOR_MONITOR_INTERVAL", "15"))
+    )
+    idle_interval = int(os.environ.get("CURSOR_MONITOR_IDLE_INTERVAL", "60"))
     status_interval = int(os.environ.get("CURSOR_MONITOR_STATUS_INTERVAL", "600"))
     lines = int(os.environ.get("CURSOR_MONITOR_LINES", "15"))
     debug = args.debug
@@ -246,28 +287,43 @@ def cmd_daemon(args: argparse.Namespace) -> int:
         print(f"[cursor-monitor-daemon:{group}] {msg}", file=sys.stderr)
 
     log.emit(
-        f"CURSOR-MONITOR-START group={group} pid={os.getpid()} interval={interval}s"
+        f"CURSOR-MONITOR-START group={group} pid={os.getpid()} "
+        f"active_interval={active_interval}s idle_interval={idle_interval}s"
     )
-    _log(f"started pid={os.getpid()} interval={interval}s log={log.path}")
+    _log(f"started pid={os.getpid()} active={active_interval}s idle={idle_interval}s log={log.path}")
     save_daemon_meta(group, os.getpid())
 
     def _cleanup(*_a: Any) -> None:
+        """Handle SIGTERM/SIGINT: log STOP, clear meta, close file, EXIT.
+
+        os._exit is required, not raise SystemExit: a Python signal handler
+        only propagates exceptions when the main thread next returns to the
+        interpreter, and the daemon spends most of its time blocked inside
+        subprocess.run(tmux ...) calls — where the exception would be
+        deferred indefinitely (this is why daemon processes used to
+        accumulate after pkill). All cleanup (log, meta, file close) is
+        synchronous and flushed here, so os._exit is safe.
+        """
         log.emit(f"CURSOR-MONITOR-STOP group={group} pid={os.getpid()}")
         _log("stopped")
         save_daemon_meta(group, None)
         log.close()
+        os._exit(0)
 
     signal.signal(signal.SIGTERM, _cleanup)
     signal.signal(signal.SIGINT, _cleanup)
 
     tick_count = 0
     last_status_at = time.time()
+    last_reported: dict[str, tuple[str, str]] = {}
 
     try:
         while True:
             if debug:
                 _log(f"tick {time.strftime('%H:%M:%S')}")
-            ok, skipped, total = daemon_tick(group, lines, debug, log)
+            ok, skipped, total, has_activity = daemon_tick(
+                group, lines, debug, log, last_reported
+            )
             # Auto-layout: run layout.sh auto after each tick
             if auto_layout:
                 try:
@@ -278,7 +334,9 @@ def cmd_daemon(args: argparse.Namespace) -> int:
                 except Exception:
                     pass
             tick_count += 1
-            log.emit(
+            # Heartbeat goes to the audit file only; it is not a state event
+            # and must not consume parent-process/LLM capacity every tick.
+            log.emit_file_only(
                 f"CURSOR-MONITOR-TICK group={group} ok={ok} skipped={skipped} total={total}"
             )
             now = time.time()
@@ -293,7 +351,10 @@ def cmd_daemon(args: argparse.Namespace) -> int:
                 _log("done (--once)")
                 _cleanup()
                 return 0
-            time.sleep(interval)
+            # Adaptive pacing: any pane executing → fast poll; all steady →
+            # slow poll (idle panes need no prompt completion detection).
+            pace = active_interval if has_activity else idle_interval
+            time.sleep(pace)
     except Exception:
         log.close()
         raise

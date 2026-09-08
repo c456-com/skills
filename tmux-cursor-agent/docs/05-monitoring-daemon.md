@@ -10,7 +10,8 @@ The monitoring daemon (`core/monitor.py`) is a polling service that watches regi
 │                                                  │
 │  daemon --group default                          │
 │       │                                          │
-│       │  every 15s                               │
+│       │  every active/idle interval              │
+│       │  (15s executing / 60s all-idle)          │
 │       ▼                                          │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
 │  │ pane 1   │  │ pane 2   │  │ pane 3   │       │
@@ -105,12 +106,25 @@ python3 core/monitor.py daemon --group <name> --log-file /tmp/my-monitor.log
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CURSOR_MONITOR_INTERVAL` | `15` | Polling interval in seconds |
+| `CURSOR_MONITOR_ACTIVE_INTERVAL` | `15` | Poll interval while ANY pane is EXECUTING (keeps the executing→stopped handoff prompt) |
+| `CURSOR_MONITOR_INTERVAL` | `15` | Legacy alias for `CURSOR_MONITOR_ACTIVE_INTERVAL` (kept for backwards compat) |
+| `CURSOR_MONITOR_IDLE_INTERVAL` | `60` | Poll interval when ALL panes are steady-state stopped — saves tmux captures, CPU and token cost |
 | `CURSOR_MONITOR_STATUS_INTERVAL` | `600` | Status heartbeat interval |
 | `CURSOR_MONITOR_LINES` | `15` | Lines to capture per poll |
 | `CURSOR_MONITOR_DIR` | `~/.hermes/logs/cursor-monitors/` | State/log directory |
 | `CURSOR_MONITOR_LOG` | `{dir}/cursor-monitors--{group}.log` | Log file path override |
 | `CURSOR_MONITOR_STATE_PREFIX` | `""` | Optional file name prefix for multi-profile |
+
+## stdout Discipline — Events Only (token-cost aware)
+
+The daemon writes to TWO channels with different jobs:
+
+- **stdout** (consumed by Hermes `watch_patterns`, `process(action='poll')` and cron snapshots): **events only**. Every line reaching here can end up in an LLM context, so steady-state repeats are suppressed.
+  - daemon start/stop, state/reason transitions, `CURSOR-STOPPED`, low-frequency `CURSOR-MONITOR-STATUS` heartbeat, session-missing errors.
+  - An idle pane therefore produces **zero** stdout lines between events (previously: 2 lines × every poll interval ≈ 11k lines/day for one pane).
+- **log file** (`{log}`): **full audit**. Every poll's WATCH + TICK line is always written here — nothing is lost, just read from the file instead of stdout.
+
+Combined with the adaptive poll interval, an idle daemon costs ~nothing: no stdout traffic and only one tmux capture per `CURSOR_MONITOR_IDLE_INTERVAL`.
 
 ## Notification Format
 
@@ -128,14 +142,15 @@ CURSOR-STOPPED:default:cursor:3:task_done
 CURSOR-STOPPED:default:cursor:0:exited
 ```
 
-Additional log lines:
+Additional log lines (stdout shows only the event-bearing ones; file shows all):
 
 ```
-CURSOR-MONITOR-START group=default pid=12345 interval=15s
-CURSOR-MONITOR-WATCH group=default session=cursor:0 state=executing reason=task_done
-CURSOR-MONITOR-TICK group=default ok=2 skipped=0 total=2
-CURSOR-MONITOR-STATUS:default:monitors=2:ok=2:skipped=0:daemon_pid=12345
-CURSOR-MONITOR-SKIP group=default session=cursor:2 reason=session_missing
+CURSOR-MONITOR-START group=default pid=12345 active_interval=15s idle_interval=60s
+CURSOR-MONITOR-WATCH group=default session=cursor:0 state=executing reason=task_done   # event → stdout
+CURSOR-MONITOR-WATCH group=default session=cursor:0 state=stopped reason=idle          # steady repeat → file only
+CURSOR-MONITOR-TICK group=default ok=2 skipped=0 total=2                                # heartbeat → file only
+CURSOR-MONITOR-STATUS:default:monitors=2:ok=2:skipped=0:daemon_pid=12345                # low-freq → stdout
+CURSOR-MONITOR-SKIP group=default session=cursor:2 reason=session_missing               # error → stdout
 CURSOR-MONITOR-STOP group=default pid=12345
 ```
 

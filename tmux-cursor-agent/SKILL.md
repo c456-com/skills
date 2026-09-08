@@ -455,25 +455,29 @@ tmux set -t session pane-border-format '#{pane_title}'  # 在边框中显示面�
 
 **验证：** 修复后，显示 `→ Add a follow-up` 且页脚中有 `1 task` 的 agent 将正确报告 `state=stopped reason=idle` 而不是永远显示 `state=executing`。这使得守护进程可以为有过期后台进程的空闲 agent 触发 CURSOR-STOPPED 通知。
 
-33. **守护进程轮询间隔调优（`CURSOR_MONITOR_INTERVAL`）**：守护进程每 N 秒检查一次面板状态，由环境变量 `CURSOR_MONITOR_INTERVAL` 控制（默认：`15`）。更改时，先杀死旧守护进程并使用新值重启：
+33. **守护进程轮询间隔调优（`CURSOR_MONITOR_ACTIVE_INTERVAL` / `CURSOR_MONITOR_IDLE_INTERVAL`）**：守护进程**自适应轮询**：任一 pane EXECUTING 时按 `CURSOR_MONITOR_ACTIVE_INTERVAL`（默认 `15`）快扫（保证及时感知 executing→stopped）；全部 pane 稳态 stopped 时按 `CURSOR_MONITOR_IDLE_INTERVAL`（默认 `60`）慢扫（省 tmux capture、CPU 与 token）。`CURSOR_MONITOR_INTERVAL` 仍兼容，作为 active interval 的别名。更改时，先杀死旧守护进程并使用新值重启：
 
 ```bash
-# 默认 15s（无需环境变量）
-cd ~/.hermes/skills/autonomous-ai-agents/tmux-cursor-agent
+# 默认 15s active（无需环境变量）；空闲自动降频到 60s
+cd ~/Codes/c456-com/skills/tmux-cursor-agent
 exec python3 -m core.monitor daemon --group YOUR_GROUP
 
-# 10s — 响应更快，2026-07-04 会话中用户偏好
-CURSOR_MONITOR_INTERVAL=10 exec python3 -m core.monitor daemon --group YOUR_GROUP
+# 更快响应 + 更省空闲轮询：active 10s / idle 120s
+CURSOR_MONITOR_ACTIVE_INTERVAL=10 CURSOR_MONITOR_IDLE_INTERVAL=120 exec python3 -m core.monitor daemon --group YOUR_GROUP
 
-# 5s — 激进模式，仅在响应速度至关重要时使用
+# 旧单间隔形式仍可用（等价 active interval）
 CURSOR_MONITOR_INTERVAL=5 exec python3 -m core.monitor daemon --group YOUR_GROUP
 ```
 
 其他可调环境变量：`CURSOR_MONITOR_STATUS_INTERVAL`（心跳日志，默认 600s）、`CURSOR_MONITOR_LINES`（面板捕获行数，默认 15）。低于 10s 会增加 CPU 占用但收益有限 — 大多数工作流在 10s 或 15s 下即可正常工作。
 
+34. **空闲稳态守护进程必须对 stdout 静默（token 成本）**：daemon 的 stdout 会被 Hermes `watch_patterns`、`process(action='poll')`、cron 快照消费——任何写到 stdout 的行都可能进 LLM 上下文。因此**稳态重复行只落日志文件**（每轮 poll 的 `CURSOR-MONITOR-WATCH state=stopped` + `CURSOR-MONITOR-TICK` 仅写文件）；空闲 pane 在事件之间对 stdout **零输出**。旧行为：默认 15s poll 每轮 2 行 → 单个 pane 一天约 11,500 行纯噪音；配合 Hermes 任意消费通道都会变成 token 黑洞。需要看实时明细请读审计文件（`~/.hermes/logs/cursor-monitors/cursor-monitors--{group}.log`）或 `--debug`，不要期望 stdout 有每 tick 行。
+
+35. **守护进程现在能被 SIGTERM/SIGINT 真正杀掉**：旧版本 signal handler 只写 `CURSOR-MONITOR-STOP` 日志就继续轮询——`pkill` 看似失败、daemon 进程不断累积（只能 kill -9）。handler 现改为同步清理 + `os._exit(0)`；`pkill -f "python3 -m core.monitor daemon"` 能真正终止。注意：Hermes 后台进程环境下信号投递可能延迟几秒——先等待再判断 daemon 是否存活。
+
 **修复后早期通知的说明：** TASK_COUNT 修复（陷阱 #32）后，提交后台 shell 命令（如 `make ci-quick`）的 agent 在 shell 运行时显示空闲 — 这是**正确行为**。Agent 没有在活跃处理；它在等待。在长时间 shell 命令期间频繁的 `CURSOR-STOPPED:idle` 是预期行为，不是回归。守护进程现在准确报告 agent 活动而非将后台进程计数与 agent 状态混淆。
 
-34. **Follow-ups 队列识别特征（`enter steer` vs 文档 `enter send now`）**：follow-ups 框的**唯一可靠特征**是框头 `┌─ follow-ups ───┐` 与末行 `+N more lines · enter steer`（旧版本显示 `enter send now`）。不要在捕获中只搜 `enter send now` — 新版本不会匹配，消息会静默堆积。**每次发送后必须检查**：若捕获中出现 follow-ups 框，说明消息未投递，需要立即在空输入行按 Enter 提升（每条消息一次 Enter，重复按到框消失）。排查顺序：`capture-pane -S -40` → grep `follow-ups|enter steer|enter send now` → 有框则 Enter 提升 → 再 capture 确认消息已在对话历史中（框外）→ 才声明发送成功。
+36. **Follow-ups 队列识别特征（`enter steer` vs 文档 `enter send now`）**：follow-ups 框的**唯一可靠特征**是框头 `┌─ follow-ups ───┐` 与末行 `+N more lines · enter steer`（旧版本显示 `enter send now`）。不要在捕获中只搜 `enter send now` — 新版本不会匹配，消息会静默堆积。**每次发送后必须检查**：若捕获中出现 follow-ups 框，说明消息未投递，需要立即在空输入行按 Enter 提升（每条消息一次 Enter，重复按到框消失）。排查顺序：`capture-pane -S -40` → grep `follow-ups|enter steer|enter send now` → 有框则 Enter 提升 → 再 capture 确认消息已在对话历史中（框外）→ 才声明发送成功。
 
 ## 文档
 
@@ -499,7 +503,5 @@ CURSOR_MONITOR_INTERVAL=5 exec python3 -m core.monitor daemon --group YOUR_GROUP
 | [`references/daemon-poll-behavior.md`](references/daemon-poll-behavior.md) | 守护进程轮询行为与过早空闲检测 |
 | [`references/task-count-bug-20260704.md`](references/task-count-bug-20260704.md) | TASK_COUNT 页脚 bug（修复、复现、验证） |
 | [`references/publishing-pattern.md`](references/publishing-pattern.md) | 如何在 c456-com/skills 仓库中添加/重命名/移除技能 |
-| [`references/daemon-poll-interval.md`](references/daemon-poll-interval.md) | 守护进程轮询间隔配置（CURSOR_MONITOR_INTERVAL 环境变量） |
+| [`docs/05-monitoring-daemon.md`](docs/05-monitoring-daemon.md) | Daemon config: adaptive poll intervals、stdout 事件驱动与日志文件审计 |
 | [`scripts/team_tasks.py`](scripts/team_tasks.py) | 持久化团队任务台账 — 创建/更新/列表/完成任务 |
-END
-__tr_native_ec=$?; pwd -P >| '/var/folders/kr/_pxypyrx0xvcqfqdwy1h83q80000gn/T/trae-agent-toolhost-501/jobs/job-38144be5058a452cbdbff7359c12a8ef/cwd.txt'; exit "$__tr_native_ec"

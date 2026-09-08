@@ -21,11 +21,23 @@ class MonitorLog:
     def _iso(self) -> str:
         return datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
 
-    def emit(self, line: str) -> None:
+    def emit(self, line: str, *, to_stdout: bool = True) -> None:
+        """Write a log line to the audit file; optionally also to stdout.
+
+        stdout is the narrow signal channel consumed by parent processes
+        (Hermes watch_patterns / poll / cron snapshots). Idle steady-state
+        lines must go to the FILE ONLY so they never reach an LLM context.
+        """
         iso = self._iso()
-        sys.stdout.write(f"[{iso}] {line}\n")
-        sys.stdout.flush()
+        if to_stdout:
+            sys.stdout.write(f"[{iso}] {line}\n")
+            sys.stdout.flush()
         self._write_file(f"[{iso}] {line}\n")
+
+    def emit_file_only(self, line: str) -> None:
+        """Audit-file-only line: no stdout. Use for per-tick noise that
+        carries no state-change signal (steady-state WATCH/TICK repeats)."""
+        self.emit(line, to_stdout=False)
 
     def emit_with_body(self, headline: str, body: str | None) -> None:
         self.emit(headline)
