@@ -16,6 +16,12 @@
       "sourceType": "local",
       "computedHash": "3191caab43669c9240d79771bc40870885530ef868075c8453d47ccf1beff138"
     },
+    "c456-ruby-llm": {
+      "source": "c456-com/skills",
+      "sourceType": "github",
+      "skillPath": "c456-ruby-llm/SKILL.md",
+      "computedHash": "0287d02574e634b0ccab81f2818108b1ea99709c4c9f72790f7eb3e8254d9e0f"
+    },
     "c456-skills-repo": {
       "source": "/Users/xiaohui/Codes/c456-com/skills",
       "sourceType": "local",
