@@ -331,6 +331,32 @@ python3 -m core.watch c456-summit 0 --pane 0 --debug
 > )
 > ```
 
+#### 监控按需开关（省 token，辉哥准则）
+
+监控 daemon 是常驻后台进程——即使 idle 时它对 stdout 静默、把稳态写入日志文件，后台进程本身仍占用 terminal 会话与 Hermes 的 watch_patterns 挂钩，持续消耗 token。**因此监控必须按需开启、按需关闭，不当默认常驻。**
+
+> ⚠️ 与 Cache note 不冲突：Cache note 讲的是**不要杀掉 cursor-agent 会话**（保活复用 prompt 缓存最省 cache 成本）；本节讲的是**监控 daemon**（轮询 state 的后台进程）——两者是不同对象。cursor 会话可保持常驻，但不再需要跟踪时，**监控 daemon 必须关**。
+
+| 场景 | 动作 |
+|------|------|
+| 需要给 cursor 指派任务并跟踪其完成时 | **开**：杀旧 → 确认注册 → 启动 daemon（走「三步执行法」） |
+| 任务交付/验收完毕，不需要再跟进该 cursor 时 | **关**：`pkill -f "python3 -m core.monitor daemon"`，验证进程归零 |
+| 收工/空闲 | 关掉所有 daemon |
+| 只临时看一眼状态 | 不需开 daemon，用 `core.watch ... --debug` 手动查即可 |
+
+**开关命令（从技能模板，不经记忆）：**
+
+```bash
+# ① 关（空闲/收工/不再跟进）：杀旧并验证
+pkill -f "python3 -m core.monitor daemon" 2>/dev/null; sleep 2
+ps aux | grep "core.monitor" | grep -v grep | wc -l   # 必须 = 0
+
+# ② 开（再次指派任务、需要跟踪）：先加载本技能拿正确模板
+#    杀旧 → terminal(background=true, watch_patterns=["CURSOR-STOPPED:"], command="exec python3 -m core.monitor daemon --group YOUR_GROUP")
+```
+
+**每个任务收尾必须自检一次：这个 cursor 还需要监控吗？若已交付/验收，则即刻关闭，不留给下个会话空转。**
+
 ## 职责边界
 
 **使用 tmux + cursor-agent 时，应专注于：**
