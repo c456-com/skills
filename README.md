@@ -52,6 +52,7 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | [c456-cli](c456-cli/SKILL.md) | **基础能力** — C456 CLI / c456.com 操作：intake、CDP、截图、assets、搜索、API 工作流与 Agent 规则 |
 | [c456-sync](c456-sync/SKILL.md) | **数据同步** — c456-sync/ 对外正文规范（格式、禁止项）与配图策略（截图 vs Unsplash） |
 | [c456-write](c456-write/SKILL.md) | **数据同步** — 内容写作方法论：信号研究员、产品对比、产品/渠道五段式文章 |
+| [c456-curation-philosophy](c456-curation-philosophy/SKILL.md) | **资讯策展** — 四轨策展方法论（AI 大事 / 开源与新产品 / GEO 实操 / 素材储备）、信号+工具→打法三段论、每日简报采集管线与失败恢复 |
 | [c456-llm-wiki](c456-llm-wiki/SKILL.md) | **数据同步** — C456 LLM Wiki 扩展：wiki ↔ c456-sync 双向同步、引用型镜像、版本绑定 |
 | [c456-publish](c456-publish/SKILL.md) | **数据发布** — 从 c456-sync 到 C456 线上发布：净稿、CLI 发布、回填元数据、SEO 分发 |
 | [c456-wechat-publish](c456-wechat-publish/SKILL.md) | **公众号发布** — 将 C456 内容转为 WeChat 兼容 HTML（inline style、全 section、暖橙配色、横向对比表），一键复制到公众号后台 |

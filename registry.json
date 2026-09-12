@@ -115,6 +115,21 @@
       "version": "1.0.0"
     },
     {
+      "name": "c456-curation-philosophy",
+      "description": "c456 策思路方法论 / curation philosophy：当要设计或调整信息采集策略、决定一条信息该不该收、或做每日简报选稿时触发；定义四轨策展（AI 大事 / 开源与新产品 / GEO 实操 / 素材储备）、信号 + 工具 → 打法的三段论，以及每日简报采集管线与失败恢复路径。",
+      "tags": [
+        "c456",
+        "curation",
+        "philosophy",
+        "methodology",
+        "playbook",
+        "signal",
+        "tool",
+        "brief"
+      ],
+      "version": "2.0.0"
+    },
+    {
       "name": "c456-publish",
       "description": "C456 数据发布层 — 从 c456-sync 到 C456 线上发布的完整流程。净稿处理、CLI 发布（new/update）、回填本地元数据、长文发布专属、发布后 SEO 分发。合并自 c456-wiki-sync-publish / c456-playbook-publishing / c456-playbook-seo-distribution。",
       "tags": [
