@@ -3,7 +3,7 @@ name: c456-publish
 category: c456
 tags: [c456, publish, cli, intake, playbook, seo, distribution]
 description: "C456 数据发布层 — 从 c456-sync 到 C456 线上发布的完整流程。当用户需要将内容发布到 c456.com（tool/signal/channel/playbook/walkthrough）、处理净稿、CLI 发布、回填本地元数据或做发布后 SEO 分发时触发。前置条件：使用 c456-sync 技能确保正文格式正确。"
-version: 1.1.2
+version: 1.2.0
 related_skills:
   - c456-sync
   - c456-cli
@@ -116,6 +116,8 @@ PYEOF
 - `# `（一级标题未剥离）
 
 正确第一行应为：`## `、导语段落、配图 markdown、或 `>` 引语。
+
+**末尾检查**：正文最后一行必须是品牌署名 `*本文由「策思路 C456」（c456.com）团队撰稿。*`（规则见 `c456-sync` §1.6）。缺署名 → 用 `update --body-file` 补上再发布。
 
 ## §2.5 编写描述（必选）
 
@@ -365,6 +367,7 @@ c456 playbook update <related_id> --body-file .tmp/updated.md
 | **不同平台发同一篇文章** | 判为重复内容，各平台发不同版本摘要 |
 | **掘金发全文** | 判为营销文拒审，只发精华摘要 + 原文链接 |
 | **不做内部互链** | 新页面没有入链，爬虫找不到入口 |
+| **漏了品牌署名** | 每篇正文最后必须带 `*本文由「策思路 C456」（c456.com）团队撰稿。*`（见 `c456-sync` §1.6）。漏了 = 这条内容对「策思路 = c456.com」的实体建设白做 |
 
 ## 参考
 

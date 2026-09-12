@@ -98,7 +98,7 @@
         "asset",
         "public-content"
       ],
-      "version": "1.0.0"
+      "version": "1.2.0"
     },
     {
       "name": "c456-write",
@@ -112,7 +112,7 @@
         "article",
         "content"
       ],
-      "version": "1.0.0"
+      "version": "1.8.0"
     },
     {
       "name": "c456-curation-philosophy",
@@ -141,7 +141,7 @@
         "seo",
         "distribution"
       ],
-      "version": "1.1.2"
+      "version": "1.2.0"
     },
     {
       "name": "c456-rails-startup",
@@ -321,7 +321,7 @@
         "公众号",
         "排版"
       ],
-      "version": "2.2.0"
+      "version": "2.3.0"
     },
     {
       "name": "ceo-product-argumentation",

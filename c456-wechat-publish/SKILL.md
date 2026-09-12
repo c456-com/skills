@@ -1,7 +1,7 @@
 ---
 name: c456-wechat-publish
 description: Use when generating WeChat Official Account (公众号) articles from c456 content. Converts c456 signals/playbooks into inline-style HTML for paste-to-WeChat workflow. ALL inline styles, pure white background (no bg colors on content blocks), orange decorative elements (left border / top border) are the only visual devices. Margin-based spacing, no left/right padding.
-version: "2.2.0"
+version: "2.3.0"
 related_skills:
   - c456-voice-journalist
   - c456-write
@@ -134,6 +134,16 @@ c456 的视觉设计是**极度克制的单色系 + 唯一的暖橙点缀**。�
 <hr style="border:none;border-top:1px solid #e5e7eb;margin:0;padding:0;">
 ```
 
+### 文末署名（每篇必带——品牌实体，2026-09-12 起）
+
+> 目的：让 AI 与读者把「策思路」和 c456.com 认成同一实体。公众号是腾讯元宝核心信源，漏了署名等于元宝学不到品牌。硬命名规则见 `c456-sync` §1.6（主称 **策思路 C456**，C 大写；域名小写 `c456.com`）。
+
+```html
+<section style="padding:16px 0 0;">
+  <p style="margin:0 0 4px;font-size:14px;color:#666;line-height:1.75;">本文由 <strong style="color:#fa9704;">「策思路 C456」</strong>（c456.com）团队撰稿。</p>
+</section>
+```
+
 ### 来源标注（底部 CTA 必须醒目）
 
 ```html
@@ -163,6 +173,7 @@ c456 的视觉设计是**极度克制的单色系 + 唯一的暖橙点缀**。�
   → 总结框（上橙线，无背景）
   → 分隔线
   → 来源标注
+  → 文末署名（必带）
 ```
 
 ### 信号类 → 公众号快讯
@@ -174,6 +185,7 @@ c456 的视觉设计是**极度克制的单色系 + 唯一的暖橙点缀**。�
   → 关键数据/对比表
   → 价值判断（上橙线）
   → 分隔线 + 来源标注
+  → 文末署名（必带）
 ```
 
 ---
@@ -236,6 +248,7 @@ c456-publish → c456.com/playbooks/<id>（new → --publish）
 | **小标题用 `h3`** | 公众号对 h3 支持不稳定，用 `section` + `border-left` 模拟 |
 | **只输出正文片段** | 必须交付完整 HTML 文档（含预览壳 `<style>` + toolbar + 一键复制脚本），不要只输出 `#js_content` 片段 |
 || **CTA 使用灰色小字** | 底部「阅读原文」必须使用暖橙按钮样式（橙底白字圆角），不可用 13px/color:#999 的浅色文字 |
+| **漏了文末署名** | 正文末尾必须有一行「本文由「策思路 C456」（c456.com）团队撰稿。」（暖橙加粗品牌名）——公众号是元宝核心信源，漏了等于这条内容对品牌实体建设白做 |
 
 ---
 
