@@ -72,4 +72,6 @@ hermes cron add --name tmp-deliver-today-brief --in 1m \
 
 **验证投递是否真的送达**（不要只信 `last_status`）：查 `cron/executions.db` 的 `delivery_outcome`，`delivered` 才算成功；或建一个 2 分钟的探针任务实测。
 
+**留意误报**：手动 run 留下的 `last_status: delivery_failed` 会一直挂在 job 上直到下一次定时运行覆盖它——别把它当成“定时任务坏了”。行级真相看 `executions.db` 的 `source`：`direct` = 手动，其他 = 调度。
+
 ## 失败恢复（内容层）
