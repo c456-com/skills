@@ -74,4 +74,6 @@ hermes cron add --name tmp-deliver-today-brief --in 1m \
 
 **留意误报**：手动 run 留下的 `last_status: delivery_failed` 会一直挂在 job 上直到下一次定时运行覆盖它——别把它当成“定时任务坏了”。行级真相看 `executions.db` 的 `source`：`direct` = 手动，其他 = 调度。
 
+**查完整运行现场**：每次运行的全量输出（含注入的 `ai-radar.py` 素材、agent 的全部回复）落在 `~/.hermes/profiles/hermes-c456/cron/output/<job_id>/<YYYY-MM-DD_HH-MM-SS>.md`。选稿质量出问题时先看这里，不靠猜。
+
 ## 失败恢复（内容层）
