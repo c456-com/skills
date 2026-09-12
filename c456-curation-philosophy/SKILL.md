@@ -3,7 +3,7 @@ name: c456-curation-philosophy
 category: c456
 tags: [c456, curation, philosophy, methodology, playbook, signal, tool]
 description: "c456 策思路方法论 / curation philosophy：当要设计或调整信息采集策略、决定一条信息该不该收、或做每日简报选稿时触发；定义四轨策展（AI 大事 / 开源与新产品 / GEO 实操 / 素材储备）、信号 + 工具 → 打法的三段论，以及每日简报采集管线与失败恢复路径。"
-version: 2.0.0
+version: 2.0.1
 related_skills:
   - c456-write
   - c456-client-interview
