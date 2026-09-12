@@ -2,9 +2,10 @@
 name: c456-sync
 category: c456
 tags: [c456, sync, markdown, formatting, image, asset, public-content]
-description: "C456 数据同步层 — c456-sync/ 镜像内容撰写规范与配图策略。当用户需要编写对外正文、处理 --body-file、检查格式、选择配图方式（截图 vs 概念图）时触发。与 c456-publish 配合使用：写完内容后用 c456-publish 发布上线。"
-version: 1.0.0
+description: "C456 数据同步层 — c456-sync/ 镜像内容撰写规范与配图策略。当用户需要编写对外正文、处理 --body-file、检查格式、选择配图方式（截图 vs 概念图）时触发。与 c456-voice-journalist（声线层）、c456-publish（发布上线）配合使用。"
+version: 1.1.0
 related_skills:
+  - c456-voice-journalist
   - c456-publish
   - c456-cli
   - c456-write
@@ -37,7 +38,12 @@ related_skills:
 - **来源块前**不要单独插入整行 `---`（会渲染为横线）；与上一节用空行或自然段落收束即可。
 - **Walkthrough 正文内嵌本页录屏**：不要写 `:::walkthrough{id=<当前 id>}` 或等价播放器块；讲解详情页前端**已自动展示**该条媒体，正文只写文字与步骤。
 
-说明：Markdown 图片语法 `![alt](url "title")` 里 **title** 字段若需保留 `c456:asset/<id>` 供平台识别，可以保留；**正文中不要再用自然语言解释 asset ID**。
+说明：Markdown 图片的 **URL 部分必须是完整 `https://c456.com/our-assets/<id>/...` 链接**，从 `c456 asset show <id>` 输出的 `markdownSnippet` 获取。`c456:asset/<id>` 是内部标记，**只能放在 title 字段**（图片语法的第二个引号内），不能作为 URL——C456 前端不展开它。错误写法 `![](c456:asset/99)` 会导致图片不显示。
+
+正确写法：
+```markdown
+![Logto 官网首页](https://c456.com/our-assets/63/... "c456:asset/63")
+```
 
 ### 1.3 配图：媒体级呈现
 
@@ -162,6 +168,7 @@ c456 browser start → screenshot → asset upload → 嵌入正文
 ## 参考
 
 - 仓库总规范：`AGENTS.md` §1.3
+- 科技记者声线：`c456-voice-journalist` 技能（36氪/虎嗅风格）
 - 配套发布：`c456-publish` 技能
 - C456 CLI：`c456-cli` 技能
 - 各内容类型写法：`c456-write` 技能
