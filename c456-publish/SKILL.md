@@ -3,7 +3,7 @@ name: c456-publish
 category: c456
 tags: [c456, publish, cli, intake, playbook, seo, distribution]
 description: "C456 数据发布层 — 从 c456-sync 到 C456 线上发布的完整流程。当用户需要将内容发布到 c456.com（tool/signal/channel/playbook/walkthrough）、处理净稿、CLI 发布、回填本地元数据或做发布后 SEO 分发时触发。前置条件：使用 c456-sync 技能确保正文格式正确。"
-version: 1.1.1
+version: 1.1.2
 related_skills:
   - c456-sync
   - c456-cli
@@ -174,7 +174,16 @@ c456 playbook new -t "标题（≤80字符）" --body-file .tmp/<文件>-净稿.
 c456 walkthrough new -t "标题" --body-file .tmp/<文件>-净稿.md
 ```
 
-**⚠️ 关键**：`new` 就是发布行为。创建即上线，无需额外 publish/approve 步骤。
+**⚠️ 关键**：`new` 创建的是**草稿**（仅创建者可见），**不等于对外公开**。公开发布要再走一步 `update <id> --publish`。
+
+| 你要 | 加的参数 | 服务端 `publication_status` |
+|------|---------|---------------------------|
+| 仅存草稿（`new` 默认） | —（`new` 不写该字段，取服务端默认） | 非公开 |
+| 申请公开 | `--publish` | `pending_review` |
+| 管理员直接公开 | `--published` | `published` |
+| 撤回为草稿 | `--draft` | `private` |
+
+> 更正记录：本节旧文案写「`new` 就是发布行为，创建即上线」，与 CLI 实际行为（`new` 不写 `publication_status`）及 `c456-cli` 技能（「`new` → 只有创建者能看见（草稿）」）不符，已修正。
 
 **记录输出**：`new` 会返回 `ID: <数字>`，立即记录该 ID。
 
