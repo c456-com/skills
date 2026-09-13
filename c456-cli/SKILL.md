@@ -1,7 +1,7 @@
 ---
 name: c456-cli
 description: "C456 CLI / c456.com 操作：当用户要收录 intake、发布 playbook、管理 assets 媒体库、搜索/获取 C456 内容、截图上传或同步 self-hosted C456 数据时触发；用于 CLI 命令、CDP 截图和 API v1 工作流。"
-version: 1.3.0
+version: 1.3.1
 related_skills:
   - c456-sync
   - c456-publish

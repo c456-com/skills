@@ -24,6 +24,6 @@
 
 | 问题 | 解决 |
 |------|------|
-| `--auto-resolve-url` 返回 403（GitHub API 限流） | 改用 `link_product` 手动传入 |
-| 422 "至少添加一个资料段或图标" | profile_data 为空或格式不对，检查 facet 结构 |
+| `--auto-resolve-url` 返回 403（GitHub API 限流）或创建失败提示「至少添加一个资料段或图标」 | 改用显式 `--profile-data-json`。GitHub 仓库用 **`github_origin`** 段（比 `link_product` 语义更准）：`{"facets":[{"profile_id":"github_origin","data":{"_dict_key":"owner/repo","full_name":"owner/repo","url":"https://github.com/owner/repo"}}],"primary_profile_id":"github_origin"}`；不确定用 `link_product` |
+| 422 "至少添加一个资料段或图标" | profile_data 为空或格式不对，检查 facet 结构（`--auto-resolve-url` 静默失败也会走到这里） |
 | 不确定 profile_id | 用 `link_product` 最通用 |
