@@ -1,7 +1,7 @@
 ---
 name: c456-cli
 description: "C456 CLI / c456.com 操作：当用户要收录 intake、发布 playbook、管理 assets 媒体库、搜索/获取 C456 内容、截图上传或同步 self-hosted C456 数据时触发；用于 CLI 命令、CDP 截图和 API v1 工作流。"
-version: 1.3.1
+version: 1.4.0
 related_skills:
   - c456-sync
   - c456-publish
@@ -53,7 +53,14 @@ related_skills:
 7. **自媒体账号默认收录为渠道**：用户要收录 **YouTube / 抖音 / 小红书 / B 站 / 微博** 等**自媒体账号主页或频道**时，**默认使用 `c456 channel new`**（不要用 `c456 tool new`），并配合 `-u <主页或频道 URL>`；需要服务端按 URL 自动填资料段时再加 `--auto-resolve-url`。仅做「不落库的 URL 资料预览/抓取」时用 `c456 fetch profile -p social_account -u "url"`。
 8. **渠道（及 tool）必须带至少一条「资料」**：`c456 channel new` 或 `c456 tool new` 时，服务端要求 **profile_data 里至少有一条资料段**（例如主页 **URL**、**媒体账号** 等对应 facet），常见做法是 `-u <url>` 并加 **`--auto-resolve-url`** 让服务端生成资料段；如需手写 **`--profile-data-json`**，**必须先阅读** [references/intake-profile-data-json.md](references/intake-profile-data-json.md)（含各 `profile_id`、必填字段与最小 JSON 示例）。**不能只写标题/正文而不提供 URL/资料段**，否则会 **422 校验失败**（提示含「至少添加一个资料段或图标」等）。
 9. **素材库与列表图标**：上传、插入正文、设置 tool/channel 列表图标（`list_icon_url`）见 [references/media-library-and-icons.md](references/media-library-and-icons.md)；CLI：`c456 asset …`、`c456 intake update … --profile-data-json-file`。
-10. **工具 / 渠道介绍里的产品截图**：优先 **`c456 browser start`**（持久 profile：`~/.cache/c456-cli/chrome-profile`，可保留登录态）→ 需要时在窗口内登录 → **`c456 screenshot <url> [-o .tmp/…]`** 复用 CDP；结束用 **`c456 browser stop`**。无长会话时可只跑 **`c456 screenshot <url>`**（可省略 **`-o`**，在当前目录按 URL 生成文件名）。然后 **`c456 asset upload`** → **`markdownSnippet`** 写入 **`--body-file`**。**产品官网 / 落地页首屏类截图一律只做视窗截图**：**不要**加 **`-f` / `--full-page`**（默认即为视口高度；整页长图上传后素材处理与阅读体验均易变差）。**仅当**收录时的**产品链接**为 **RubyGems / npm 等包注册表页**（如 **`-u`** 或资料中的包页 URL），并需要**基于该包页**为介绍配截图时：**`c456 screenshot` 的 URL 优先**用 **`c456 fetch profile -p package_registry -u "包页完整URL"`** 解析出的 **GitHub 仓库根页**（`https://github.com/owner/repo`），**不要**优先直接对包页截图。若产品链接已是 **GitHub / 官网 / 文档站**等，或用户**指定了其它截图目标 URL**，则**按该 URL 截图**。详见 [references/product-screenshots-for-intake.md](references/product-screenshots-for-intake.md)。
+10. **工具 / 渠道介绍里的产品截图**：优先 **`c456 browser start`**（持久 profile：`~/.cache/c456-cli/chrome-profile`，可保留登录态）→ 需要时在窗口内登录 → **`c456 screenshot <url> [-o .tmp/…]`** 复用 CDP；结束用 **`c456 browser stop`**。无长会话时可只跑 **`c456 screenshot <url>`**（可省略 **`-o`**，在当前目录按 URL 生成文件名）。然后 **`c456 asset upload`** → **`markdownSnippet`** 写入 **`--body-file`**。**产品官网 / 落地页首屏类截图一律只做视窗截图**：**不要**加 **`-f` / `--full-page`**（默认即为视口高度；整页长图上传后素材处理与阅读体验均易变差）。**仅当**收录时的**产品链接**为 **RubyGems / npm 等包注册表页**（如 **`-u`** 或资料中的包页 URL），并需要**基于该包页**为介绍配截图时：**`c456 screenshot` 的 URL 优先**用 **`c456 fetch profile -p package_registry -u "包页完整URL"`** 解析出的 **GitHub 仓库根页**（`https://github.com/owner/repo`），**不要**优先直接对包页截图。**GitHub 项目收录的截图优先级（2026-09-18 用户确认）**：收录对象是 **GitHub / GitLab / Gitee 仓库**时，先看它**有没有官网**——官网地址取 repo 的 `homepage` 字段，或 README 顶部的品牌 / 官网链接（如 `<a href="https://www.xxx.com">`、`👉 https://www.xxx.com`）。
+- **有官网 → 首图必截官网首页**（`c456 screenshot https://官网/ -o .tmp/<name>-hero.png`），正文首图优先展示官网截图，**不要**拿仓库页当首图。
+- 需要多张图时，再补仓库页 / 官网内页截图（官网内页优先于仓库页）。
+- **没有官网**时才截 GitHub 仓库页。
+- **什么才算「官网」（判据，2026-09-18）**：必须是**独立域名**的**产品站**——首屏有品牌化 hero（产品名 + 一句卖点 + CTA 按钮）+ 功能 / 定价 / 客户等营销内容。**以下不算官网，不要截**：`.github.io` 等托管 demo（如 `mozilla.github.io/pdf.js`）、纯文档站、包注册表页、README 式索引页、只有个裸播放器 / 示例的页面。反例：**pdf.js**（Mozilla）的展示页就是 demo，不适合当 c456 封面图——这类一律改截 GitHub 仓库页。
+- **官网不可用则回退仓库页**：官网打不开（超时 / 4xx / 5xx / 空白页），或首屏一眼是未完成品（占位文案、只有 logo 没内容、布局错乱、「Coming soon」），**放弃官网图，改截 GitHub 仓库页**。截图后先看一眼产出图再决定用哪张，别把烂图发出去。
+
+若产品链接已是 **官网 / 文档站**等，或用户**指定了其它截图目标 URL**，则**按该 URL 截图**。详见 [references/product-screenshots-for-intake.md](references/product-screenshots-for-intake.md)。
 11. **封面截图与发布上线流程已迁至独立技能**：正文格式规范、配图策略 → 加载 **`c456-sync`**；净稿、CLI 发布、回填元数据、SEO 分发 → 加载 **`c456-publish`**。
 12. **用户关键词 → 动作映射**：用户说的日常用语直接映射为以下 CLI 操作序列：
 

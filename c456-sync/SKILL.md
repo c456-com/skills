@@ -3,7 +3,7 @@ name: c456-sync
 category: c456
 tags: [c456, sync, markdown, formatting, image, asset, public-content]
 description: "C456 数据同步层 — c456-sync/ 镜像内容撰写规范与配图策略。当用户需要编写对外正文、处理 --body-file、检查格式、选择配图方式（截图 vs 概念图）时触发。与 c456-voice-journalist（声线层）、c456-publish（发布上线）配合使用。"
-version: 1.2.0
+version: 1.3.0
 related_skills:
   - c456-voice-journalist
   - c456-publish
@@ -147,6 +147,15 @@ c456 browser start → screenshot → asset upload → 嵌入正文
 
 **特例：包注册表页 → GitHub 仓库**
 当收录的产品链接为 RubyGems / npm 等包注册表页时，截图目标优先用 `c456 fetch profile -p package_registry -u "<URL>"` 解析出的 GitHub 仓库根页，不要直接对包页截图。
+
+**特例：GitHub 仓库 → 官网优先（2026-09-18 用户确认）**
+收录对象是 GitHub（或其同类）仓库时，先查它有没有官网（repo `homepage` 字段，或 README 顶部的品牌 / 官网链接）。
+- **有官网**：首图截**官网首页**，正文首图优先展示官网截图——官网体现产品形态，仓库页只有文件列表。
+- **无官网**：才截仓库页。
+- **官网不可用则回退仓库页**：官网打不开（超时 / 4xx / 5xx / 空白页），或首屏一看就是未完成品（占位文案、只有 logo、布局错乱），**放弃官网图，改截仓库页**——宁可用信息完整的仓库页，也不要用一张显得产品不靠谱的官网图。
+- 需要多张图时，再补仓库页 / 官网内页（官网内页优先于仓库页）。
+
+完整判断与操作序列见 `c456-cli` 技能 `references/product-screenshots-for-intake.md`。
 
 ### 2.3 策略 B：Unsplash 概念图（通用/技术分享）
 

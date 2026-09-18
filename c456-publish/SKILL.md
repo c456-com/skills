@@ -3,7 +3,7 @@ name: c456-publish
 category: c456
 tags: [c456, publish, cli, intake, playbook, seo, distribution]
 description: "C456 数据发布层 — 从 c456-sync 到 C456 线上发布的完整流程。当用户需要将内容发布到 c456.com（tool/signal/channel/playbook/walkthrough）、处理净稿、CLI 发布、回填本地元数据或做发布后 SEO 分发时触发。前置条件：使用 c456-sync 技能确保正文格式正确。"
-version: 1.2.0
+version: 1.3.0
 related_skills:
   - c456-sync
   - c456-cli
@@ -52,6 +52,8 @@ related_skills:
 ## §1 前置准备：封面截图
 
 **适用范围**：tool / channel 类型收录必须配封面截图。
+
+**截图目标选择**：收录对象是 GitHub 等代码仓库时，**先查官网**（repo `homepage` 字段或 README 品牌链接）——**有官网就截官网首页作封面**，不用仓库页；无官网才用仓库页。用户指定了 URL 则按用户的 URL 来。
 
 **例外**：用户明确说不需要截图、或 URL 无法访问、或类型为 signal/playbook/walkthrough。
 
