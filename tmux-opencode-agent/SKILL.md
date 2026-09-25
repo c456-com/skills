@@ -1,0 +1,319 @@
+---
+name: tmux-opencode-agent
+description: "OpenCode over tmux / OpenCode TUI 编排与监控：当用户要启动、驱动或监控 OpenCode，或提出直接用 opencode run / ACP 绕过 tmux、起 tmux 会话、判断某一轮是否结束、处理 Permission required 权限请示面板、并行多个 OpenCode 按 session 归因，或换版本后复验事件能力时触发；用于强制所有 Agent 任务在 tmux 可见 TUI 中执行、旁听 SSE 事件流判终态（succeeded/interrupted/failed）、按 sessionID 分流、识别权限面板选中态与卡死。"
+version: 1.2.0
+author: Hermes Agent (hermes-cto)
+license: MIT
+platforms: [macos, linux]
+metadata:
+  hermes:
+    tags: [opencode, tmux, monitoring, orchestration, sse, permissions, xiaohui]
+    category: xiaohui
+    related_skills: [tmux-cursor-agent, cto-delegation-protocol]
+---
+
+# 驱动与监控 tmux 里的 OpenCode
+
+> ⛔ **硬规矩：本仓场景开 tmux 是必须，不是可选。** `opencode` 与 Cursor 一样是「小弟」，
+> 所有 Agent 任务一律在 tmux 会话里运行可见 TUI；直接执行 `opencode run` 算**编排失误**，
+> **无例外**，冒烟、一次性只读评审也不例外。
+>
+> 「必须用可见 TUI」的理由：用户可见、屏监控可抓、用户可干预、事后可复盘。
+> 冲突处置：本条与任何把 `headless` / ACP 当 Agent 入口，或把「有界任务 / 只读评审」
+> 解释为可绕过 tmux 的旧措辞冲突；旧措辞全部作废，**以本条为准**。
+> SSE 只负责旁听，不接管 TUI、不改它的显示。
+>
+> 与 `tmux-cursor-agent` 同类（tmux 里驱动常驻 TUI 小弟），但**监控机制不同**，不能照搬 Cursor 的判据。
+
+## When to Use
+
+- 把活派给 tmux 里的 OpenCode，且要精准知道它哪一轮说完
+- 要处理 OpenCode 的权限请示面板（`Permission required`）
+- 一个项目并行多个 OpenCode，需要按会话分开归因
+- 换机/换版本后要复验 OpenCode 的事件能力
+
+## 1. 起会话（可见 TUI）
+
+起会话前逐项检查，任一不满足就不启动：
+
+1. **会话名 = 任务名**：用稳定的 `<task>`，便于 SSE、屏幕和日志按同一名字归因。
+2. **cwd = 目标工作树**：必须传目标 worktree 的绝对路径，不能是主树或业务根目录。
+3. **先查重**：已有同名会话就复用或先退出；不得静默创建第二个同名会话。
+4. **文本与 Enter 分两次发送**：先 `send-keys` 写命令，确认后再另发 `Enter`。
+
+```bash
+TASK=<task>
+WORKTREE=<absolute-target-worktree>
+
+# 起前查重；命中即停止，不能继续创建同名会话
+if tmux has-session -t "=$TASK" 2>/dev/null; then
+  echo "tmux 会话 $TASK 已存在；复用或先退出，不得重名启动"
+  exit 1
+fi
+
+tmux new-session -d -s "$TASK" -n agent -c "$WORKTREE"
+tmux display-message -p -t "=$TASK" '#{session_name} #{pane_current_path}'  # 复核名字与 cwd
+tmux send-keys -t "=$TASK":0 "opencode"  # 不加 --auto 才有权限请示
+sleep 2
+tmux send-keys -t "=$TASK":0 Enter       # 必须与上一条分开
+sleep 15                                  # 等到出现 "Ask anything…" 输入框
+```
+
+⛔ **`--auto` 会自动批准权限** ⇒ 权限面板永不出现。**要观察/管理交互就别加 `--auto`。**
+
+### 1.1 退出方式
+
+```bash
+# 首选：在 TUI 空闲态发送 Ctrl+C（字节 \x03）；若仍不退出，再核 PID 后 kill
+tmux send-keys -t "=$TASK":0 C-c
+# 进程仍存活时：
+kill <pid>
+# 或终止整个会话：
+tmux kill-session -t "=$TASK"
+```
+
+⛔ **禁止发送 `/exit`**：对 OpenCode 它会打开 Agent 选择器，不是退出命令。
+
+**pane title 空闲态为 `OpenCode`，忙碌时变成 `OC | <任务名>`**（实测 `OC | Running repeated OC- output…`）
+⇒ **可作辅助佐证，不能当权威判活/判结束信号**（Cursor 的 `✅ Ready` / `⏳ Working` 二值信号在这里不存在）。
+判活用屏底忙碌行 `esc interrupt`（在跑）/ 无（结束）+ SSE 终态事件；详见 §3.5。
+
+## 2. SSE 事件流（主判据，零配置）
+
+OpenCode 有 background service，TUI 连的是常驻服务端 ⇒ **不需要像 Cursor 那样装 hook**，
+旁听服务端事件流即可拿到硬终态。
+
+```bash
+# 取服务地址与凭据
+URL=$(opencode service status | tr -d '[:space:]')          # http://127.0.0.1:<port>
+PW=$(python3 -c "import json;print(json.load(open('$HOME/.config/opencode/service.json'))['password'])")
+
+# 旁听（-N 不缓冲，实时逐行落盘）
+curl -s -N -u "opencode:$PW" --max-time <秒> "$URL/api/event" >> <logfile>
+```
+
+⛔ **端点要 Basic 鉴权**（`www-authenticate: Basic realm="Secure Area"`），裸 curl 全 401。
+用户名固定 `opencode`，密码在 `~/.config/opencode/service.json`。
+⛔ **别用 `opencode api GET /api/event`**：它能带凭据但**输出被缓冲**，实时场景收不到事件。
+⛔ **别直接 curl `/openapi.json` 拿 spec**：要鉴权；用 `opencode api GET /openapi.json` 拿。
+拿到 spec 后 SSE 端点是 `GET /api/event`（`operationId: event.subscribe`），返回 `text/event-stream`。
+
+事件行结构：`{id, created, type, location:{directory}, data:{sessionID, ...}}`
+每约 5s 有一行 `: heartbeat`（忽略）。
+
+## 3. 轮次结束判据（三个终态，任一即结束）
+
+| 事件 | 含义 |
+|------|------|
+| `session.execution.succeeded` | 正常完成 |
+| `session.execution.interrupted` | 被打断（发新消息会顶掉待批准请求） |
+| `session.step.failed` / `session.tool.failed` | 失败 |
+
+**判据是「本 session 出现过任一终态事件」，不是只看 `succeeded`** —— 只等 succeeded 会漏掉
+被打断和失败的轮次。
+
+⛔ **`session.execution.succeeded` ≠ 工具成功**：实测跑不存在的命令（exit 127）**照样发 succeeded**，
+它只表示「这一轮执行完成」。`session.tool.success` 同理只表示「调用完成」，不代表业务成功。
+⛔ **`session export` 的 `info.outcome` 不能当判据**：实测**运行中它就已是 `succeeded`**（那是上一轮的结果），
+用它判本轮会 100% 误判。
+
+**分流**：一条流里混着所有 session 的事件（实测过 4 个并存），按 `data.sessionID` 精确切分，零交叉。
+多工作树再按 `location.directory` 分第二层。
+
+## 3.1 用 `scripts/watch.py` 判结束（可直接执行）
+
+上面的判据已封装成一次性探针：连上 SSE，等到本 session 的终态事件就退出。
+
+**前置条件**
+
+- OpenCode background service 在跑：`opencode service status` 输出 `http://127.0.0.1:<port>`
+  （没起就 `opencode service start`）。探针自己调这条命令拿地址。
+- 凭据：探针自动读 `~/.config/opencode/service.json` 的 `password`，无需手传。
+- 系统有 `curl`；拿到目标 session ID（在**工作树目录下**执行，只列当前项目的会话，最新在前）：
+
+```bash
+cd <worktree>
+SID=$(opencode session list -n 1 --format json | python3 -c "import json,sys;print(json.load(sys.stdin)[0]['id'])")
+echo "$SID"   # ses_...
+```
+
+  新开的 TUI 若 list 里还没有它的会话，先发一句秒回的冒烟消息，再取 ID。
+
+**运行**（先挂探针，再发要监控的那轮消息；探针只收连上之后的事件）：
+
+```bash
+python3 <skill>/scripts/watch.py "$SID" 900 --tmux-session <task>
+# 等价写法（参数顺序任意）：watch.py "$SID" --tmux-session <task> / watch.py --tmux-session <task> "$SID" 900
+```
+
+- `timeout_s`：正整数秒，可省，缺省 900。
+- `--tmux-session <task>`：承载该 session TUI 的 tmux 会话名（§1 里的 `<task>`，读 `<task>:0`）。
+  **建议总是传**：它启用屏幕补位（见下），不传则只靠 SSE。也可写成 `--tmux-session=<task>`。
+- 参数写错（缺 session ID、timeout 非正整数、`--tmux-session` 缺值、多余参数）打印用法并以退出码 2 退出；`-h` 看帮助。
+- 本探针是 one-shot，命中信号后退出；Hermes 里用退出投递托管：
+  `terminal(background=true, notify_on_complete=true)`，不要用 `subprocess.Popen` 起。
+  常驻监控不能把中途 `print` 当通知；须配 per-match `notify=[...]`，详见
+  `cursor-hook-monitor` 的「检测到 ≠ 用户收到」。
+
+**屏幕补位：SSE 看不到的那种卡死**
+
+SSE **不补发连接前的事件**，REST 又查不到待批请求（见 §4）。实测：面板弹出后才连上的 SSE，
+12 秒收到 43 行其他事件，本 session 的 `permission.asked` 为 0。
+⇒ 探针晚于面板启动（包括下面建议的「短 timeout 循环重挂」从第二次起）时，纯 SSE 探针只会一直报 `WATCH-TIMEOUT`，
+而 agent 实际卡在面板上。
+
+传了 `--tmux-session` 时，**仅当 SSE 没有待批记录**，探针启动即读一次可见屏，之后按时钟每隔 ≥5 秒再读
+（同时出现 `Permission required`、`Allow once`、`Reject` 才算；间隔从上次截屏完成算起），**连续两次可见**即报
+`QUESTION-PANEL … source=screen` 并退出。屏幕检查由时钟驱动、与 SSE 有无数据无关：
+实测 SSE 完全静默 / 每秒约 20 行 / 仅心跳三种情况下，启动到报出为 5.5–6.2 秒。
+SSE 已收到 `permission.asked` 时屏幕不参与，避免与之抢跑。
+
+**SSE 断开：重连，屏幕补位不停**
+
+SSE 连接提前结束（服务重启、端口不通、连接被断）时，探针不退出：打印 `SSE-LOST`，按 1 / 2 / 4 / 8 秒退避重连
+（封顶 8 秒；某条连接收到过数据则下次从 1 秒重新算），每次重连都重新执行 `opencode service status` 取地址
+（服务重启后端口会变）。断开期间屏幕检查照常按时钟进行。实测 SSE 端点不通 + 屏上有面板时约 5.5–6 秒报出
+`QUESTION-PANEL … source=screen`；断线后重连成功能继续接住终态事件报 `STAGE-DONE`。
+⚠️ **断开期间发生的事件无法补回**（SSE 不补发）：若本轮恰在断线时结束，探针只能等到 timeout；
+屏幕补位只覆盖权限面板，不覆盖「本轮已结束」。
+
+**输出与判读**（逐行打印，以文字判读）
+
+| 输出 | 何时 | 含义 / 处置 |
+|------|------|------------|
+| `PROBE-START session=… url=… timeout=… tmux=…` | 启动 | 已取到服务地址，开始连 SSE；`tmux=-` 表示未启用屏幕补位 |
+| `SSE-LOST rc=… 本连接收到 N 行，Ks 后重连…` | SSE 连接提前结束，或重连失败 | 探针继续工作；`N=0` 且反复出现 ⇒ SSE 端点不通，核 `opencode service status` |
+| `SSE-RECONNECT attempt=… url=…` | 发起重连 | 仅记录；断开期间的事件已丢失（见上） |
+| `TURN-START ts=…` | 本 session 开始一轮 | 仅记录 |
+| `PERMISSION-ASKED id=… action=… resources=…` | 弹权限面板 | **探针不退出**；需要时按 §4 裁决 |
+| `PERMISSION-REPLIED reply=…` | 面板已答 | 仅记录 |
+| `STAGE-DONE session=… event=… start_ts=… end_ts=… duration=…` | 出现任一终态事件 | 本轮结束，**退出码 0**；`event=` 区分 succeeded / interrupted / failed，业务成败另行核验（见 §3） |
+| `CURL-END rc=…` | 到 timeout 仍未见终态 | 正常到点，不是故障（`28` = curl 到点；探针自身先到点时为 `None`；SSE 断开期间到点时为最后一次连接的 rc，如 `7`），后面紧跟下列一行 |
+| `QUESTION-PANEL session=… 待批=[…]` | 到点时仍有未答的权限请求（SSE 看到的） | 卡在权限面板，去裁决 |
+| `QUESTION-PANEL session=… source=screen tmux=…` | 屏幕连续可见面板但 SSE 无记录（需 `--tmux-session`） | 面板早于探针弹出、已卡住，**立即退出**；去裁决 |
+| `WATCH-TIMEOUT conv=…` | 到点且无待批 | 核当前状态，必要时重挂；偶尔会连打两行，含义相同 |
+
+以上信号退出码均为 0；启动时拿不到服务地址则打印 `拿不到 service 地址…` 并以退出码 1 退出（运行中断开走上面的重连）。
+收到 SIGTERM / SIGINT 时 0.5 秒内静默退出（退出码 0），并回收 curl，不留子进程。
+⚠️ SSE 看到的权限卡死要到 timeout 才会以 `QUESTION-PANEL` 退出；想早点发现，用较短 timeout 循环重挂
+（**重挂时务必带 `--tmux-session`**，否则从第二次起就看不到已弹出的面板），或盯输出里的 `PERMISSION-ASKED`。
+
+## 3.5 五个交互问题的实测答案（与 Cursor 差异最大的一节）
+
+「消息发出没 / 进队列没 / 撤回执行 / 纠正队列内容 / 撤销队列条目」——
+**这五问在 OpenCode 上的答案与 Cursor 截然不同，大部分能力缺失。**
+
+| 问题 | 判据 | 动作 |
+|------|------|------|
+| **消息发送成功没** | ① Enter 前 `capture-pane` 能在**输入框**找到文字 ② Enter 后屏底出现 `esc interrupt` | 两者都要；只看①可能只是没提交 |
+| **消息进队列没** | **屏面上无队列 UI**——只能看 `Press ctrl+b to move running work to the background` 提示出现 | ⛔ **无法数条目**，别指望看清有几条 |
+| **已发送，想换向/停止** | 屏底 `esc interrupt` 仍在 ⇒ 还在跑 | 立即停：`esc` 连按两次打断，或 `ctrl+b` 转后台；⚠️ **无 steer**，发 `STOP-NOW: …` 式消息只会等当前轮结束后才生效 |
+| **队列里那条要改** | **做不到**——无队列列表、无编辑态 | 发新消息显式作废前一条 |
+| **撤销队列条目** | **做不到**——`esc` 是打断当前执行，不是撤消息 | 同上 |
+
+### ⛔ 三条能力缺失是实测结论，不是没找到
+
+1. **无 steer 机制**（Cursor 的「空框 Enter 注入队首到当前轮」在 OpenCode 不存在）。
+   要「立即改向」只能：打断当前执行（`esc` 连按两次，二次确认），或 `ctrl+b` 转后台。
+2. **无队列列表**——忙碌时发消息只显示「Press ctrl+b…」提示，
+   **看不到队列里有几条、也改不了其中任何一条**。
+3. **`esc` 语义与 Cursor 完全不同**：Cursor 的 `esc` 撤队列条目；
+   OpenCode 的 `esc` 第一次把提示改成 `esc again to interrupt`，第二次才打断当前执行。
+
+### 忙碌时 title 会变
+
+空闲态为 `OpenCode`，**忙碌时变成 `OC | <任务名>`**（实测 `OC | Running repeated OC- output…`）。
+⇒ 短窗口采样时它**可用作辅助佐证**；但结束态会回到 `OpenCode`，
+所以**不能只靠 title 判结束**，仍以 SSE 终态事件为准。
+
+### 消费后的队列消息不会在屏上重复
+
+实测：忙碌时发的 `OCQ2-MARKER` 转后台后被消费执行，屏上出现它的 Thought 块，
+但**原始输入行只出现 1 次**（不重复渲染）——
+⇒ 别用「屏上几次」数队列，用 `session.inbox.enqueued` / `delivered` 事件数。
+
+## 4. 权限请示面板（Cursor 的对应物）
+
+面板形态：
+
+```
+  △ Permission required
+    ← Access external directory ~/somewhere
+    Patterns
+    - /Users/xiaohui/somewhere/*
+
+     Allow once   Always allow   Reject
+     ctrl+f fullscreen  ⇆ select  enter confirm
+```
+
+**默认权限是 `{"action":"*","effect":"allow"}`** ⇒ 写文件、普通 shell **不弹面板**。
+只有这些会弹（从 agent 权限规则读，别猜）：
+
+- `external_directory`（访问工作树外的目录）
+- `read` `*.env` / `*.env.*`（除 `*.env.example`）
+
+⇒ **要测/演示权限面板，用跨目录访问，别用「创建文件」**（那个默认直接放行）。
+
+### 按键语义（实测）
+
+| 键 | 行为 |
+|----|------|
+| `←` / `→` | 在三项间**循环**切换（两端环绕：`Always allow → Allow once → Reject → Always allow`） |
+| `Enter` | 确认选中项 |
+
+⛔ **选中态是颜色高亮，纯文本快照看不出来** —— `capture-pane -p` 三项看起来完全一样。
+必须用 `capture-pane -p -e` 读转义序列，选中项背景色是 `48;2;250;178;131`（橙）。
+判「我现在选的是哪项」不能靠肉眼看文本。
+
+**拒答后它自己换路继续**（实测：Reject 后 agent 说「Previous tool call declined」然后换个工具继续），
+不会卡死等在这儿 —— 这点比 Cursor 的请示门省心。
+
+⛔ **权限状态以 SSE 的 `permission.asked` / `permission.replied` 为准**：
+`GET /api/permission/request` 在面板明明在等时返回 `data:[]`，**REST 端点不可靠**。
+SSE 不补发连接前的事件 ⇒ 面板早于旁听弹出时，只有屏幕看得到（`watch.py --tmux-session` 已据此补位，见 §3.1）。
+
+| 事件 | data 关键字段 |
+|------|--------------|
+| `permission.asked` | `{id, sessionID, action, resources, save, source}` |
+| `permission.replied` | `{sessionID, requestID, reply}`（reply = `allow-once` / `always` / `reject` 实测值） |
+
+**卡死判据**：`permission.asked` 已发、长时间无对应 `permission.replied` ⇒ 它在等裁决。
+
+## 5. 事件能力实测表
+
+实测触发（长驻 TUI，多轮）：`server.connected` · `session.execution.started` /
+`succeeded` / `interrupted` · `session.step.started` / `ended` / `failed` /
+`streamed` · `session.tool.input.started` / `ended` · `called` / `progress` /
+`success` / `failed` · `session.reasoning.started` / `delta` / `ended` ·
+`session.text.started` / `delta` / `ended` · `session.usage.updated` ·
+`session.inbox.enqueued` / `delivered` · `permission.asked` / `replied` ·
+`project.updated` · `provider.updated` / `model.updated` · `shell.exited` / `deleted`
+
+⛔ **事件类型不在 OpenAPI spec 里枚举**（spec 只有 `V2EventEncoded: string`）⇒ 换版本要重新实测，
+别照抄这张表当契约。
+
+## 6. 与 Cursor 的差异（别互相照搬）
+
+| 维度 | Cursor | OpenCode |
+|------|--------|----------|
+| 结束信号 | hook（须先于启动配好，忘 chmod 静默失效） | **SSE（零配置）** |
+| pane title | `✅ Ready` / `⏳ Working` 可判活 | 空闲 `OpenCode` / 忙碌 `OC \| <任务名>`，**仅作辅助佐证，不能判结束** |
+| 忙碌指示 | `ctrl+c to stop` | `esc interrupt` |
+| 请示门 | `Question N of M` 多问面板，`←/→` 翻页 | `Permission required` 单选三项，`←/→` 循环 |
+| 拒答后果 | 容易停住等你 | **自己换路继续** |
+| 会话身份 | `create-chat` 预分配 | `session list` 直接列（`ses_...`） |
+| 排障入口 | hook 日志 | `session export <id>`（⚠️ 其 `outcome` 不可当判据） |
+
+## 7. 探针任务怎么写
+
+- 在 **scratch 目录**跑探针（业务工作树里会让它去动真文件）。
+- 长任务用固定列表（`for i in 1 2 3 …`），别用 `$(seq …)`（折行污染，见 `tmux-cursor-agent` §2.2）。
+- 收尾：kill tmux 会话 → **核 SSE curl 进程真的退了**（长连接容易漏杀，
+  `terminal` 报退出但进程可能还在，用 `ps` 按 pid 核）。
+- 裸 curl 旁听的正常退出码是 `28`（`--max-time` 到点），**不是故障**；`watch.py` 会把它打印成 `CURL-END rc=28`，自身仍以 0 退出。
+
+## 相关
+
+- `tmux-cursor-agent` — Cursor 版运行时手册；共享「折行污染」「Busy/Ready 决定落点」等通用坑
+- `cto-delegation-protocol` — 派活判据与验收门禁
+- `cursor-hook-monitor` — Cursor hook 监控技能包（OpenCode 不需要，SSE 覆盖）
