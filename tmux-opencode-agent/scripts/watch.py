@@ -15,8 +15,9 @@
     此时屏幕连续两次可见面板 ⇒ 报 QUESTION-PANEL source=screen 并退出。
     屏幕检查按时钟调度（读线程收 SSE、主循环定时醒），SSE 完全静默时照样工作。
   · SSE 提前断开：打印 SSE-LOST，按 1/2/4/8s 退避重连（每次重取 service 地址），期间屏幕补位不停。
-  · 必须由 Hermes 托管（terminal(background=true, notify_on_complete=true)），
-    用 subprocess.Popen 起的进程 Hermes 不认，退出时不通知。
+  · 本探针是 one-shot，命中信号后退出；必须由 Hermes 托管并使用退出投递
+    （terminal(background=true, notify_on_complete=true)）。subprocess.Popen 不在托管链路内。
+    常驻监控不能靠中途 print 投递，须用 per-match notify 或命中后退出；详见 SKILL.md。
   · 正常退出码可能是 curl 的 28（--max-time 到点），不是故障。
 """
 import sys

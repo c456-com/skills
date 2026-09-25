@@ -1,7 +1,7 @@
 ---
 name: tmux-opencode-agent
-description: "OpenCode over tmux / OpenCode TUI 驱动与监控：当用户要在 tmux 中启动、驱动或监控 OpenCode，判断某一轮是否结束、处理 Permission required 权限请示面板、并行多个 OpenCode 按 session 归因，或换版本后复验事件能力时触发；用于旁听 SSE 事件流判终态（succeeded/interrupted/failed）、按 sessionID 分流、识别权限面板选中态与卡死。"
-version: 1.1.2
+description: "OpenCode over tmux / OpenCode TUI 编排与监控：当用户要启动、驱动或监控 OpenCode，或提出直接用 opencode run / ACP 绕过 tmux、起 tmux 会话、判断某一轮是否结束、处理 Permission required 权限请示面板、并行多个 OpenCode 按 session 归因，或换版本后复验事件能力时触发；用于强制所有 Agent 任务在 tmux 可见 TUI 中执行、旁听 SSE 事件流判终态（succeeded/interrupted/failed）、按 sessionID 分流、识别权限面板选中态与卡死。"
+version: 1.2.0
 author: Hermes Agent (hermes-cto)
 license: MIT
 platforms: [macos, linux]
@@ -14,9 +14,16 @@ metadata:
 
 # 驱动与监控 tmux 里的 OpenCode
 
-> 与 `tmux-cursor-agent` 同类（tmux 里驱动常驻 TUI 小弟）但**机制不同**，不能照搬 Cursor 的判据。
-> **必须用可见 TUI**：用户要能在 tmux 里 attach 看到界面；headless / ACP 不适用
-> （要 headless 就直接用 `opencode acp`）。SSE 只是**旁听**，不接管 TUI、不改它的显示。
+> ⛔ **硬规矩：本仓场景开 tmux 是必须，不是可选。** `opencode` 与 Cursor 一样是「小弟」，
+> 所有 Agent 任务一律在 tmux 会话里运行可见 TUI；直接执行 `opencode run` 算**编排失误**，
+> **无例外**，冒烟、一次性只读评审也不例外。
+>
+> 「必须用可见 TUI」的理由：用户可见、屏监控可抓、用户可干预、事后可复盘。
+> 冲突处置：本条与任何把 `headless` / ACP 当 Agent 入口，或把「有界任务 / 只读评审」
+> 解释为可绕过 tmux 的旧措辞冲突；旧措辞全部作废，**以本条为准**。
+> SSE 只负责旁听，不接管 TUI、不改它的显示。
+>
+> 与 `tmux-cursor-agent` 同类（tmux 里驱动常驻 TUI 小弟），但**监控机制不同**，不能照搬 Cursor 的判据。
 
 ## When to Use
 
@@ -27,14 +34,45 @@ metadata:
 
 ## 1. 起会话（可见 TUI）
 
+起会话前逐项检查，任一不满足就不启动：
+
+1. **会话名 = 任务名**：用稳定的 `<task>`，便于 SSE、屏幕和日志按同一名字归因。
+2. **cwd = 目标工作树**：必须传目标 worktree 的绝对路径，不能是主树或业务根目录。
+3. **先查重**：已有同名会话就复用或先退出；不得静默创建第二个同名会话。
+4. **文本与 Enter 分两次发送**：先 `send-keys` 写命令，确认后再另发 `Enter`。
+
 ```bash
-tmux new-session -d -s <task> -n agent -c <worktree>   # cwd 必须是目标工作树
-tmux send-keys -t <task>:0 "opencode"                   # 不加 --auto 才有权限请示
-sleep 2; tmux send-keys -t <task>:0 Enter
-sleep 15   # 等到出现 "Ask anything…" 输入框
+TASK=<task>
+WORKTREE=<absolute-target-worktree>
+
+# 起前查重；命中即停止，不能继续创建同名会话
+if tmux has-session -t "=$TASK" 2>/dev/null; then
+  echo "tmux 会话 $TASK 已存在；复用或先退出，不得重名启动"
+  exit 1
+fi
+
+tmux new-session -d -s "$TASK" -n agent -c "$WORKTREE"
+tmux display-message -p -t "=$TASK" '#{session_name} #{pane_current_path}'  # 复核名字与 cwd
+tmux send-keys -t "=$TASK":0 "opencode"  # 不加 --auto 才有权限请示
+sleep 2
+tmux send-keys -t "=$TASK":0 Enter       # 必须与上一条分开
+sleep 15                                  # 等到出现 "Ask anything…" 输入框
 ```
 
 ⛔ **`--auto` 会自动批准权限** ⇒ 权限面板永不出现。**要观察/管理交互就别加 `--auto`。**
+
+### 1.1 退出方式
+
+```bash
+# 首选：在 TUI 空闲态发送 Ctrl+C（字节 \x03）；若仍不退出，再核 PID 后 kill
+tmux send-keys -t "=$TASK":0 C-c
+# 进程仍存活时：
+kill <pid>
+# 或终止整个会话：
+tmux kill-session -t "=$TASK"
+```
+
+⛔ **禁止发送 `/exit`**：对 OpenCode 它会打开 Agent 选择器，不是退出命令。
 
 **pane title 空闲态为 `OpenCode`，忙碌时变成 `OC | <任务名>`**（实测 `OC | Running repeated OC- output…`）
 ⇒ **可作辅助佐证，不能当权威判活/判结束信号**（Cursor 的 `✅ Ready` / `⏳ Working` 二值信号在这里不存在）。
@@ -112,8 +150,10 @@ python3 <skill>/scripts/watch.py "$SID" 900 --tmux-session <task>
 - `--tmux-session <task>`：承载该 session TUI 的 tmux 会话名（§1 里的 `<task>`，读 `<task>:0`）。
   **建议总是传**：它启用屏幕补位（见下），不传则只靠 SSE。也可写成 `--tmux-session=<task>`。
 - 参数写错（缺 session ID、timeout 非正整数、`--tmux-session` 缺值、多余参数）打印用法并以退出码 2 退出；`-h` 看帮助。
-- Hermes 里照 `cursor-hook-monitor` 的方式托管：`terminal(background=true, notify_on_complete=true)`，
-  不要用 `subprocess.Popen` 起。
+- 本探针是 one-shot，命中信号后退出；Hermes 里用退出投递托管：
+  `terminal(background=true, notify_on_complete=true)`，不要用 `subprocess.Popen` 起。
+  常驻监控不能把中途 `print` 当通知；须配 per-match `notify=[...]`，详见
+  `cursor-hook-monitor` 的「检测到 ≠ 用户收到」。
 
 **屏幕补位：SSE 看不到的那种卡死**
 

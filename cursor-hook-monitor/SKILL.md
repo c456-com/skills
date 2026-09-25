@@ -1,13 +1,13 @@
 ---
 name: cursor-hook-monitor
-description: "Cursor Agent hook 监控 / cursor-agent hook monitor：当用户要精准判断 tmux 中 cursor-agent 哪一轮对话结束、发现屏幕轮询漏报或误报空闲、给已在跑的 cursor-agent 补装 hook 接管、并行多个 cursor-agent 按会话归因，或复盘对话时间线时触发；用于安装 hook 事件流（stop/afterAgentResponse）、用时间窗丢弃假空闲、输出 STAGE-DONE/QUESTION-PANEL 信号，作为 tmux-cursor-agent 屏幕轮询的补充。"
-version: 1.0.1
+description: "Cursor Agent hook 监控 / cursor-agent hook monitor / 屏监控与后台通知投递：当用户要精准判断 tmux 中 cursor-agent 哪一轮对话结束、排查‘没收到提醒’是没检测到还是检测到未送达、给已在跑的 cursor-agent 补装 hook 接管、并行多个 cursor-agent 按会话归因，或复盘对话时间线时触发；用于安装 hook 事件流（stop/afterAgentResponse）、用时间窗丢弃假空闲、按事件名做 per-match 推送或命中后退出投递、落事件文件并在每回合回读兜底，输出 STAGE-DONE/QUESTION-PANEL 信号。"
+version: 1.1.0
 author: Hermes Agent (hermes-cto)
 license: MIT
 platforms: [macos, linux]
 metadata:
   hermes:
-    tags: [cursor, cursor-agent, hook, monitoring, tmux, orchestration, xiaohui]
+    tags: [cursor, cursor-agent, hook, monitoring, tmux, orchestration, notification, delivery, xiaohui]
     category: xiaohui
     related_skills: [tmux-cursor-agent, cto-delegation-protocol]
 ---
@@ -21,6 +21,69 @@ metadata:
 - 需要**事后复盘**整场对话的时间线（每轮起止、时长、工具调用）
 - 一个项目**并行多个 cursor-agent**，需要按会话分开归因
 - 接手一个**已在跑但没监控**的 cursor-agent，想给它补上能力
+
+## ⛔⛔⛔ 检测到 ≠ 用户收到：print 不投递
+
+**机制**：`print` 只把文本写进**本进程的输出缓冲**。后台进程通知默认在进程**退出时投递一次**；
+进程仍活着时，中途 `print` 的事件**永远递不出来**，`process(action='poll')` 看见也不等于用户已收到。
+
+**本次踩坑判据**：
+
+```text
+terminal(background=true, notify=true)  # 只在退出时投递
+```
+
+2026-09-25 16:12，屏监控已 `print` 出 `QUESTION`；监控进程继续存活，8 分钟内 CTO 对话没有任何提醒。
+检测正常，缺的是投递。把 `timeout` / 寿命从 15 分钟改成 1 小时也不会改变这一点。
+
+### 两条可执行投递路径
+
+**路径 1（常驻监控首选）——按事件名 per-match 推送**：
+
+```text
+terminal(command="python3 <monitor.py> --session <SESSION>",
+         background=true,
+         notify=["EVENT_A", "EVENT_B"])
+```
+
+- 每一行匹配 `EVENT_A` / `EVENT_B` 就进入 CTO 队列；**不打断当前执行**，等执行空闲后再处理。
+- 事件名必须来自监控输出中的稳定行首，例如 `QUESTION`、`PERMISSION-REQUIRED`；不要匹配普通状态行。
+- 监控进程可继续运行；后续同类事件仍能逐次投递。
+
+**路径 2（一次性探针保底）——命中后立即退出**：
+
+```python
+if match(event, ["EVENT_A", "EVENT_B"]):
+    append_delivery_ledger(event)  # 先留可回读落点
+    sys.exit(9)                     # 再靠退出通知投递
+```
+
+监控检测到需要立即处置的事件就先落盘、再 `sys.exit(9)`；CTO 被唤醒并处理完后重新挂监控。
+`watch.py` 是 one-shot 探针，命中 `STAGE-DONE` / `QUESTION-PANEL` / `IDLE-FALLBACK` 后会退出，因此它走此路径。
+
+⛔ **寿命值只决定“无事件时的兜底何时发生，与中途投递无关”**：15 分钟、1 小时都不会把一行
+`print` 变成通知。常驻进程要中途提醒，必须用路径 1；一次性探针才用路径 2。
+
+### 不依赖推送的兜底纪律
+
+1. 每次检测到事件，先追加到事件文件或标记文件；持久化成功后才 `print`、`notify` 或 `exit`。
+2. **每个回合开头先回读一次**该落点，消费尚未处理的事件，再做屏幕轮询或发消息；不得先假设用户已收到推送。
+3. 文件回读是最终兜底，即使后台通知丢失、TUI 不在场或 Agent 会话重启也不失效。
+
+### 用户说“没收到提醒”时的第一动作
+
+**第一动作：读监控的完整输出日志**，不要先延长寿命或重发任务。
+
+```bash
+cat <monitor-complete-output.log>
+```
+
+| 日志判读 | 结论 | 修法 |
+|----------|------|------|
+| 没有目标事件，也没有检测标记 | **没检测到** | 修 hook、屏监控条件或检测逻辑；与通知配置无关 |
+| 已出现目标事件 / `print` / 落盘标记 | **检测到但没送达** | 常驻进程改路径 1 的 per-match 推送；一次性探针确认命中后立即退出 |
+
+两条修法完全不同：延长寿命对两者都无效。
 
 ## 定位：补充，不是替换
 
@@ -122,9 +185,11 @@ python3 <skill>/scripts/start.py <worktree_path> <tmux_session> [初始prompt]
 
 ### 2. 挂监控（**必须由 Hermes 托管**）
 
-```bash
+本技能的 `watch.py` 是**一次性探针**：命中信号就退出，因此使用上面的**路径 2（退出投递）**：
+
+```text
 terminal(command="python3 <skill>/scripts/watch.py <CONV> <timeout_s> --tmux-session <SESSION>",
-         background=true, notify_on_complete=true)
+         background=true, notify_on_complete=true)  # notify=true：只在退出时投递
 ```
 
 **绝不能用 `subprocess.Popen` 起探针**——Hermes 不托管那个进程，
@@ -142,10 +207,8 @@ python3 <skill>/scripts/watch.py <CONV> [timeout_s] [--tmux-session <SESSION>]
 - 前置：事件流所在目录与启动器一致（见「日志落位」）；**先挂探针再发要监控的那轮任务**，
   探针启动时已有的 stop 会被当作历史轮次忽略。
 - 只读不写，一次性：首行 `WATCH-START`，随后输出下表信号之一即退出（退出码恒为 0，以输出文字判读）。
-
-用 `notify_on_complete` 而非 `watch_patterns`：后者有 8 次投递上限
-（`WATCH_LIFETIME_MAX_HITS`）+ 15s 冷却 3 次熔断 + 全局 15/10s 限流，
-多 agent 并行必然踩到，之后静默退化成"进程退出才通知"。
+- `timeout_s` 只管**无事件时何时退出兜底**，不承担中途投递；常驻屏监控按「检测到 ≠ 用户收到」
+  一节的路径 1 配 per-match 推送。
 
 ### 3. 判读
 

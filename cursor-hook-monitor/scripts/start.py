@@ -20,11 +20,14 @@
        ⇒ tag / 会话身份 / 事件文件 三者同一个 ID，天然对齐
     5. 冒烟：确认 TUI 真的进入输入框
 
-  ⚠️ 本脚本 **不** 负责挂监控探针。探针必须由 Hermes 自己托管：
+  ⚠️ 本脚本 **不** 负责挂监控探针。一次性 watch.py 必须在 Hermes 中托管，
+     并依靠命中后退出投递（路径 2）：
         terminal(background=true, notify_on_complete=true,
                  command="python3 <skill>/scripts/watch.py <CONV> <timeout> --tmux-session <SESSION>")
      若在本脚本里用 subprocess.Popen 起探针，Hermes 不托管那个进程，
      进程退出时不会产生通知 ⇒ Hermes 永远叫不醒（实测踩过）。
+     常驻屏监控的中途 print 不会投递，必须配 notify=["EVENT_A", ...] 的 per-match 通道；
+     完整准据见 SKILL.md「检测到 ≠ 用户收到」。
 """
 import os
 import sys
