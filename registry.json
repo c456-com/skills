@@ -229,6 +229,32 @@
       "version": "0.4.7"
     },
     {
+      "name": "cursor-hook-monitor",
+      "description": "Cursor Agent hook 监控 / cursor-agent hook monitor：当用户要精准判断 tmux 中 cursor-agent 哪一轮对话结束、发现屏幕轮询漏报或误报空闲、给已在跑的 cursor-agent 补装 hook 接管、并行多个 cursor-agent 按会话归因，或复盘对话时间线时触发；用于安装 hook 事件流（stop/afterAgentResponse）、用时间窗丢弃假空闲、输出 STAGE-DONE/QUESTION-PANEL 信号，作为 tmux-cursor-agent 屏幕轮询的补充。",
+      "tags": [
+        "cursor",
+        "cursor-agent",
+        "hook",
+        "monitoring",
+        "tmux",
+        "orchestration"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "tmux-opencode-agent",
+      "description": "OpenCode over tmux / OpenCode TUI 驱动与监控：当用户要在 tmux 中启动、驱动或监控 OpenCode，判断某一轮是否结束、处理 Permission required 权限请示面板、并行多个 OpenCode 按 session 归因，或换版本后复验事件能力时触发；用于旁听 SSE 事件流判终态（succeeded/interrupted/failed）、按 sessionID 分流、识别权限面板选中态与卡死。",
+      "tags": [
+        "opencode",
+        "tmux",
+        "monitoring",
+        "orchestration",
+        "sse",
+        "permissions"
+      ],
+      "version": "1.0.0"
+    },
+    {
       "name": "tmux-pane-workspace",
       "description": "Tmux pane workspace / zoom / layout / meeting：当用户要在 tmux 中聚焦或放大 pane、读取/输入/发送消息、管理多 pane 工作区、创建圆桌会议/多窗口讨论、维护会议日志、从 Agency Agents 等职业角色库选择专家 pane，或为 tmux-cursor-agent、tmux-trae-agent、tmux-codex-agent 等具体 Agent 技能提供 workspace 边界时触发；用于通用 pane 可见性、布局与会议协作。",
       "tags": [

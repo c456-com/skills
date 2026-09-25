@@ -30,6 +30,8 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | [book-extract](book-extract/SKILL.md) | 书籍素材提取 — PDF、扫描件、拍照书页、OCR → `raw/books/`（MinerU 或视觉） |
 | [llm-wiki-book](llm-wiki-book/SKILL.md) | 书籍知识编译 — `raw/books/` → 连续内容窗口理解、案例/故事/概念提取、交叉链接维护 |
 | [tmux-cursor-agent](tmux-cursor-agent/SKILL.md) | Cursor Agent over tmux — 状态检测、四步消息协议、取消执行、监控 daemon |
+| [cursor-hook-monitor](cursor-hook-monitor/SKILL.md) | Cursor Agent hook 监控 — 用 hook 事件流精准判断每轮对话结束、接管已在跑的会话、多会话归因与时间线复盘（补充 tmux-cursor-agent 屏幕轮询） |
+| [tmux-opencode-agent](tmux-opencode-agent/SKILL.md) | OpenCode over tmux — 可见 TUI 驱动、SSE 事件流判轮次结束、权限请示面板处置、多会话归因 |
 | [tmux-pane-workspace](tmux-pane-workspace/SKILL.md) | Tmux pane workspace — pane 聚焦缩放、多 pane 布局、圆桌会议、职业角色来源与会议日志 |
 | [doc-driven-multi-agent](doc-driven-multi-agent/SKILL.md) | 文档驱动多代理协作 — 角色 SOP、handoff 三要素、G0-G4 门禁、越界拒绝 |
 | [camofox-scraping](camofox-scraping/SKILL.md) | CamoFox scraping — 抓取 Cloudflare / 反爬页面，失败时回退 web_search |
