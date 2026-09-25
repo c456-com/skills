@@ -257,7 +257,7 @@
     },
     {
       "name": "camofox-scraping",
-      "description": "CamoFox scraping / Cloudflare bypass：当用户要抓取受 Cloudflare/反爬保护的网页、做浏览器自动化采集、登录态页面研究或 CamoFox 失败回退 web_search 时触发；用于 npx 运行的反检测浏览器抓取。",
+      "description": "用户或任意 AI Agent 需要真实浏览器打开、访问、阅读、交互、调试或采集任何网页时使用；支持 CamoFox / Camoufox、browser automation、headless browser 与 headed browser、web scraping，覆盖公开或动态网页、有头人工登录、无头浏览、批量抓取，以及 Cloudflare、反爬和登录墙场景。",
       "tags": [
         "scraping",
         "camofox",
@@ -265,7 +265,7 @@
         "research",
         "cloudflare"
       ],
-      "version": "1.2.1"
+      "version": "2.1.0"
     },
     {
       "name": "product-niche-discovery",

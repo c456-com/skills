@@ -1,82 +1,87 @@
 ---
 name: camofox-scraping
-description: "CamoFox scraping / Cloudflare bypass：当用户要抓取受 Cloudflare/反爬保护的网页、做浏览器自动化采集、登录态页面研究或 CamoFox 失败回退 web_search 时触发；用于 npx 运行的反检测浏览器抓取。"
-version: 1.2.1
+description: "用户或任意 AI Agent 需要真实浏览器打开、访问、阅读、交互、调试或采集任何网页时使用；支持 CamoFox / Camoufox、browser automation、headless browser 与 headed browser、web scraping，覆盖公开或动态网页、有头人工登录、无头浏览、批量抓取，以及 Cloudflare、反爬和登录墙场景。"
+version: 2.1.0
 author: Hermes Agent
 license: MIT
 platforms: [macos, linux, windows]
 metadata:
   hermes:
     tags: [scraping, camofox, browser-automation, research, cloudflare]
+references:
+  - references/fork-v1.17-contract.md
+  - references/rest-workflow.md
+  - references/persistence-and-login.md
 ---
 
-# CamoFox 网页抓取
+# CamoFox v1.17.0 抓取与可见登录
 
-使用 CamoFox 反检测浏览器抓取网站 —— 在它能用的时候。**用不了就别硬上。** 使用回退方案。
+## 核心契约
 
-## 安装启动（无需克隆）
+- **唯一来源：** [xiaohui-zhangxh/camofox-browser](https://github.com/xiaohui-zhangxh/camofox-browser)；SSH 等价地址为 `git@github.com:xiaohui-zhangxh/camofox-browser.git`。
+- **本机默认落点：** `/Users/xiaohui/Codes/camofox-browser-fork`。
+- **其他机器：** 可以选择自己的绝对 clone 目录，但必须在
+  `~/.camofox/camofox-local-root.txt` 记录该目录，并在后续所有命令中使用同一个值。
+- **版本门禁：** fork 当前契约为 CamoFox `1.17.0`；安装后先确认版本，再继续。
+- **禁止绕过：** 不从其他仓库、发布包、全局安装或临时安装器取得 CamoFox，也不修改 fork 业务源码来适配当前任务。仓内唯一允许的 `npx` 用法是 `npx tsc -p .` 严格 TypeScript 编译门禁。
 
-```bash
-# 启动 — 无需 git clone，无需本地仓库
-npx @askjo/camofox-browser
+完整的来源、安装、编译、启动和健康检查契约见
+[ fork v1.17 契约](references/fork-v1.17-contract.md)。安装、编译、启动或健康检查任一步失败，都停止；不拿已有进程或其他服务代替通过。
 
-# 有头模式（可见浏览器窗口，用于登录）
-CAMOFOX_HEADLESS=false npx @askjo/camofox-browser
+## Fail-closed 顺序
 
-# 端口 9377，验证：curl -s http://localhost:9377/
+每次安装或更新 fork 都从全新 clone 开始；已有目录必须先由用户决定保留或移走，不能直接复用：
+
+1. 记录并验证唯一来源和 clone 根目录。
+2. 进入仓根执行 `npm ci`。
+3. 执行严格 `npx tsc -p .`，确认退出码为 `0`。
+4. 执行 `npm run build`，确认退出码为 `0` 且 `dist/plugin.js` 存在。
+5. 仍在仓根设置 v1.17 配置并用 `npm start` 启动。
+6. 只以 `GET /health` 的 HTTP `200`、`ok: true` 和
+   `browserConnected: true` 三项同时成立作为就绪证据。
+
+健康检查不通过时，不创建 tab、不登录、不抓取，也不把 `ok: true`
+单独当成浏览器已经连接。
+
+## 可见登录与人化交互
+
+需要账号、密码、二维码、短信、2FA 或验证码时，使用
+`CAMOFOX_INTERACTIVE=desktop` 打开的真实窗口，由用户完成敏感输入。
+Agent 不索取、不输入、不记录这些凭据；只在登录完成后继续用 REST 读取页面。
+
+页面交互只走 fork 的 REST 工作流：创建 tab、导航、snapshot、用当前
+元素 ref 点击或输入，必要时重新 snapshot。不使用页面脚本直接改 DOM、合成事件、直接调用 Playwright 客户端或伪造鼠标键盘来替代 REST。`CAMOFOX_HUMANIZE` 只控制
+fork 的 Camoufox 输入时长，不能用来绕过站点的认证或安全检查。
+
+完整请求模板和失败处理见 [REST 工作流](references/rest-workflow.md)；
+持久化路径、会话清理和登录边界见 [持久化与登录](references/persistence-and-login.md)。
+
+## 持久化与清理
+
+默认 persistence 插件把每个用户的状态写入：
+
+```text
+~/.camofox/profiles/<SHA256(userId) 的前 32 个十六进制字符>/storage-state.json
 ```
 
-就这样。不需要 `~/Codes/camofox-browser`，不需要本地修改。
+保持同一个 `userId` 才能复用同一份状态。正常结束任务时先关闭 tab，再按需要
+关闭 user session，让插件完成检查点。登出或要清除登录态时，使用
+`DELETE /sessions/:userId/storage_state`；该操作会关闭 live session，并删除
+对应的状态文件和元数据。
 
-## 理念：能用就用，不能用就跳过
+不要手工读取、复制或输出 storage state，也不要把敏感页面内容贴进日志。
 
-Camofox 是工具，不是项目。如果它访问不了某个站点，不要修补它 —— 改用 web_search。
+## 失败时回退
 
-| 情况 | 应对 |
-|------|------|
-| Camofox 能用 | 直接使用 |
-| Camofox 被屏蔽（Reddit） | 用 web_search 获取摘要；报告中注明缺口 |
-| Camofox 崩溃 | 用相同 userId 重启 —— 持久化会恢复登录状态 |
-| Viewport/isMobile bug | 已知上游 Camoufox 问题。不要修补 Playwright。等待或使用回退方案。 |
+CamoFox 被目标站点拦截、登录过期、交互不可靠、二进制或网络失败时：
 
-## API 工作流
+1. 记录目标 URL、时间、HTTP/REST 错误和缺失内容。
+2. 停止继续硬点、硬输或重复提交。
+3. 调用 Hermes `web_search` 查找可公开核验的替代信息，保留来源 URL。
+4. 搜索也失败时如实报告，不用猜测补齐内容。
 
-### 创建标签页
+## 历史资料
 
-```bash
-curl -s -X POST http://localhost:9377/tabs \
-  -H "Content-Type: application/json" \
-  -d '{"userId":"researcher","sessionKey":"<session-key>"}'
-```
-
-### 导航 + 提取 — 标准步骤
-
-完整参考见 `references/camofox-web-scraping.md`。关键参数：`expression`（不是 `script`）。
-
-## 持久化（跳过登录烦恼）
-
-```bash
-# 重启前优雅关闭会话
-curl -s -X DELETE "http://localhost:9377/sessions/<userId>"
-
-# 然后 pkill 是安全的
-pkill -f "node server.js"
-```
-
-## 回退方案
-
-当 Camofox 失败时（Reddit、二进制文件损坏等）：
-
-```python
-from hermes_tools import web_search
-results = web_search(query="site:reddit.com keyword")
-```
-
-在调研报告中记录缺口，让用户知情。
-
-## 注意事项
-
-- **只用 npx** —— 永远不要克隆仓库。`npx @askjo/camofox-browser` 是唯一支持的方式。
-- **不要修补 Playwright** —— 如果 Camoufox 二进制文件不支持某功能，接受这个限制。
-- **Reddit 会屏蔽 Camofox** —— 使用 web_search 回退方案。
-- **持久化需要在 pkill 之前执行 DELETE /sessions/:userId** —— 没有这一步，登录状态会丢失。
+[数据源登录状态](references/source-login-status.md) 与
+[调研快照](references/kb-research-2026-07-03.md) 只保存历史观察，不是执行
+契约，也不替代上面的 v1.17.0 门禁。
