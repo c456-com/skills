@@ -14,6 +14,7 @@
     探针晚于面板启动（含循环重挂）时 SSE 永远看不到这个面板；
     此时屏幕连续两次可见面板 ⇒ 报 QUESTION-PANEL source=screen 并退出。
     屏幕检查按时钟调度（读线程收 SSE、主循环定时醒），SSE 完全静默时照样工作。
+  · SSE 提前断开：打印 SSE-LOST，按 1/2/4/8s 退避重连（每次重取 service 地址），期间屏幕补位不停。
   · 必须由 Hermes 托管（terminal(background=true, notify_on_complete=true)），
     用 subprocess.Popen 起的进程 Hermes 不认，退出时不通知。
   · 正常退出码可能是 curl 的 28（--max-time 到点），不是故障。
@@ -88,12 +89,19 @@ def panel_on_screen():
     return "Permission required" in text and "Allow once" in text and "Reject" in text
 
 
+stop_requested = False
+
+
 def on_signal(signum, frame):
-    # curl 是子进程，用管道关闭自然结束；不吞信号，让上层能感知
-    raise SystemExit(0)
+    # 只置标志、由主循环在安全点退出：在 handler 里直接 raise，连续收到两次信号时
+    # （如 GNU timeout 先发子进程再发进程组）会打断 queue.get 内部的锁恢复，
+    # 崩成 RuntimeError: release unlocked lock。退出时 finally 仍会回收 curl。
+    global stop_requested
+    stop_requested = True
 
 
 signal.signal(signal.SIGTERM, on_signal)
+signal.signal(signal.SIGINT, on_signal)
 
 url = service_url()
 pw = password()
@@ -102,28 +110,41 @@ if not url.startswith("http"):
 
 print(f"PROBE-START session={SESSION_ID} url={url} timeout={TIMEOUT}s tmux={TMUX or '-'}", flush=True)
 
-# 用管道跑 curl，边读边解析；一行一个 SSE data
-proc = subprocess.Popen(
-    ["curl", "-s", "-N", "-u", f"opencode:{pw}", "--max-time", str(TIMEOUT),
-     f"{url}/api/event"],
-    stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-    text=True, bufsize=1,
-)
 
-# 读 SSE 放到独立线程：直接 for line in proc.stdout 会在 SSE 静默时阻塞，
-# 时钟类检查（屏幕补位、deadline）就一次都跑不到。None 表示 curl 已结束。
-lines = queue.Queue()
+def connect(url, pw, max_time):
+    """起一条 curl SSE 连接及其读线程，返回 (proc, queue)；队列里的 None 表示这条连接已结束。
+
+    读 SSE 放在独立线程：直接 for line in proc.stdout 会在 SSE 静默时阻塞，
+    时钟类检查（屏幕补位、deadline）就一次都跑不到。每条连接独占一个队列，旧连接的 None 不会串到新连接。
+    """
+    p = subprocess.Popen(
+        ["curl", "-s", "-N", "-u", f"opencode:{pw}", "--max-time", str(max_time),
+         f"{url}/api/event"],
+        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+        text=True, bufsize=1,
+    )
+    q = queue.Queue()
+
+    def reader():
+        try:
+            for raw in p.stdout:
+                q.put(raw)
+        finally:
+            q.put(None)
+
+    threading.Thread(target=reader, daemon=True).start()
+    return p, q
 
 
-def reader():
+def reap(p):
     try:
-        for raw in proc.stdout:
-            lines.put(raw)
-    finally:
-        lines.put(None)
+        return p.wait(timeout=3)
+    except Exception:
+        p.kill()
+        return p.wait()
 
 
-threading.Thread(target=reader, daemon=True).start()
+proc, lines = connect(url, pw, TIMEOUT)
 
 started_at = None          # 本 session 的 execution.started 时间
 seen_terminal = set()      # 已报告过的终态（id 或 key）
@@ -132,9 +153,15 @@ deadline = time.time() + TIMEOUT
 last_any_event = time.time()
 last_screen_check = 0.0
 screen_panel_hits = 0
+conn_lines = 0             # 当前连接已收到的非空行数；>0 说明连通过，断开后退避从头算
+reconnect_at = None        # SSE 断开后的下次重连时刻；None 表示连接在线
+reconnect_delay = 1
+reconnect_attempt = 0
 
 try:
     while True:
+        if stop_requested:
+            sys.exit(0)
         now = time.time()
         if now > deadline:
             print(f"WATCH-TIMEOUT conv={SESSION_ID}", flush=True)
@@ -159,13 +186,45 @@ try:
             else:
                 screen_panel_hits = 0
 
+        # SSE 断开期间：到点就重连；屏幕检查不受影响，照常按时钟进行
+        if reconnect_at is not None and now >= reconnect_at:
+            reconnect_at = None
+            reconnect_attempt += 1
+            remaining = max(1, int(deadline - now + 0.999))
+            try:
+                new_url = service_url()
+                if not new_url.startswith("http"):
+                    raise RuntimeError(f"service 地址异常：{new_url!r}")
+                proc, lines = connect(new_url, password(), remaining)
+                conn_lines = 0
+                print(f"SSE-RECONNECT attempt={reconnect_attempt} url={new_url}", flush=True)
+            except Exception as exc:
+                reconnect_at = now + reconnect_delay
+                print(f"SSE-LOST 重连失败（{exc}），{reconnect_delay}s 后再试（屏幕补位继续）", flush=True)
+                reconnect_delay = min(reconnect_delay * 2, 8)
+
         try:
             line = lines.get(timeout=LOOP_TICK)
         except queue.Empty:
             continue
         if line is None:
-            break
+            # 这条连接结束了。离 deadline 不足 2s 视为 --max-time 自然到点，照旧收尾；
+            # 否则是 SSE 异常断开：回收 curl、排期重连，主循环继续（屏幕补位不停）
+            rc = reap(proc)
+            if stop_requested:
+                sys.exit(0)   # 进程组被整体终止时 curl 往往先退，别误报成 SSE 断开
+            if deadline - time.time() <= 2:
+                break
+            if conn_lines > 0:
+                reconnect_delay = 1
+            reconnect_at = time.time() + reconnect_delay
+            print(f"SSE-LOST rc={rc} 本连接收到 {conn_lines} 行，{reconnect_delay}s 后重连（屏幕补位继续）", flush=True)
+            reconnect_delay = min(reconnect_delay * 2, 8)
+            lines = queue.Queue()
+            continue
         line = line.strip()
+        if line:
+            conn_lines += 1
         now = time.time()
 
         if not line.startswith("data: "):

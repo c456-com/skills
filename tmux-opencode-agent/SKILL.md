@@ -1,7 +1,7 @@
 ---
 name: tmux-opencode-agent
 description: "OpenCode over tmux / OpenCode TUI 驱动与监控：当用户要在 tmux 中启动、驱动或监控 OpenCode，判断某一轮是否结束、处理 Permission required 权限请示面板、并行多个 OpenCode 按 session 归因，或换版本后复验事件能力时触发；用于旁听 SSE 事件流判终态（succeeded/interrupted/failed）、按 sessionID 分流、识别权限面板选中态与卡死。"
-version: 1.1.1
+version: 1.1.2
 author: Hermes Agent (hermes-cto)
 license: MIT
 platforms: [macos, linux]
@@ -128,21 +128,33 @@ SSE **不补发连接前的事件**，REST 又查不到待批请求（见 §4）
 实测 SSE 完全静默 / 每秒约 20 行 / 仅心跳三种情况下，启动到报出为 5.5–6.2 秒。
 SSE 已收到 `permission.asked` 时屏幕不参与，避免与之抢跑。
 
+**SSE 断开：重连，屏幕补位不停**
+
+SSE 连接提前结束（服务重启、端口不通、连接被断）时，探针不退出：打印 `SSE-LOST`，按 1 / 2 / 4 / 8 秒退避重连
+（封顶 8 秒；某条连接收到过数据则下次从 1 秒重新算），每次重连都重新执行 `opencode service status` 取地址
+（服务重启后端口会变）。断开期间屏幕检查照常按时钟进行。实测 SSE 端点不通 + 屏上有面板时约 5.5–6 秒报出
+`QUESTION-PANEL … source=screen`；断线后重连成功能继续接住终态事件报 `STAGE-DONE`。
+⚠️ **断开期间发生的事件无法补回**（SSE 不补发）：若本轮恰在断线时结束，探针只能等到 timeout；
+屏幕补位只覆盖权限面板，不覆盖「本轮已结束」。
+
 **输出与判读**（逐行打印，以文字判读）
 
 | 输出 | 何时 | 含义 / 处置 |
 |------|------|------------|
-| `PROBE-START session=… url=… timeout=… tmux=…` | 启动 | 已连上服务；`tmux=-` 表示未启用屏幕补位 |
+| `PROBE-START session=… url=… timeout=… tmux=…` | 启动 | 已取到服务地址，开始连 SSE；`tmux=-` 表示未启用屏幕补位 |
+| `SSE-LOST rc=… 本连接收到 N 行，Ks 后重连…` | SSE 连接提前结束，或重连失败 | 探针继续工作；`N=0` 且反复出现 ⇒ SSE 端点不通，核 `opencode service status` |
+| `SSE-RECONNECT attempt=… url=…` | 发起重连 | 仅记录；断开期间的事件已丢失（见上） |
 | `TURN-START ts=…` | 本 session 开始一轮 | 仅记录 |
 | `PERMISSION-ASKED id=… action=… resources=…` | 弹权限面板 | **探针不退出**；需要时按 §4 裁决 |
 | `PERMISSION-REPLIED reply=…` | 面板已答 | 仅记录 |
 | `STAGE-DONE session=… event=… start_ts=… end_ts=… duration=…` | 出现任一终态事件 | 本轮结束，**退出码 0**；`event=` 区分 succeeded / interrupted / failed，业务成败另行核验（见 §3） |
-| `CURL-END rc=…` | 到 timeout 仍未见终态 | 正常到点，不是故障（`28` = curl 到点；探针自身先到点时为 `None`），后面紧跟下列一行 |
+| `CURL-END rc=…` | 到 timeout 仍未见终态 | 正常到点，不是故障（`28` = curl 到点；探针自身先到点时为 `None`；SSE 断开期间到点时为最后一次连接的 rc，如 `7`），后面紧跟下列一行 |
 | `QUESTION-PANEL session=… 待批=[…]` | 到点时仍有未答的权限请求（SSE 看到的） | 卡在权限面板，去裁决 |
 | `QUESTION-PANEL session=… source=screen tmux=…` | 屏幕连续可见面板但 SSE 无记录（需 `--tmux-session`） | 面板早于探针弹出、已卡住，**立即退出**；去裁决 |
 | `WATCH-TIMEOUT conv=…` | 到点且无待批 | 核当前状态，必要时重挂；偶尔会连打两行，含义相同 |
 
-以上信号退出码均为 0；拿不到服务地址时打印 `拿不到 service 地址…` 并以退出码 1 退出。
+以上信号退出码均为 0；启动时拿不到服务地址则打印 `拿不到 service 地址…` 并以退出码 1 退出（运行中断开走上面的重连）。
+收到 SIGTERM / SIGINT 时 0.5 秒内静默退出（退出码 0），并回收 curl，不留子进程。
 ⚠️ SSE 看到的权限卡死要到 timeout 才会以 `QUESTION-PANEL` 退出；想早点发现，用较短 timeout 循环重挂
 （**重挂时务必带 `--tmux-session`**，否则从第二次起就看不到已弹出的面板），或盯输出里的 `PERMISSION-ASKED`。
 
