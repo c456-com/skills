@@ -27,8 +27,10 @@ SESSION = CONV_ID
 if "--tmux-session" in args:
     SESSION = args[args.index("--tmux-session") + 1]
 
-BASE = os.path.dirname(os.path.abspath(__file__))
-LOG_DIR = os.environ.get("CURSOR_MONITOR_LOG_DIR") or os.path.join(BASE, "logs")
+# 默认值须与 start.py / adopt.py / hook_event.py 一致，且不落技能目录。
+LOG_DIR = os.environ.get("CURSOR_MONITOR_LOG_DIR") or os.path.join(
+    os.environ.get("TMPDIR", "/tmp").rstrip("/"), "cursor-hook-monitor", "logs"
+)
 EVENTS = os.path.join(LOG_DIR, f"{CONV_ID}.jsonc")
 
 # 启动时先记住已有 stop：避免把启动前的历史轮次当成本轮的新结束

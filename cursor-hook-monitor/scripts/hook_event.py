@@ -29,8 +29,10 @@ import time
 import fcntl
 
 TAG = os.environ.get("CURSOR_MONITOR_TAG") or "_UNATTRIBUTED"
+# 默认值须与 start.py / adopt.py / watch.py 一致，且不落技能目录。
+# 经 start.py / adopt.py 启动时会显式注入 CURSOR_MONITOR_LOG_DIR，此默认只在手工装 hook 时生效。
 LOG_DIR = os.environ.get("CURSOR_MONITOR_LOG_DIR") or os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "logs"
+    os.environ.get("TMPDIR", "/tmp").rstrip("/"), "cursor-hook-monitor", "logs"
 )
 os.makedirs(LOG_DIR, exist_ok=True)
 EVENTS = os.path.join(LOG_DIR, f"{TAG}.jsonc")

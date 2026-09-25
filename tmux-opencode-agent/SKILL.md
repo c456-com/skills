@@ -1,7 +1,7 @@
 ---
 name: tmux-opencode-agent
 description: "OpenCode over tmux / OpenCode TUI 驱动与监控：当用户要在 tmux 中启动、驱动或监控 OpenCode，判断某一轮是否结束、处理 Permission required 权限请示面板、并行多个 OpenCode 按 session 归因，或换版本后复验事件能力时触发；用于旁听 SSE 事件流判终态（succeeded/interrupted/failed）、按 sessionID 分流、识别权限面板选中态与卡死。"
-version: 1.0.0
+version: 1.0.1
 author: Hermes Agent (hermes-cto)
 license: MIT
 platforms: [macos, linux]
@@ -36,7 +36,7 @@ sleep 15   # 等到出现 "Ask anything…" 输入框
 
 ⛔ **`--auto` 会自动批准权限** ⇒ 权限面板永不出现。**要观察/管理交互就别加 `--auto`。**
 
-**pane title 空闲态恒为 `OpenCode`，但忙碌时会变成 `OC | <任务名>`**（实测 `OC | Running repeated OC- output…`）
+**pane title 空闲态为 `OpenCode`，忙碌时变成 `OC | <任务名>`**（实测 `OC | Running repeated OC- output…`）
 ⇒ **可作辅助佐证，不能当权威判活/判结束信号**（Cursor 的 `✅ Ready` / `⏳ Working` 二值信号在这里不存在）。
 判活用屏底忙碌行 `esc interrupt`（在跑）/ 无（结束）+ SSE 终态事件；详见 §3.5。
 
@@ -82,6 +82,53 @@ curl -s -N -u "opencode:$PW" --max-time <秒> "$URL/api/event" >> <logfile>
 **分流**：一条流里混着所有 session 的事件（实测过 4 个并存），按 `data.sessionID` 精确切分，零交叉。
 多工作树再按 `location.directory` 分第二层。
 
+## 3.1 用 `scripts/watch.py` 判结束（可直接执行）
+
+上面的判据已封装成一次性探针：连上 SSE，等到本 session 的终态事件就退出。
+
+**前置条件**
+
+- OpenCode background service 在跑：`opencode service status` 输出 `http://127.0.0.1:<port>`
+  （没起就 `opencode service start`）。探针自己调这条命令拿地址。
+- 凭据：探针自动读 `~/.config/opencode/service.json` 的 `password`，无需手传。
+- 系统有 `curl`；拿到目标 session ID（在**工作树目录下**执行，只列当前项目的会话，最新在前）：
+
+```bash
+cd <worktree>
+SID=$(opencode session list -n 1 --format json | python3 -c "import json,sys;print(json.load(sys.stdin)[0]['id'])")
+echo "$SID"   # ses_...
+```
+
+  新开的 TUI 若 list 里还没有它的会话，先发一句秒回的冒烟消息，再取 ID。
+
+**运行**（先挂探针，再发要监控的那轮消息；探针只收连上之后的事件）：
+
+```bash
+python3 <skill>/scripts/watch.py "$SID" 900
+```
+
+- 第二个参数 `timeout_s`（缺省 900）**必须写成第二个位置参数**：
+  只写 `watch.py <SID> --tmux-session x` 会把 `--tmux-session` 当 timeout 解析而报 `ValueError`。
+- `--tmux-session <name>` 可放在 timeout 之后，但当前版本**不参与任何判定**（权限状态只看 SSE）。
+- Hermes 里照 `cursor-hook-monitor` 的方式托管：`terminal(background=true, notify_on_complete=true)`，
+  不要用 `subprocess.Popen` 起。
+
+**输出与判读**（逐行打印，以文字判读）
+
+| 输出 | 何时 | 含义 / 处置 |
+|------|------|------------|
+| `PROBE-START session=… url=… timeout=…` | 启动 | 已连上服务 |
+| `TURN-START ts=…` | 本 session 开始一轮 | 仅记录 |
+| `PERMISSION-ASKED id=… action=… resources=…` | 弹权限面板 | **探针不退出**；需要时按 §4 裁决 |
+| `PERMISSION-REPLIED reply=…` | 面板已答 | 仅记录 |
+| `STAGE-DONE session=… event=… start_ts=… end_ts=… duration=…` | 出现任一终态事件 | 本轮结束，**退出码 0**；`event=` 区分 succeeded / interrupted / failed，业务成败另行核验（见 §3） |
+| `CURL-END rc=…` | 到 timeout 仍未见终态 | 正常到点，不是故障（`28` = curl 到点；探针自身先到点时为 `None`），后面紧跟下列一行 |
+| `QUESTION-PANEL session=… 待批=[…]` | 到点时仍有未答的权限请求 | 卡在权限面板，去裁决 |
+| `WATCH-TIMEOUT conv=…` | 到点且无待批 | 核当前状态，必要时重挂；偶尔会连打两行，含义相同 |
+
+以上信号退出码均为 0；拿不到服务地址时打印 `拿不到 service 地址…` 并以退出码 1 退出。
+⚠️ 权限卡死要到 timeout 才会以 `QUESTION-PANEL` 退出；想早点发现，用较短 timeout 循环重挂，或盯输出里的 `PERMISSION-ASKED`。
+
 ## 3.5 五个交互问题的实测答案（与 Cursor 差异最大的一节）
 
 「消息发出没 / 进队列没 / 撤回执行 / 纠正队列内容 / 撤销队列条目」——
@@ -91,7 +138,7 @@ curl -s -N -u "opencode:$PW" --max-time <秒> "$URL/api/event" >> <logfile>
 |------|------|------|
 | **消息发送成功没** | ① Enter 前 `capture-pane` 能在**输入框**找到文字 ② Enter 后屏底出现 `esc interrupt` | 两者都要；只看①可能只是没提交 |
 | **消息进队列没** | **屏面上无队列 UI**——只能看 `Press ctrl+b to move running work to the background` 提示出现 | ⛔ **无法数条目**，别指望看清有几条 |
-| **已发送，想换向/停止** | 发一条 `STOP-NOW: kill …` 式指令；或 `ctrl+b` 把当前工作转后台 | ⚠️ **无 steer**，消息只能等当前轮结束 |
+| **已发送，想换向/停止** | 屏底 `esc interrupt` 仍在 ⇒ 还在跑 | 立即停：`esc` 连按两次打断，或 `ctrl+b` 转后台；⚠️ **无 steer**，发 `STOP-NOW: …` 式消息只会等当前轮结束后才生效 |
 | **队列里那条要改** | **做不到**——无队列列表、无编辑态 | 发新消息显式作废前一条 |
 | **撤销队列条目** | **做不到**——`esc` 是打断当前执行，不是撤消息 | 同上 |
 
@@ -104,9 +151,9 @@ curl -s -N -u "opencode:$PW" --max-time <秒> "$URL/api/event" >> <logfile>
 3. **`esc` 语义与 Cursor 完全不同**：Cursor 的 `esc` 撤队列条目；
    OpenCode 的 `esc` 第一次把提示改成 `esc again to interrupt`，第二次才打断当前执行。
 
-### 忙碌时 title 会变（修正「恒为 OpenCode」）
+### 忙碌时 title 会变
 
-空闲态恒为 `OpenCode`，但**忙碌时会变成 `OC | <任务名>`**（实测 `OC | Running repeated OC- output…`）。
+空闲态为 `OpenCode`，**忙碌时变成 `OC | <任务名>`**（实测 `OC | Running repeated OC- output…`）。
 ⇒ 短窗口采样时它**可用作辅助佐证**；但结束态会回到 `OpenCode`，
 所以**不能只靠 title 判结束**，仍以 SSE 终态事件为准。
 
@@ -180,7 +227,7 @@ curl -s -N -u "opencode:$PW" --max-time <秒> "$URL/api/event" >> <logfile>
 | 维度 | Cursor | OpenCode |
 |------|--------|----------|
 | 结束信号 | hook（须先于启动配好，忘 chmod 静默失效） | **SSE（零配置）** |
-| pane title | `✅ Ready` / `⏳ Working` 可判活 | **恒为 `OpenCode`，不可用** |
+| pane title | `✅ Ready` / `⏳ Working` 可判活 | 空闲 `OpenCode` / 忙碌 `OC \| <任务名>`，**仅作辅助佐证，不能判结束** |
 | 忙碌指示 | `ctrl+c to stop` | `esc interrupt` |
 | 请示门 | `Question N of M` 多问面板，`←/→` 翻页 | `Permission required` 单选三项，`←/→` 循环 |
 | 拒答后果 | 容易停住等你 | **自己换路继续** |
@@ -193,7 +240,7 @@ curl -s -N -u "opencode:$PW" --max-time <秒> "$URL/api/event" >> <logfile>
 - 长任务用固定列表（`for i in 1 2 3 …`），别用 `$(seq …)`（折行污染，见 `tmux-cursor-agent` §2.2）。
 - 收尾：kill tmux 会话 → **核 SSE curl 进程真的退了**（长连接容易漏杀，
   `terminal` 报退出但进程可能还在，用 `ps` 按 pid 核）。
-- SSE 探针正常退出码是 curl 的 `28`（`--max-time` 到点），**不是故障**。
+- 裸 curl 旁听的正常退出码是 `28`（`--max-time` 到点），**不是故障**；`watch.py` 会把它打印成 `CURL-END rc=28`，自身仍以 0 退出。
 
 ## 相关
 

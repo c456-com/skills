@@ -1,7 +1,7 @@
 ---
 name: cursor-hook-monitor
 description: "Cursor Agent hook 监控 / cursor-agent hook monitor：当用户要精准判断 tmux 中 cursor-agent 哪一轮对话结束、发现屏幕轮询漏报或误报空闲、给已在跑的 cursor-agent 补装 hook 接管、并行多个 cursor-agent 按会话归因，或复盘对话时间线时触发；用于安装 hook 事件流（stop/afterAgentResponse）、用时间窗丢弃假空闲、输出 STAGE-DONE/QUESTION-PANEL 信号，作为 tmux-cursor-agent 屏幕轮询的补充。"
-version: 1.0.0
+version: 1.0.1
 author: Hermes Agent (hermes-cto)
 license: MIT
 platforms: [macos, linux]
@@ -45,7 +45,17 @@ CLI 正常交互模式（TUI，非 `--print`）下这些 hook **确实触发**�
 `sessionStart` · `beforeSubmitPrompt` · `afterAgentResponse` · `stop` · `afterFileEdit`
 
 旧报告（论坛 2026.01 / 2026.08）称 CLI 只发 shell 事件、不发 `stop`——**已过时**。
-若换版本后 hook 不触发，先用 `scripts/probe.py` 复验，不要直接下结论。
+若换版本后 hook 不触发，先用 `scripts/probe.py` 复验，不要直接下结论：
+
+```bash
+python3 <skill>/scripts/probe.py [scratch_dir]   # scratch_dir 默认 ~/.cache/cursor-hook-probe
+```
+
+- 前置：`cursor-agent` 已登录、`tmux` 可用；会真实发两轮短任务（消耗少量模型额度），约 1 分钟。
+- 副作用：**清空并重建** scratch_dir；占用并在结束时 kill 名为 `cursor-hook-probe` 的 tmux 会话。
+  不碰业务仓，日志写在 `<scratch_dir>/logs/probe.jsonc`。
+- 输出：cursor-agent 版本、`✓` 实测触发 / `✗` 未触发的 hook 列表、事件流路径。
+  `stop` 出现在 `✓` 里才能依赖本技能；否则退回纯屏幕轮询。
 
 ## 接管已在跑的 agent（补装 hook）
 
@@ -76,9 +86,22 @@ python3 <skill>/scripts/adopt.py <worktree_path> <tmux_session> [--conv-id <id>]
 
 ## 日志落位
 
-默认落 `$TMPDIR/cursor-hook-monitor/logs`（Hermes scratch），**不落技能目录**——
-落技能目录会污染技能、随技能分发跑到别的机器上，且技能目录常为只读。
-可用 `CURSOR_MONITOR_LOG_DIR` 覆盖。start.py / adopt.py / watch.py 三者需用同一路径。
+默认落 `$TMPDIR/cursor-hook-monitor/logs`（未设 `TMPDIR` 时为 `/tmp/cursor-hook-monitor/logs`），
+**不落技能目录**——落技能目录会污染技能、随技能分发跑到别的机器上，且技能目录常为只读。
+可用 `CURSOR_MONITOR_LOG_DIR` 覆盖。
+
+`start.py` / `adopt.py` / `hook_event.py` / `watch.py` 四者默认值完全相同，但各自在不同进程里解析：
+
+| 脚本 | 谁来跑 | 路径怎么定 |
+|------|--------|-----------|
+| `start.py` / `adopt.py` | 你（编排方） | 按**你的**环境解析，并把结果写死进 `CURSOR_MONITOR_LOG_DIR=` 传给 cursor-agent |
+| `hook_event.py` | Cursor 进程 | 经上面两者启动时用注入的绝对路径，与 Cursor 自身 `TMPDIR` 无关；默认值只在手工装 hook 时生效 |
+| `watch.py` | 你（编排方） | 按**你的**环境解析 |
+
+⇒ **同一个 shell / 同一个 `TMPDIR` 里跑 start/adopt 和 watch，不设任何变量就能对上。**
+换了 shell 或 `TMPDIR` 不同（如 Hermes 各终端 scratch 不同）时，以启动器输出的 `EVENTS=` 为准：
+`CURSOR_MONITOR_LOG_DIR=$(dirname <EVENTS路径>)` 再跑 watch。
+手工装 hook（不经 start/adopt）时，两边都显式设 `CURSOR_MONITOR_LOG_DIR`，别赌两个进程的 `TMPDIR` 相同。
 
 ## 用法（三步）
 
@@ -106,6 +129,19 @@ terminal(command="python3 <skill>/scripts/watch.py <CONV> <timeout_s> --tmux-ses
 
 **绝不能用 `subprocess.Popen` 起探针**——Hermes 不托管那个进程，
 它退出时不产生通知，Hermes 永远叫不醒（实测踩过）。
+
+非 Hermes 环境（普通 shell）的等价命令，放后台或另开一个窗口跑：
+
+```bash
+python3 <skill>/scripts/watch.py <CONV> [timeout_s] [--tmux-session <SESSION>]
+# 例：python3 <skill>/scripts/watch.py 3f9c…e21 1800 --tmux-session task-a
+```
+
+- `<CONV>`：start.py / adopt.py 输出的 `CONV=`；`timeout_s` 缺省 1800。
+- `--tmux-session`：不传则把 `<CONV>` 当 tmux 会话名，请示门面板会抓不到——**要传**。
+- 前置：事件流所在目录与启动器一致（见「日志落位」）；**先挂探针再发要监控的那轮任务**，
+  探针启动时已有的 stop 会被当作历史轮次忽略。
+- 只读不写，一次性：首行 `WATCH-START`，随后输出下表信号之一即退出（退出码恒为 0，以输出文字判读）。
 
 用 `notify_on_complete` 而非 `watch_patterns`：后者有 8 次投递上限
 （`WATCH_LIFETIME_MAX_HITS`）+ 15s 冷却 3 次熔断 + 全局 15/10s 限流，
@@ -183,7 +219,14 @@ hook 在此场景正确地不触发，只有屏幕能看见。捕获到后面板
 11:58:19  stop               ← 轮起点 11:57:49
 ```
 
-用 `scripts/timeline.py <log_dir> <conversation_id>` 渲染成可读时间线。
+渲染成可读时间线（只读）：
+
+```bash
+python3 <skill>/scripts/timeline.py <log_dir> <conversation_id>
+python3 <skill>/scripts/timeline.py <EVENTS路径>              # 或直接传启动器输出的 EVENTS=
+```
+
+输出每轮的 generation_id 前缀、起止时间、时长（未见 stop 显示「进行中」）和事件序列。
 
 ## 相关
 
