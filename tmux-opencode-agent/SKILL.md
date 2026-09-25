@@ -1,7 +1,7 @@
 ---
 name: tmux-opencode-agent
 description: "OpenCode over tmux / OpenCode TUI 驱动与监控：当用户要在 tmux 中启动、驱动或监控 OpenCode，判断某一轮是否结束、处理 Permission required 权限请示面板、并行多个 OpenCode 按 session 归因，或换版本后复验事件能力时触发；用于旁听 SSE 事件流判终态（succeeded/interrupted/failed）、按 sessionID 分流、识别权限面板选中态与卡死。"
-version: 1.1.0
+version: 1.1.1
 author: Hermes Agent (hermes-cto)
 license: MIT
 platforms: [macos, linux]
@@ -122,9 +122,11 @@ SSE **不补发连接前的事件**，REST 又查不到待批请求（见 §4）
 ⇒ 探针晚于面板启动（包括下面建议的「短 timeout 循环重挂」从第二次起）时，纯 SSE 探针只会一直报 `WATCH-TIMEOUT`，
 而 agent 实际卡在面板上。
 
-传了 `--tmux-session` 时，**仅当 SSE 没有待批记录**，探针约每 5 秒读一次可见屏
-（同时出现 `Permission required`、`Allow once`、`Reject` 才算），**连续两次可见**即报
-`QUESTION-PANEL … source=screen` 并退出（实测约 15 秒）。SSE 已收到 `permission.asked` 时屏幕不参与，避免与之抢跑。
+传了 `--tmux-session` 时，**仅当 SSE 没有待批记录**，探针启动即读一次可见屏，之后按时钟每隔 ≥5 秒再读
+（同时出现 `Permission required`、`Allow once`、`Reject` 才算；间隔从上次截屏完成算起），**连续两次可见**即报
+`QUESTION-PANEL … source=screen` 并退出。屏幕检查由时钟驱动、与 SSE 有无数据无关：
+实测 SSE 完全静默 / 每秒约 20 行 / 仅心跳三种情况下，启动到报出为 5.5–6.2 秒。
+SSE 已收到 `permission.asked` 时屏幕不参与，避免与之抢跑。
 
 **输出与判读**（逐行打印，以文字判读）
 

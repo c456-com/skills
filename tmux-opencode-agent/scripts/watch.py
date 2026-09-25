@@ -13,6 +13,7 @@
   · 屏幕补位（需 --tmux-session）：SSE 不补发连接前的事件，REST 查不到待批请求，
     探针晚于面板启动（含循环重挂）时 SSE 永远看不到这个面板；
     此时屏幕连续两次可见面板 ⇒ 报 QUESTION-PANEL source=screen 并退出。
+    屏幕检查按时钟调度（读线程收 SSE、主循环定时醒），SSE 完全静默时照样工作。
   · 必须由 Hermes 托管（terminal(background=true, notify_on_complete=true)），
     用 subprocess.Popen 起的进程 Hermes 不认，退出时不通知。
   · 正常退出码可能是 curl 的 28（--max-time 到点），不是故障。
@@ -21,8 +22,10 @@ import sys
 import os
 import json
 import time
+import queue
 import signal
 import argparse
+import threading
 import subprocess
 
 
@@ -44,6 +47,7 @@ SESSION_ID = opts.session_id
 TIMEOUT = opts.timeout
 TMUX = opts.tmux
 SCREEN_CHECK_INTERVAL = 5   # 秒；连续两次可见才算，避开「刚弹出、SSE 事件还在路上」的竞态
+LOOP_TICK = 0.5             # 秒；主循环最长阻塞时间，决定时钟类检查（屏幕、deadline）的精度
 
 TERMINAL_EVENTS = {
     "session.execution.succeeded",
@@ -106,6 +110,21 @@ proc = subprocess.Popen(
     text=True, bufsize=1,
 )
 
+# 读 SSE 放到独立线程：直接 for line in proc.stdout 会在 SSE 静默时阻塞，
+# 时钟类检查（屏幕补位、deadline）就一次都跑不到。None 表示 curl 已结束。
+lines = queue.Queue()
+
+
+def reader():
+    try:
+        for raw in proc.stdout:
+            lines.put(raw)
+    finally:
+        lines.put(None)
+
+
+threading.Thread(target=reader, daemon=True).start()
+
 started_at = None          # 本 session 的 execution.started 时间
 seen_terminal = set()      # 已报告过的终态（id 或 key）
 asked_permissions = {}     # requestID -> 时间戳
@@ -115,8 +134,7 @@ last_screen_check = 0.0
 screen_panel_hits = 0
 
 try:
-    for line in proc.stdout:
-        line = line.strip()
+    while True:
         now = time.time()
         if now > deadline:
             print(f"WATCH-TIMEOUT conv={SESSION_ID}", flush=True)
@@ -126,8 +144,10 @@ try:
         if asked_permissions:
             screen_panel_hits = 0
         elif TMUX and now - last_screen_check >= SCREEN_CHECK_INTERVAL:
-            last_screen_check = now
-            if panel_on_screen():
+            visible = panel_on_screen()
+            # 以截屏完成时刻计间隔：两次真实观察之间才保证 ≥ SCREEN_CHECK_INTERVAL
+            last_screen_check = time.time()
+            if visible:
                 screen_panel_hits += 1
                 if screen_panel_hits >= 2:
                     print(
@@ -138,6 +158,15 @@ try:
                     sys.exit(0)
             else:
                 screen_panel_hits = 0
+
+        try:
+            line = lines.get(timeout=LOOP_TICK)
+        except queue.Empty:
+            continue
+        if line is None:
+            break
+        line = line.strip()
+        now = time.time()
 
         if not line.startswith("data: "):
             continue
