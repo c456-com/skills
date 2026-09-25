@@ -1,7 +1,7 @@
 ---
 name: camofox-scraping
-description: "CamoFox scraping / Cloudflare bypass：当用户要抓取受 Cloudflare 或反爬保护的网页、做浏览器自动化采集、登录态页面研究，或在 CamoFox 失败时使用 web_search 回退时触发；用于唯一 GitHub fork 的 v1.17.0 安装、REST 交互与持久化。"
-version: 2.0.0
+description: "通用浏览器 / browser automation / web browsing / scraping：当用户或任意 AI Agent 需要打开、访问、阅读、交互、调试或采集任何网页时触发，包括公开或动态页面、有头窗口登录与人工操作、无头浏览、批量抓取，以及 Cloudflare、反爬或登录墙场景；用于浏览器操作、页面内容读取和网页数据采集。"
+version: 2.1.0
 author: Hermes Agent
 license: MIT
 platforms: [macos, linux, windows]
