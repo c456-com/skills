@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """OpenCode 监控探针：旁听 SSE，把「一轮结束」转成进程完成通知唤醒 Hermes。
 
-用法：
-    watch.py <session_id> <timeout_seconds> [--tmux-session <name>]
+用法（参数顺序任意）：
+    watch.py <session_id> [timeout_seconds=900] [--tmux-session <name>]
 
 设计要点（都是实测踩出来的）：
   · 终态判据 = 本 session 出现过 execution.succeeded / execution.interrupted /
@@ -10,6 +10,9 @@
   · 按 data.sessionID 分流：一条 SSE 流里混着所有 session 的事件。
   · 绝不用「最后一行是不是 succeeded」——事件到达顺序不固定。
   · 权限面板卡死：permission.asked 出现后长时间无 permission.replied ⇒ 报 QUESTION-PANEL。
+  · 屏幕补位（需 --tmux-session）：SSE 不补发连接前的事件，REST 查不到待批请求，
+    探针晚于面板启动（含循环重挂）时 SSE 永远看不到这个面板；
+    此时屏幕连续两次可见面板 ⇒ 报 QUESTION-PANEL source=screen 并退出。
   · 必须由 Hermes 托管（terminal(background=true, notify_on_complete=true)），
     用 subprocess.Popen 起的进程 Hermes 不认，退出时不通知。
   · 正常退出码可能是 curl 的 28（--max-time 到点），不是故障。
@@ -19,13 +22,28 @@ import os
 import json
 import time
 import signal
+import argparse
 import subprocess
 
-SESSION_ID = sys.argv[1]
-TIMEOUT = int(sys.argv[2]) if len(sys.argv) > 2 else 900
-TMUX = None
-if "--tmux-session" in sys.argv:
-    TMUX = sys.argv[sys.argv.index("--tmux-session") + 1]
+
+def positive_int(s):
+    v = int(s)
+    if v <= 0:
+        raise argparse.ArgumentTypeError(f"必须是正整数秒数：{s!r}")
+    return v
+
+
+parser = argparse.ArgumentParser(description="OpenCode 单会话轮次结束探针（SSE 为主，屏幕补位）")
+parser.add_argument("session_id", help="OpenCode session ID（ses_...）")
+parser.add_argument("timeout", nargs="?", type=positive_int, default=900,
+                    help="超时秒数，缺省 900")
+parser.add_argument("--tmux-session", dest="tmux", default=None,
+                    help="承载该 session TUI 的 tmux 会话名；给了才启用屏幕补位")
+opts = parser.parse_intermixed_args()
+SESSION_ID = opts.session_id
+TIMEOUT = opts.timeout
+TMUX = opts.tmux
+SCREEN_CHECK_INTERVAL = 5   # 秒；连续两次可见才算，避开「刚弹出、SSE 事件还在路上」的竞态
 
 TERMINAL_EVENTS = {
     "session.execution.succeeded",
@@ -49,12 +67,21 @@ def password():
 
 
 def pane_text():
+    # 只取可见屏，不取滚动历史：历史里残留的旧面板/文档文字会误判
     if not TMUX:
         return ""
-    return subprocess.run(
-        ["tmux", "capture-pane", "-p", "-t", f"{TMUX}:0", "-S", "-10"],
-        capture_output=True, text=True,
-    ).stdout
+    try:
+        return subprocess.run(
+            ["tmux", "capture-pane", "-p", "-t", f"{TMUX}:0"],
+            capture_output=True, text=True, timeout=10,
+        ).stdout
+    except Exception:
+        return ""
+
+
+def panel_on_screen():
+    text = pane_text()
+    return "Permission required" in text and "Allow once" in text and "Reject" in text
 
 
 def on_signal(signum, frame):
@@ -69,7 +96,7 @@ pw = password()
 if not url.startswith("http"):
     sys.exit(f"拿不到 service 地址：{url!r}（opencode service status 输出异常）")
 
-print(f"PROBE-START session={SESSION_ID} url={url} timeout={TIMEOUT}s", flush=True)
+print(f"PROBE-START session={SESSION_ID} url={url} timeout={TIMEOUT}s tmux={TMUX or '-'}", flush=True)
 
 # 用管道跑 curl，边读边解析；一行一个 SSE data
 proc = subprocess.Popen(
@@ -84,6 +111,8 @@ seen_terminal = set()      # 已报告过的终态（id 或 key）
 asked_permissions = {}     # requestID -> 时间戳
 deadline = time.time() + TIMEOUT
 last_any_event = time.time()
+last_screen_check = 0.0
+screen_panel_hits = 0
 
 try:
     for line in proc.stdout:
@@ -92,6 +121,24 @@ try:
         if now > deadline:
             print(f"WATCH-TIMEOUT conv={SESSION_ID}", flush=True)
             break
+
+        # SSE 已知有待批请求时由 SSE 负责；只在 SSE 无记录时用屏幕补位
+        if asked_permissions:
+            screen_panel_hits = 0
+        elif TMUX and now - last_screen_check >= SCREEN_CHECK_INTERVAL:
+            last_screen_check = now
+            if panel_on_screen():
+                screen_panel_hits += 1
+                if screen_panel_hits >= 2:
+                    print(
+                        f"QUESTION-PANEL session={SESSION_ID} source=screen "
+                        f"tmux={TMUX} 屏幕可见权限面板但 SSE 未收到 permission.asked（探针晚于面板启动）",
+                        flush=True,
+                    )
+                    sys.exit(0)
+            else:
+                screen_panel_hits = 0
+
         if not line.startswith("data: "):
             continue
         try:

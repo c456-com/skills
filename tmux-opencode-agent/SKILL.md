@@ -1,7 +1,7 @@
 ---
 name: tmux-opencode-agent
 description: "OpenCode over tmux / OpenCode TUI 驱动与监控：当用户要在 tmux 中启动、驱动或监控 OpenCode，判断某一轮是否结束、处理 Permission required 权限请示面板、并行多个 OpenCode 按 session 归因，或换版本后复验事件能力时触发；用于旁听 SSE 事件流判终态（succeeded/interrupted/failed）、按 sessionID 分流、识别权限面板选中态与卡死。"
-version: 1.0.1
+version: 1.1.0
 author: Hermes Agent (hermes-cto)
 license: MIT
 platforms: [macos, linux]
@@ -104,30 +104,45 @@ echo "$SID"   # ses_...
 **运行**（先挂探针，再发要监控的那轮消息；探针只收连上之后的事件）：
 
 ```bash
-python3 <skill>/scripts/watch.py "$SID" 900
+python3 <skill>/scripts/watch.py "$SID" 900 --tmux-session <task>
+# 等价写法（参数顺序任意）：watch.py "$SID" --tmux-session <task> / watch.py --tmux-session <task> "$SID" 900
 ```
 
-- 第二个参数 `timeout_s`（缺省 900）**必须写成第二个位置参数**：
-  只写 `watch.py <SID> --tmux-session x` 会把 `--tmux-session` 当 timeout 解析而报 `ValueError`。
-- `--tmux-session <name>` 可放在 timeout 之后，但当前版本**不参与任何判定**（权限状态只看 SSE）。
+- `timeout_s`：正整数秒，可省，缺省 900。
+- `--tmux-session <task>`：承载该 session TUI 的 tmux 会话名（§1 里的 `<task>`，读 `<task>:0`）。
+  **建议总是传**：它启用屏幕补位（见下），不传则只靠 SSE。也可写成 `--tmux-session=<task>`。
+- 参数写错（缺 session ID、timeout 非正整数、`--tmux-session` 缺值、多余参数）打印用法并以退出码 2 退出；`-h` 看帮助。
 - Hermes 里照 `cursor-hook-monitor` 的方式托管：`terminal(background=true, notify_on_complete=true)`，
   不要用 `subprocess.Popen` 起。
+
+**屏幕补位：SSE 看不到的那种卡死**
+
+SSE **不补发连接前的事件**，REST 又查不到待批请求（见 §4）。实测：面板弹出后才连上的 SSE，
+12 秒收到 43 行其他事件，本 session 的 `permission.asked` 为 0。
+⇒ 探针晚于面板启动（包括下面建议的「短 timeout 循环重挂」从第二次起）时，纯 SSE 探针只会一直报 `WATCH-TIMEOUT`，
+而 agent 实际卡在面板上。
+
+传了 `--tmux-session` 时，**仅当 SSE 没有待批记录**，探针约每 5 秒读一次可见屏
+（同时出现 `Permission required`、`Allow once`、`Reject` 才算），**连续两次可见**即报
+`QUESTION-PANEL … source=screen` 并退出（实测约 15 秒）。SSE 已收到 `permission.asked` 时屏幕不参与，避免与之抢跑。
 
 **输出与判读**（逐行打印，以文字判读）
 
 | 输出 | 何时 | 含义 / 处置 |
 |------|------|------------|
-| `PROBE-START session=… url=… timeout=…` | 启动 | 已连上服务 |
+| `PROBE-START session=… url=… timeout=… tmux=…` | 启动 | 已连上服务；`tmux=-` 表示未启用屏幕补位 |
 | `TURN-START ts=…` | 本 session 开始一轮 | 仅记录 |
 | `PERMISSION-ASKED id=… action=… resources=…` | 弹权限面板 | **探针不退出**；需要时按 §4 裁决 |
 | `PERMISSION-REPLIED reply=…` | 面板已答 | 仅记录 |
 | `STAGE-DONE session=… event=… start_ts=… end_ts=… duration=…` | 出现任一终态事件 | 本轮结束，**退出码 0**；`event=` 区分 succeeded / interrupted / failed，业务成败另行核验（见 §3） |
 | `CURL-END rc=…` | 到 timeout 仍未见终态 | 正常到点，不是故障（`28` = curl 到点；探针自身先到点时为 `None`），后面紧跟下列一行 |
-| `QUESTION-PANEL session=… 待批=[…]` | 到点时仍有未答的权限请求 | 卡在权限面板，去裁决 |
+| `QUESTION-PANEL session=… 待批=[…]` | 到点时仍有未答的权限请求（SSE 看到的） | 卡在权限面板，去裁决 |
+| `QUESTION-PANEL session=… source=screen tmux=…` | 屏幕连续可见面板但 SSE 无记录（需 `--tmux-session`） | 面板早于探针弹出、已卡住，**立即退出**；去裁决 |
 | `WATCH-TIMEOUT conv=…` | 到点且无待批 | 核当前状态，必要时重挂；偶尔会连打两行，含义相同 |
 
 以上信号退出码均为 0；拿不到服务地址时打印 `拿不到 service 地址…` 并以退出码 1 退出。
-⚠️ 权限卡死要到 timeout 才会以 `QUESTION-PANEL` 退出；想早点发现，用较短 timeout 循环重挂，或盯输出里的 `PERMISSION-ASKED`。
+⚠️ SSE 看到的权限卡死要到 timeout 才会以 `QUESTION-PANEL` 退出；想早点发现，用较短 timeout 循环重挂
+（**重挂时务必带 `--tmux-session`**，否则从第二次起就看不到已弹出的面板），或盯输出里的 `PERMISSION-ASKED`。
 
 ## 3.5 五个交互问题的实测答案（与 Cursor 差异最大的一节）
 
@@ -199,8 +214,9 @@ python3 <skill>/scripts/watch.py "$SID" 900
 **拒答后它自己换路继续**（实测：Reject 后 agent 说「Previous tool call declined」然后换个工具继续），
 不会卡死等在这儿 —— 这点比 Cursor 的请示门省心。
 
-⛔ **权限状态只能从 SSE 的 `permission.asked` / `permission.replied` 拿**：
+⛔ **权限状态以 SSE 的 `permission.asked` / `permission.replied` 为准**：
 `GET /api/permission/request` 在面板明明在等时返回 `data:[]`，**REST 端点不可靠**。
+SSE 不补发连接前的事件 ⇒ 面板早于旁听弹出时，只有屏幕看得到（`watch.py --tmux-session` 已据此补位，见 §3.1）。
 
 | 事件 | data 关键字段 |
 |------|--------------|
