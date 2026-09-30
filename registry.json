@@ -271,15 +271,16 @@
     },
     {
       "name": "camofox-scraping",
-      "description": "用户或任意 AI Agent 需要真实浏览器打开、访问、阅读、交互、调试或采集任何网页时使用；支持 CamoFox / Camoufox、browser automation、headless browser 与 headed browser、web scraping，覆盖公开或动态网页、有头人工登录、无头浏览、批量抓取，以及 Cloudflare、反爬和登录墙场景。",
+      "description": "用户或任意 AI Agent 需要真实浏览器打开、访问、阅读、交互、调试或采集网页时使用；支持 CamoFox / Camoufox、browser automation、headless 与 headed browser、web scraping，覆盖公开或动态网页、有头人工登录、无头浏览、批量抓取，以及 Cloudflare、反爬和登录墙场景。⚠️ 须使用 fork 版 xiaohui-zhangxh/camofox-browser —— 官方 npm 包在 macOS 上有阻断性 bug。",
       "tags": [
         "scraping",
         "camofox",
         "browser-automation",
         "research",
-        "cloudflare"
+        "cloudflare",
+        "anti-detection"
       ],
-      "version": "2.1.0"
+      "version": "3.0.0"
     },
     {
       "name": "product-niche-discovery",

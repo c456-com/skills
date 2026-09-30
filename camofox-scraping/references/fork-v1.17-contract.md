@@ -7,7 +7,7 @@
 - HTTPS：<https://github.com/xiaohui-zhangxh/camofox-browser>
 - SSH：`git@github.com:xiaohui-zhangxh/camofox-browser.git`
 
-本机固定目录：`/Users/xiaohui/Codes/camofox-browser-fork`。
+本机固定目录：`~/Codes/camofox-browser-fork`。
 
 其他机器可以使用自己的绝对目录，但必须把它写入
 `~/.camofox/camofox-local-root.txt`。记录文件是本机运行约定，不提交到任何仓库：
