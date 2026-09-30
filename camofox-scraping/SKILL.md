@@ -370,4 +370,3 @@ Log the gap so the user knows what was missed.
 | `scripts/identity_harness.py` | 身份持久化验证 harness（配合 `oracle_server.py` 使用） |
 | `scripts/oracle_server.py` | 本地身份 oracle 服务：以「服务端 session 记录」为准判定是否真登录，可验证 cookie / localStorage / IndexedDB 的恢复 |
 | `references/macos-headful-patcher.js` / `references/viewport-mobile-init.js` | macOS 有头窗口与移动视口的补丁脚本 |
-| `references/kb-research-2026-07-03.md` | 历史调研快照（不是执行契约，不代表当前站点可访问性） |
