@@ -7,9 +7,9 @@ license: MIT
 platforms: [macos, linux]
 metadata:
   hermes:
-    tags: [opencode, tmux, monitoring, orchestration, sse, permissions, xiaohui]
-    category: xiaohui
-    related_skills: [tmux-cursor-agent, cto-delegation-protocol]
+    tags: [opencode, tmux, monitoring, orchestration, sse, permissions]
+    category: autonomous-ai-agents
+    related_skills: [tmux-cursor-agent, tmux-pane-workspace]
 ---
 
 # 驱动与监控 tmux 里的 OpenCode
@@ -1372,5 +1372,5 @@ tmux send-keys -t <sess> Enter
 ## 相关
 
 - `tmux-cursor-agent` — Cursor 版运行时手册；共享「折行污染」「Busy/Ready 决定落点」等通用坑
-- `cto-delegation-protocol` — 派活判据与验收门禁
+- `tmux-pane-workspace` — 通用 pane 可见性、布局与多窗口协作
 - `cursor-hook-monitor` — Cursor hook 监控技能包（OpenCode 不需要，SSE 覆盖）
