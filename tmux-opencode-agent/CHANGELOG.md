@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-09-30
+
+### Changed
+
+- 版本号承接仓库内既有 1.2.0 线，避免版本倒退；内容以本机现行运行时手册为准
+- 新增判据：同一工作目录 OpenCode 的 TUI tab 模型与键位真源、AskUserQuestion 提问面板处置、
+  假终态识别（`tool.failed` / 主轮 succeeded 不等于收工）、单会话制、发送侧字符硬闸
+  （`!` 会把输入切进 shell 模式，正文禁用）、会话身份验真与归属硬闸
+- 新增 `references/`：会话身份、面板选择与答复、OpenCode v2 凭据、假终态成因
+- 新增 `scripts/screen_watch.py`（屏副路轮询，识别提问面板）
+- 公开脱敏：本机家目录路径、内部项目名与内部 issue 编号、个人称呼
+
 ## [1.0.0] - 2026-09-30
 
 ### Added

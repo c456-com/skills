@@ -246,15 +246,14 @@
       "name": "tmux-opencode-agent",
       "description": "OpenCode Agent over tmux：当用户要把活派给 tmux 中的 OpenCode、判断它哪一轮说完（SSE 终态）、处置 Permission required 权限面板与 AskUserQuestion 提问面板、切换会话 tab、取消执行（Esc 两次）或挂监控探针时触发；用于可见 TUI 编排与可靠终态判定。",
       "tags": [
-        "tmux",
         "opencode",
-        "agent",
-        "automation",
+        "tmux",
         "monitoring",
+        "orchestration",
         "sse",
         "permissions"
       ],
-      "version": "1.0.0"
+      "version": "1.3.0"
     },
     {
       "name": "doc-driven-multi-agent",
