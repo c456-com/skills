@@ -32,6 +32,7 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | [tmux-cursor-agent](tmux-cursor-agent/SKILL.md) | Cursor Agent over tmux — 状态检测、四步消息协议、取消执行、监控 daemon |
 | [tmux-pane-workspace](tmux-pane-workspace/SKILL.md) | Tmux pane workspace — pane 聚焦缩放、多 pane 布局、圆桌会议、职业角色来源与会议日志 |
 | [tmux-opencode-agent](tmux-opencode-agent/SKILL.md) | OpenCode Agent over tmux — 可见 TUI 编排、SSE 终态判定、权限/提问面板处置、常驻监控探针 |
+| [cursor-hook-monitor](cursor-hook-monitor/SKILL.md) | Cursor Agent hook 监控 — 精准判轮次结束，区分「没检测到 / 已检测未送达」，支持 per-match 与退出投递、事件回读兜底、会话接管和时间线复盘 |
 | [doc-driven-multi-agent](doc-driven-multi-agent/SKILL.md) | 文档驱动多代理协作 — 角色 SOP、handoff 三要素、G0-G4 门禁、越界拒绝 |
 | [camofox-scraping](camofox-scraping/SKILL.md) | 通用浏览器 — 打开、访问、阅读、交互、调试或采集公开/动态网页，支持有头窗口登录与人工操作、无头浏览、批量抓取及 Cloudflare/反爬/登录墙 |
 | [product-niche-discovery](product-niche-discovery/SKILL.md) | 产品赛道发现 — 52 渠道找赛道、挖痛点、抓竞品/差评/定价原始材料 |
