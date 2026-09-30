@@ -14,7 +14,7 @@
 ```python
 import json, base64, urllib.request, subprocess
 URL = subprocess.run(["opencode","service","status"],capture_output=True,text=True).stdout.strip()
-PW  = json.load(open('/Users/xiaohui/.config/opencode/service.json'))['password']
+PW  = json.load(open('~/.config/opencode/service.json'))['password']
 AUTH = "Basic " + base64.b64encode(f"opencode:{PW}".encode()).decode()
 def get(p):
     r = urllib.request.Request(URL+p); r.add_header("Authorization", AUTH)

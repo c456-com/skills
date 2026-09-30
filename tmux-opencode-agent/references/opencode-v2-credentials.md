@@ -46,7 +46,7 @@ curl -sS -D h.txt -o b.txt -A "$UA" \
 | 现象 | 含义 |
 |------|------|
 | `200` | 可用 |
-| 401 `CreditsError` / `Insufficient balance … /workspace/<wrk_>/billing` | **额度耗尽**（正文自带计费链接，转给辉哥充值用） |
+| 401 `CreditsError` / `Insufficient balance … /workspace/<wrk_>/billing` | **额度耗尽**（正文自带计费链接，转给操作者充值用） |
 | 401 `Invalid credential` | 该 key 失效/停用 |
 | 400 `MissingSessionID` | 少 session 头（口径写错，不是账号问题） |
 
