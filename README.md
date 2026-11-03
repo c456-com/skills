@@ -13,6 +13,10 @@ C456 系列技能库。安装与更新统一使用 **[Vercel `npx skills`](https
 | 写信号/产品对比/渠道文章 | [c456-write](c456-write/SKILL.md) |
 | 发布上线、净稿、回填元数据、SEO 分发 | [c456-publish](c456-publish/SKILL.md) |
 | 转为公众号 HTML 排版发布 | [c456-wechat-publish](c456-wechat-publish/SKILL.md) |
+| [c456-video](c456-video/SKILL.md) | **内容生产** — 讲解型短视频：教学主线、一屏一概念、固定机位、3:4 画幅，HyperFrames 渲染 MP4（含开源字体/图标/Lottie 素材方案） |
+| [c456-wechat-layout](c456-wechat-layout/SKILL.md) | **内容生产** — 公众号排版：标题层级、重点三档、深色模式适配、按段落配图、交付自检（品牌组件见 c456-wechat-publish） |
+| [c456-wechat-cover](c456-wechat-cover/SKILL.md) | **内容生产** — 公众号封面：2.35:1，带风格库 presets/，按主题自动匹配，可自动沉淀新风格 |
+| [c456-gif](c456-gif/SKILL.md) | **内容生产** — GIF 动图：视频转 GIF（≤300 帧）或手写 SVG 逐帧小动图 |
 | 把 llm-wiki 内容发布到 C456 或拉回本地 | [c456-llm-wiki](c456-llm-wiki/SKILL.md) |
 | intake、assets、搜索、截图、CDP、API 操作 | [c456-cli](c456-cli/SKILL.md) |
 | 启动多角色 AI Agent 团队协作 | [c456-team-work](c456-team-work/SKILL.md) |

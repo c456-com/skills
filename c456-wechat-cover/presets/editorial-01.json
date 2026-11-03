@@ -1,0 +1,26 @@
+{
+  "id": "editorial-01",
+  "name": "编辑风 · 米底橙点",
+  "layout": "left-text-right-art",
+  "palette": {
+    "bg": "#F6F3ED",
+    "ink": "#1A1A1A",
+    "accent": "#FA9704",
+    "muted": "#6B6154"
+  },
+  "decor": {
+    "dots": true,
+    "blob": true,
+    "brandline": true,
+    "boxed_label": true
+  },
+  "type": {
+    "title": 58,
+    "sub": 22,
+    "label": 17,
+    "vol": 15,
+    "title_lines": 2
+  },
+  "use_when": ["概念解释", "工具拆解", "科普", "方法论", "AI 认知"],
+  "notes": "公众号第一套封面框架。点阵纹理 + 右侧圆形色斑托图标 + 底部橙色短横线。标题最多两行，橙色只强调一处。"
+}

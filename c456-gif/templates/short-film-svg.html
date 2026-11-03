@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:750px; height:420px; overflow:hidden;
+    font-family:"PingFang SC","Helvetica Neue",Arial,sans-serif;
+    background:#fafaf9; -webkit-font-smoothing:antialiased; }
+  svg { display:block; }
+</style>
+</head>
+<body>
+<svg id="c" width="750" height="420" viewBox="0 0 750 420" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fa9704" stop-opacity=".22"/>
+      <stop offset="100%" stop-color="#fa9704" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#1c1917" flood-opacity=".10"/>
+    </filter>
+  </defs>
+
+  <!-- 点阵背景 -->
+  <g id="dots" opacity="0">
+    <pattern id="pt" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#e6e3de"/>
+    </pattern>
+    <rect x="0" y="0" width="750" height="420" fill="url(#pt)"/>
+  </g>
+
+  <!-- 地面 -->
+  <g id="ground">
+    <rect id="gline" x="375" y="310" width="0" height="2.5" rx="1.25" fill="#ddd8d1"/>
+  </g>
+
+  <!-- 台面（后厨案台） -->
+  <g id="counter" opacity="0">
+    <rect x="300" y="240" width="390" height="70" rx="9" fill="#fff" stroke="#1c1917" stroke-width="2.2" filter="url(#soft)"/>
+    <rect x="300" y="240" width="390" height="11" rx="5" fill="#f4f1ec"/>
+    <line x1="300" y1="252" x2="690" y2="252" stroke="#e2ded8" stroke-width="1.4"/>
+    <line x1="360" y1="270" x2="360" y2="300" stroke="#eeebe6" stroke-width="1.6"/>
+    <line x1="620" y1="270" x2="620" y2="300" stroke="#eeebe6" stroke-width="1.6"/>
+  </g>
+
+  <!-- 灶眼 -->
+  <g id="stove" opacity="0">
+    <ellipse cx="392" cy="243" rx="34" ry="7" fill="#e7e3dd"/>
+    <ellipse cx="392" cy="243" rx="24" ry="4.6" fill="#d8d2ca"/>
+  </g>
+
+  <!-- 热气 -->
+  <g id="steam" opacity="0">
+    <circle cx="0" cy="0" r="5" fill="#c9c4bd" opacity=".55"/>
+    <circle cx="0" cy="0" r="4" fill="#c9c4bd" opacity=".45"/>
+    <circle cx="0" cy="0" r="3" fill="#c9c4bd" opacity=".35"/>
+  </g>
+
+  <!-- 锅 -->
+  <g id="pan" opacity="0">
+    <path d="M-42 -4 h84 l-9 34 a12 12 0 0 1 -12 9 h-42 a12 12 0 0 1 -12 -9 z" fill="#3f3b38" stroke="#1c1917" stroke-width="2"/>
+    <ellipse cx="0" cy="-4" rx="42" ry="8" fill="#57524d" stroke="#1c1917" stroke-width="2"/>
+    <rect x="40" y="-9" width="34" height="7" rx="3.5" fill="#3f3b38" stroke="#1c1917" stroke-width="2"/>
+  </g>
+
+  <!-- 砧板 + 刀 -->
+  <g id="board" opacity="0">
+    <rect x="-52" y="-9" width="104" height="14" rx="5" fill="#e8dfd2" stroke="#1c1917" stroke-width="2"/>
+  </g>
+  <g id="knife" opacity="0">
+    <path d="M-30 -3 h44 l10 9 h-54 z" fill="#d6d2cc" stroke="#1c1917" stroke-width="2" stroke-linejoin="round"/>
+    <rect x="24" y="-3" width="22" height="9" rx="3" fill="#1c1917"/>
+  </g>
+
+  <!-- 菜谱 -->
+  <g id="book" opacity="0">
+    <path id="pageL" d="M-46 -4 q22 -12 44 0 v40 q-22 -10 -44 0 z" fill="#fff" stroke="#1c1917" stroke-width="2.2" stroke-linejoin="round"/>
+    <path id="pageR" d="M46 -4 q-22 -12 -44 0 v40 q22 -10 44 0 z" fill="#fff" stroke="#1c1917" stroke-width="2.2" stroke-linejoin="round"/>
+    <line x1="0" y1="-4" x2="0" y2="36" stroke="#1c1917" stroke-width="2"/>
+    <g id="booklines" opacity="0" stroke="#c9c4bd" stroke-width="1.6" stroke-linecap="round">
+      <line x1="-34" y1="10" x2="-12" y2="10"/><line x1="-34" y1="18" x2="-16" y2="18"/>
+      <line x1="-34" y1="26" x2="-14" y2="26"/>
+      <line x1="14" y1="10" x2="36" y2="10"/><line x1="14" y1="18" x2="32" y2="18"/>
+    </g>
+  </g>
+
+  <!-- 硬币堆 -->
+  <g id="coins" opacity="0">
+    <g id="coin0" opacity="0"><ellipse cx="0" cy="0" rx="15" ry="5" fill="#fa9704" stroke="#1c1917" stroke-width="1.8"/><text x="0" y="2.5" font-size="7" text-anchor="middle" fill="#1c1917" font-weight="700">¥</text></g>
+    <g id="coin1" opacity="0"><ellipse cx="0" cy="0" rx="15" ry="5" fill="#fbb040" stroke="#1c1917" stroke-width="1.8"/><text x="0" y="2.5" font-size="7" text-anchor="middle" fill="#1c1917" font-weight="700">¥</text></g>
+    <g id="coin2" opacity="0"><ellipse cx="0" cy="0" rx="15" ry="5" fill="#fa9704" stroke="#1c1917" stroke-width="1.8"/><text x="0" y="2.5" font-size="7" text-anchor="middle" fill="#1c1917" font-weight="700">¥</text></g>
+    <g id="coin3" opacity="0"><ellipse cx="0" cy="0" rx="15" ry="5" fill="#fbb040" stroke="#1c1917" stroke-width="1.8"/><text x="0" y="2.5" font-size="7" text-anchor="middle" fill="#1c1917" font-weight="700">¥</text></g>
+    <g id="coin4" opacity="0"><ellipse cx="0" cy="0" rx="15" ry="5" fill="#fa9704" stroke="#1c1917" stroke-width="1.8"/><text x="0" y="2.5" font-size="7" text-anchor="middle" fill="#1c1917" font-weight="700">¥</text></g>
+  </g>
+
+  <!-- 厨师 -->
+  <g id="chef" opacity="0">
+    <ellipse cx="0" cy="3" rx="27" ry="5" fill="#1c1917" opacity=".10"/>
+    <!-- 腿 -->
+    <path d="M-8 0 v-26" stroke="#1c1917" stroke-width="8" stroke-linecap="round"/>
+    <path d="M8 0 v-26" stroke="#1c1917" stroke-width="8" stroke-linecap="round"/>
+    <!-- 鞋 -->
+    <path d="M-16 0 h14" stroke="#1c1917" stroke-width="6" stroke-linecap="round"/>
+    <path d="M2 0 h14" stroke="#1c1917" stroke-width="6" stroke-linecap="round"/>
+    <!-- 身体 -->
+    <path d="M-19 -26 h38 a7 7 0 0 1 7 7 v30 a7 7 0 0 1 -7 7 h-38 a7 7 0 0 1 -7 -7 v-30 a7 7 0 0 1 7 -7 z"
+          fill="#fff" stroke="#1c1917" stroke-width="2.4"/>
+    <!-- 围裙 -->
+    <path d="M-11 -14 h22 v24 h-22 z" fill="#fa9704" opacity=".92"/>
+    <line x1="-11" y1="-14" x2="11" y2="-14" stroke="#1c1917" stroke-width="2"/>
+    <!-- 左臂 -->
+    <path id="armL" d="M-19 -48 q-13 9 -11 22" stroke="#1c1917" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+    <!-- 右臂（拿刀的手） -->
+    <path id="armR" d="M19 -48 q13 9 11 22" stroke="#1c1917" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+    <!-- 头 -->
+    <circle cx="0" cy="-66" r="15" fill="#fff" stroke="#1c1917" stroke-width="2.4"/>
+    <circle cx="-5" cy="-68" r="1.9" fill="#1c1917"/>
+    <circle cx="5" cy="-68" r="1.9" fill="#1c1917"/>
+    <path d="M-4 -61 q4 3 8 0" stroke="#1c1917" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- 厨师帽 -->
+  <g id="hat" opacity="0">
+    <path d="M-17 -4 h34 v6 a4 4 0 0 1 -4 4 h-26 a4 4 0 0 1 -4 -4 z" fill="#fff" stroke="#1c1917" stroke-width="2.2"/>
+    <circle cx="-11" cy="-9" r="9" fill="#fff" stroke="#1c1917" stroke-width="2.2"/>
+    <circle cx="0" cy="-13" r="11" fill="#fff" stroke="#1c1917" stroke-width="2.2"/>
+    <circle cx="11" cy="-9" r="9" fill="#fff" stroke="#1c1917" stroke-width="2.2"/>
+  </g>
+
+  <!-- 标签 -->
+  <g id="tag0" opacity="0">
+    <rect x="-72" y="-15" width="144" height="30" rx="15" fill="#fff" stroke="#f2d3a6" stroke-width="1.6"/>
+    <circle cx="-54" cy="0" r="4" fill="#fa9704"/>
+    <text x="6" y="5" font-size="13.5" text-anchor="middle" fill="#1c1917" font-weight="600">Agent · 厨师</text>
+  </g>
+  <g id="tag1" opacity="0">
+    <rect x="-72" y="-15" width="144" height="30" rx="15" fill="#fff" stroke="#f2d3a6" stroke-width="1.6"/>
+    <circle cx="-54" cy="0" r="4" fill="#fa9704"/>
+    <text x="6" y="5" font-size="13.5" text-anchor="middle" fill="#1c1917" font-weight="600">Tools · 厨具</text>
+  </g>
+  <g id="tag2" opacity="0">
+    <rect x="-72" y="-15" width="144" height="30" rx="15" fill="#fff" stroke="#f2d3a6" stroke-width="1.6"/>
+    <circle cx="-54" cy="0" r="4" fill="#fa9704"/>
+    <text x="6" y="5" font-size="13.5" text-anchor="middle" fill="#1c1917" font-weight="600">Skills · 菜谱</text>
+  </g>
+  <g id="tag3" opacity="0">
+    <rect x="-72" y="-15" width="144" height="30" rx="15" fill="#fff" stroke="#f2d3a6" stroke-width="1.6"/>
+    <circle cx="-54" cy="0" r="4" fill="#fa9704"/>
+    <text x="6" y="5" font-size="13.5" text-anchor="middle" fill="#1c1917" font-weight="600">Token · 工资</text>
+  </g>
+
+  <!-- 光晕 -->
+  <circle id="halo" cx="375" cy="120" r="130" fill="url(#glow)" opacity="0"/>
+
+  <!-- 结尾大字 -->
+  <g id="final" opacity="0">
+    <text id="ftitle" x="375" y="112" font-size="46" font-weight="700" text-anchor="middle" fill="#1c1917" letter-spacing="4">HARNESS</text>
+    <text id="fsub" x="375" y="146" font-size="14" text-anchor="middle" fill="#78716c" letter-spacing="1">一间后厨，四样东西</text>
+  </g>
+</svg>
+
+<script>
+const $ = id => document.getElementById(id);
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const seg=(t,s,e)=>clamp((t-s)/(e-s));
+const outC=t=>1-Math.pow(1-t,3);
+const inOut=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+const outBack=t=>{const c=1.7;return 1+ (c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2);};
+
+const set = (el, x, y, s, r, o) => {
+  let tr = `translate(${x.toFixed(2)},${y.toFixed(2)})`;
+  if (s !== undefined && s !== 1) tr += ` scale(${s.toFixed(3)})`;
+  if (r) tr += ` rotate(${r.toFixed(2)})`;
+  el.setAttribute('transform', tr);
+  if (o !== undefined) el.setAttribute('opacity', o);
+};
+
+// 厨师位置（含走向台面）
+function chefX(t){
+  const walk = outC(seg(t,1.3,3.6));          // 入场
+  let x = -150 + 300*walk;                      // -> 150
+  const go = inOut(seg(t,14.2,15.8));           // 走向台面
+  x += 165*go;                                  // -> 315
+  return x;
+}
+
+const DURATION = 20; // 秒
+window.render = function(t){
+  t = t * DURATION;
+  // 背景点阵
+  $('dots').setAttribute('opacity', (seg(t,0,0.8)*0.9).toFixed(3));
+
+  // 1. 地面从中心展开
+  const gp = outC(seg(t,0.1,1.4));
+  const gw = 640*gp;
+  $('gline').setAttribute('x', (375-gw/2).toFixed(1));
+  $('gline').setAttribute('width', gw.toFixed(1));
+
+  // 2. 厨师入场 + 落地挤压
+  const cx = chefX(t);
+  const cIn = outC(seg(t,1.3,3.5));
+  const land = seg(t,3.2,3.7);
+  const squash = 1 + 0.06*Math.sin(land*Math.PI);
+  const bob = Math.sin(t*7)*1.6*seg(t,19,20);
+  $('chef').setAttribute('opacity', (cIn>0?1:0));
+  $('chef').setAttribute('transform', `translate(${cx.toFixed(2)},${(310+bob).toFixed(2)}) scale(${(1/squash).toFixed(3)},${squash.toFixed(3)})`);
+
+  // 帽子掉落
+  const hp = outBack(seg(t,2.0,3.1));
+  const hy = -150 + (310-66-30+150)*hp;  // 落到头顶
+  $('hat').setAttribute('opacity', seg(t,2.0,2.15));
+  $('hat').setAttribute('transform', `translate(${cx.toFixed(2)},${hy.toFixed(2)}) rotate(${((1-hp)*14).toFixed(1)})`);
+
+  // 3. 抬手
+  const raise = outC(seg(t,3.7,4.4)) - outC(seg(t,13.6,14.1));
+  $('armR').setAttribute('d', raise>0.01
+    ? `M19 -48 q${(13+16*raise).toFixed(1)} ${(-6-14*raise).toFixed(1)} ${(8+6*raise).toFixed(1)} ${(-26-8*raise).toFixed(1)}`
+    : 'M19 -48 q13 9 11 22');
+
+  // 台面升起
+  const cp = outC(seg(t,4.2,5.6));
+  $('counter').setAttribute('opacity', cp>0?1:0);
+  $('counter').setAttribute('transform', `translate(0,${(90*(1-cp)).toFixed(2)})`);
+
+  // 灶眼
+  $('stove').setAttribute('opacity', outC(seg(t,4.9,5.5)));
+
+  // 锅掉落（弹跳）
+  const pp = seg(t,5.6,7.0);
+  const pe = outBack(pp);
+  $('pan').setAttribute('opacity', pp>0?1:0);
+  const panY = 201 - 300*(1-pe) - 6*Math.sin(seg(t,6.9,7.35)*Math.PI);
+  $('pan').setAttribute('transform', `translate(392,${panY.toFixed(2)}) rotate(${((1-pe)*-12).toFixed(1)})`);
+
+  // 砧板滑入
+  const bp = outC(seg(t,6.8,7.7));
+  $('board').setAttribute('opacity', bp>0?1:0);
+  $('board').setAttribute('transform', `translate(${(520+120*(1-bp)).toFixed(2)},243)`);
+
+  // 刀飞入
+  const kp = outBack(seg(t,7.4,8.5));
+  $('knife').setAttribute('opacity', kp>0?1:0);
+  $('knife').setAttribute('transform', `translate(${(520+230*(1-kp)).toFixed(2)},${(228-90*(1-kp)).toFixed(2)}) rotate(${((1-kp)*40).toFixed(1)})`);
+
+  // 菜谱飘落 + 翻开
+  const bookp = seg(t,8.8,10.8);
+  const be = outC(bookp);
+  const open = outC(seg(t,10.2,11.0));
+  $('book').setAttribute('opacity', bookp>0?1:0);
+  $('book').setAttribute('transform',
+    `translate(${(628-40*(1-be)).toFixed(2)},${(-190+428*be).toFixed(2)}) rotate(${((1-be)*26).toFixed(1)}) scale(${(0.55+0.45*open).toFixed(3)},${1})`);
+  $('booklines').setAttribute('opacity', open.toFixed(3));
+
+  // 硬币掉落（5 枚错峰）
+  for(let i=0;i<5;i++){
+    const s0 = 11.3 + i*0.26, s1 = s0+0.55;
+    const p = seg(t,s0,s1);
+    const el = $('coin'+i);
+    if(p<=0){ el.setAttribute('opacity',0); continue; }
+    const e = outBack(p);
+    const y = 310 - 240*(1-e) - i*8.5;
+    const x = 60 + (i%2? 5:-5)*0.6;
+    el.setAttribute('opacity', 1);
+    el.setAttribute('transform', `translate(${x},${y.toFixed(2)}) rotate(${((1-e)*25*(i%2?1:-1)).toFixed(1)})`);
+  }
+
+  // 标签依次浮出
+  const tags=[
+    {id:'tag0', s:3.9, x:150, y:168},
+    {id:'tag1', s:7.9, x:470, y:186},
+    {id:'tag2', s:10.9, x:628, y:150},
+    {id:'tag3', s:13.2, x:92, y:196}
+  ];
+  tags.forEach(g=>{
+    const p = outC(seg(t,g.s,g.s+0.55));
+    const el=$(g.id);
+    el.setAttribute('opacity', p);
+    set(el, g.x, g.y + 10*(1-p));
+  });
+
+  // 厨师走到台面后开始炒菜：热气
+  const cook = seg(t,15.6,17.2);
+  $('steam').setAttribute('opacity', cook>0?1:0);
+  if(cook>0){
+    for(let i=0;i<3;i++){
+      const ph = ((t*0.9 + i*0.33) % 1);
+      const cy = 306 - 60*cook - ph*70;
+      const cxx = 392 + Math.sin((t*2+i)*4)*7;
+      const c = $('steam').children[i];
+      c.setAttribute('cx', cxx.toFixed(1));
+      c.setAttribute('cy', cy.toFixed(1));
+      c.setAttribute('opacity', ((1-ph)*0.55).toFixed(2));
+    }
+    $('pan').setAttribute('transform', `translate(392,${(201+6*Math.sin(t*9)).toFixed(2)})`);
+  }
+
+  // 结尾
+  const fp = outC(seg(t,17.4,18.6));
+  $('halo').setAttribute('opacity', fp*0.9);
+  $('final').setAttribute('opacity', fp);
+  const fl = outC(seg(t,17.6,19.4));
+  $('ftitle').setAttribute('y', (112 + 8*(1-fl)).toFixed(1));
+  $('ftitle').setAttribute('opacity', fl);
+  $('fsub').setAttribute('opacity', outC(seg(t,18.4,19.5)));
+};
+render(0);
+</script>
+</body>
+</html>

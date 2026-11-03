@@ -1,0 +1,26 @@
+{
+  "id": "editorial-02-dark",
+  "name": "深沉风 · 墨底橙字",
+  "layout": "left-text-right-art",
+  "palette": {
+    "bg": "#14120F",
+    "ink": "#F5F1E8",
+    "accent": "#FA9704",
+    "muted": "#9A8F7E"
+  },
+  "decor": {
+    "dots": true,
+    "blob": true,
+    "brandline": true,
+    "boxed_label": true
+  },
+  "type": {
+    "title": 58,
+    "sub": 22,
+    "label": 17,
+    "vol": 15,
+    "title_lines": 2
+  },
+  "use_when": ["行业判断", "尖锐观点", "数据复盘", "趋势分析", "批评性内容"],
+  "notes": "同一套版式，深色底。适合结论较重、语气偏判断的文章，和米底那套交替使用会形成节奏。"
+}

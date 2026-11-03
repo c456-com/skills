@@ -379,6 +379,52 @@
         "openai"
       ],
       "version": "1.0.0"
+    },
+    {
+      "name": "c456-video",
+      "description": "讲解型短视频 — 教学主线、一场景一想法、固定机位、3:4 画幅、HyperFrames 渲染 MP4。",
+      "tags": [
+        "c456",
+        "video",
+        "explainer",
+        "short-video",
+        "hyperframes"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "c456-wechat-layout",
+      "description": "公众号图文排版 — 标题层级、重点三档、深色模式适配、按段落配图、交付自检。",
+      "tags": [
+        "c456",
+        "wechat",
+        "layout",
+        "typography",
+        "darkmode"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "c456-wechat-cover",
+      "description": "公众号封面 — 2.35:1，带风格库 presets/，栏目长期视觉统一，可自动沉淀新风格。",
+      "tags": [
+        "c456",
+        "wechat",
+        "cover",
+        "design-system"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "c456-gif",
+      "description": "GIF 动图 — 视频转 GIF（≤300 帧，公众号可用）或手写 SVG 逐帧小动图。",
+      "tags": [
+        "c456",
+        "gif",
+        "ffmpeg",
+        "animation"
+      ],
+      "version": "1.0.0"
     }
   ]
 }
