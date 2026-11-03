@@ -81,7 +81,7 @@ const repl = {
   __LABEL_SIZE__: (ty.label || 17) + 'px',
   __VOL_SIZE__: (ty.vol || 15) + 'px',
   __NO__: data.no || '01',
-  __LABEL__: data.label || 'AI 拆解',
+  __LABEL__: data.label || '栏目名',
   __VOL__: data.vol || 'VOL.001',
   __TITLE__: data.title || '标题',
   __SUB__: data.sub || '',
