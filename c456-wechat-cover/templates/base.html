@@ -13,6 +13,7 @@ __FONT_FACES__
         --ss: __SUB_SIZE__;
         --ls: __LABEL_SIZE__;
         --vs: __VOL_SIZE__;
+        __DOTS_VAR__
       }
       * { margin: 0; padding: 0; box-sizing: border-box; }
       html, body {
@@ -24,7 +25,7 @@ __FONT_FACES__
       #cover { position: relative; width: 1080px; height: 460px; overflow: hidden; background: var(--bg); }
 
       .dots { position: absolute; inset: 0;
-        background-image: radial-gradient(color-mix(in srgb, var(--ink) 9%, transparent) 1.2px, transparent 1.2px);
+        background-image: radial-gradient(var(--dots-color, color-mix(in srgb, var(--ink) 9%, transparent)) 1.2px, transparent 1.2px);
         background-size: 22px 22px; opacity: .85; }
 
       .topbar { position: absolute; left: 64px; top: 46px; right: 64px;

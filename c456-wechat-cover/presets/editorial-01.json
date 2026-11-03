@@ -12,7 +12,8 @@
     "dots": true,
     "blob": true,
     "brandline": true,
-    "boxed_label": true
+    "boxed_label": true,
+    "dots_color": "#E2DDD3"
   },
   "type": {
     "title": 58,
@@ -21,6 +22,12 @@
     "vol": 15,
     "title_lines": 2
   },
-  "use_when": ["概念解释", "工具拆解", "科普", "方法论", "AI 认知"],
+  "use_when": [
+    "概念解释",
+    "工具拆解",
+    "科普",
+    "方法论",
+    "AI 认知"
+  ],
   "notes": "公众号第一套封面框架。点阵纹理 + 右侧圆形色斑托图标 + 底部橙色短横线。标题最多两行，橙色只强调一处。"
 }

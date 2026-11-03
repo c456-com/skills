@@ -68,6 +68,7 @@ if (fs.existsSync(notoCssPath)) {
 
 const p = preset.palette || {};
 const ty = preset.type || {};
+const decor = preset.decor || {};
 let html = fs.readFileSync(path.join(SKILL, 'templates/base.html'), 'utf8');
 
 const repl = {
@@ -86,12 +87,12 @@ const repl = {
   __TITLE__: data.title || '标题',
   __SUB__: data.sub || '',
   __BRAND__: data.brand || '策思路 C456 · c456.com',
+  __DOTS_VAR__: decor.dots_color ? `--dots-color: ${decor.dots_color};` : '',
   __ART__: data.art ? 'file://' + path.join(SKILL, data.art) : '',
 };
 for (const [k, v] of Object.entries(repl)) html = html.split(k).join(v);
 
 // 装饰开关
-const decor = preset.decor || {};
 const hide = [];
 if (!decor.dots) hide.push('d-dots');
 if (!decor.blob) hide.push('d-blob');
