@@ -1,6 +1,6 @@
 ---
 name: c456-cli
-description: "C456 CLI / c456.com 操作：当用户要收录 intake、发布 playbook、管理 assets 媒体库、搜索/获取 C456 内容、截图上传或同步 self-hosted C456 数据时触发；用于 CLI 命令、CDP 截图和 API v1 工作流。"
+description: "C456 CLI / c456.com 操作：当用户要收录 intake、发布 playbook、管理 assets 媒体库、设置列表封面、搜索/获取 C456 内容、截图上传或同步 self-hosted C456 数据时触发；用于 CLI 命令、CDP 截图和 API v1 工作流。"
 version: 1.2.0
 related_skills:
   - c456-sync
@@ -86,8 +86,25 @@ related_skills:
 
 **打法 `playbook`**
 
-- 新建：`c456 playbook new -t "标题" [--body-file <path>] [--ref-intake id …] [--ref-playbook id …]`
-- 另有 `show` / `list` / `update` / `delete`
+- 新建：`c456 playbook new -t "标题" [--body-file <path>] [--ref-intake id …] [--ref-playbook id …] [--cover-asset-id <id> | --cover-image-url <url>]`
+- 另有 `show` / `list` / `update` / `delete`；更新支持 `--cover-asset-id` / `--cover-image-url` / `--clear-cover`。
+
+**封面 `cover`（指南 / 快讯）**
+
+- 不设置时，公开列表自动使用正文第一个二级标题前的首图；显式封面优先。
+- 素材库封面：先 `c456 asset upload -f cover.png` 拿 `id`，再 `--cover-asset-id <id>`（服务端渲染时重新签名，URL 不会过期）。
+- 外链 / 上传图：`--cover-image-url "https://…"`。
+- 清除显式封面、回退正文首图：`--clear-cover`。
+- 适用：`playbook new/update`、`signal|tool|channel new/update`、`intake update`。
+- 示例：
+
+```bash
+c456 playbook update 35 --cover-asset-id 227
+c456 signal update 366 --cover-image-url "https://cdn.example.com/cover.jpg"
+c456 playbook update 35 --clear-cover
+```
+
+公开列表卡片与详情页 `og:image` 都会使用该封面。
 
 **讲解 `walkthrough`**
 

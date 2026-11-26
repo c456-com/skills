@@ -63,7 +63,7 @@
     },
     {
       "name": "c456-cli",
-      "description": "C456 CLI 基础能力 — 收录 intake、playbook、assets 管理、搜索、截图 CDP 与 API 工作流；封面截图与发布流程见 c456-sync 与 c456-publish。",
+      "description": "C456 CLI 基础能力 — 收录 intake、playbook、assets 管理、列表封面参数、搜索、截图 CDP 与 API 工作流；封面截图与发布流程见 c456-sync 与 c456-publish。",
       "tags": [
         "c456"
       ],
